@@ -11,7 +11,7 @@ Note: You may want to adjust the CUDA version [according to your driver version]
 
   ```bash
   conda create -n Lumina_T2X
-  conda activate large_dit
+  conda activate Lumina_T2X
   conda install python=3.11 pytorch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 pytorch-cuda=12.1 -c pytorch -c nvidia
   ```
 
