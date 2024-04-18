@@ -263,7 +263,7 @@ def main():
     with gr.Blocks() as demo:
         with gr.Row():
             gr.Markdown(
-f"""# DiT image generation demo
+f"""# Lumina-T2I image generation demo
 
 **Model path:** {os.path.abspath(args.ckpt)}
  
@@ -282,7 +282,7 @@ f"""# DiT image generation demo
                         label="CFG scale"
                     )
                     solver = gr.Dropdown(
-                        value="dopri5",
+                        value="euler",
                         choices=["euler", "dopri5", "dopri8"],
                         label = "solver"
                     )
