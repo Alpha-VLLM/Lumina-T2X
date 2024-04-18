@@ -75,7 +75,7 @@ pip install -v --disable-pip-version-check --no-cache-dir --no-build-isolation -
 
 ## Model Zoo
 
-The checkpoints of our model will be released soon~
+More checkpoints of our model will be released soon~
 
 | Resolution | Download URL     |
 | ---------- |------------------|
