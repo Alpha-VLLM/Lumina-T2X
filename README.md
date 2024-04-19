@@ -37,11 +37,15 @@ Furthermore, training $\textbf{Lumina-T2X}$ is computationally efficient. The la
 
 ### Demos of Videos
 
-https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/2b6f7a94-35bf-442c-94b8-97952a9eb0c6
+<video controls>
+  <source src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/2b6f7a94-35bf-442c-94b8-97952a9eb0c6" type="video/mp4">
+</video>
 
 ### Demos of Multi-views
 
-
+<video controls>
+  <source src="./assets/videos/demo_multi_view.mp4" type="video/mp4">
+</video>
 
 
 ### Demos of Text2Speech
