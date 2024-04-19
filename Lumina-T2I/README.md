@@ -26,17 +26,17 @@ More checkpoints of our model will be released soon~
 Before installation, ensure that you have a working ``nvcc``
 
 ```bash
+# The command should work and show the same version number as in our case. (12.1 in our case).
 nvcc --version
-# The command should work and show the same version number as in step 1 (12.1 in our case).
 ```
 
 On some outdated distros (e.g., CentOS 7), you may also want to check that a late enough version of
 ``gcc`` is available
 
 ```bash
-gcc --version
 # The command should work and show a version of at least 6.0.
 # If not, consult distro-specific tutorials to obtain a newer version or build manually.
+gcc --version
 ```
 
 ### 1. Create a conda environment and install PyTorch
