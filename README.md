@@ -37,7 +37,7 @@ Furthermore, training $\textbf{Lumina-T2X}$ is computationally efficient. The la
 
 ### Demo of Videos
 
-https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/67970ca8-ac19-4199-8e2d-d1cc6f029bdd
+https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/2b6f7a94-35bf-442c-94b8-97952a9eb0c6
 
 ## Diverse Configurations
 
