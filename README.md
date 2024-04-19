@@ -23,21 +23,29 @@ Furthermore, training $\textbf{Lumina-T2X}$ is computationally efficient. The la
 
 ## 📰 News
 
-- [2024-04-19] 🔥🔥🔥 Demo, project introduction and **release
-- [2024-04-05] 😆😆😆 Code release
-- [2024-04-01] 🚀🚀🚀 We release the initial version of Lumina-T2I for text-to-image generation
+- [2024-04-19] 🔥🔥🔥 Demo, project introduction and **release**.
+- [2024-04-05] 😆😆😆 Code release.
+- [2024-04-01] 🚀🚀🚀 We release the initial version of Lumina-T2I for text-to-image generation.
 
 ## 📽️ Demos
 
-### Demo of Images
+### Demos of Images
 <p align="center">
  <img src="./assets/images/demo_image.png" width="100%"/> 
  <br>
 </p>
 
-### Demo of Videos
+### Demos of Videos
 
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/2b6f7a94-35bf-442c-94b8-97952a9eb0c6
+
+### Demos of Multi-views
+
+
+
+
+### Demos of Text2Speech
+
 
 ## Diverse Configurations
 
