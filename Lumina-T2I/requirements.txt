@@ -1,0 +1,6 @@
+diffusers
+fairscale
+accelerate
+tensorboard
+transformers
+gradio
