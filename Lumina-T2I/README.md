@@ -23,20 +23,43 @@ More checkpoints of our model will be released soon~
 
 ## Installation
 
+Before installation, ensure that you have a working ``nvcc``
+
+```bash
+nvcc --version
+# The command should work and show the same version number as in step 1 (12.1 in our case).
+```
+
+On some outdated distros (e.g., CentOS 7), you may also want to check that a late enough version of
+``gcc`` is available
+
+```bash
+gcc --version
+# The command should work and show a version of at least 6.0.
+# If not, consult distro-specific tutorials to obtain a newer version or build manually.
+```
+
 ### 1. Create a conda environment and install PyTorch
 
 Note: You may want to adjust the CUDA version [according to your driver version](https://docs.nvidia.com/deploy/cuda-compatibility/#default-to-minor-version).
 
   ```bash
-  conda create -n Lumina_T2X
+  conda create -n Lumina_T2X -y
   conda activate Lumina_T2X
-  conda install python=3.11 pytorch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 pytorch-cuda=12.1 -c pytorch -c nvidia
+  conda install python=3.11 pytorch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 pytorch-cuda=12.1 -c pytorch -c nvidia -y
   ```
 
 ### 2. Install dependencies
 
   ```bash
   pip install diffusers fairscale accelerate tensorboard transformers gradio
+  ```
+
+  or you can use
+
+  ```bash
+  cd Lumina-T2I
+  pip install -r requirements.txt
   ```
 
 ### 3. Install ``flash-attn``
@@ -59,24 +82,7 @@ Note: You may want to adjust the CUDA version [according to your driver version]
 > 
 > If the error `No module named 'fused_layer_norm_cuda'` appears, it typically means you are using a Python-only build of Apex. To resolve this, please run `pip uninstall apex`, and Lumina-T2X should then function correctly.
 
-Before installation, ensure that
-you have a working ``nvcc``
-
-```bash
-nvcc --version
-# The command should work and show the same version number as in step 1 (12.1 in our case).
-```
-
-On some outdated distros (e.g., CentOS 7), you may also want to check that a late enough version of
-``gcc`` is available
-
-```bash
-gcc --version
-# The command should work and show a version of at least 6.0.
-# If not, consult distro-specific tutorials to obtain a newer version or build manually.
-```
-
-Then, clone the repo and install following the official guidelines (note that we expect a full
+You can clone the repo and install following the official guidelines (note that we expect a full
 build, i.e., with CUDA and C++ extensions)
 
 ```bash

@@ -29,7 +29,16 @@ Furthermore, training $\textbf{Lumina-T2X}$ is computationally efficient. The la
 
 ## 📽️ Demos
 
-./assets/videos/295216b5909861ef737d277709ffc52f.mp4
+### Demo of Images
+<p align="center">
+ <img src="./assets/images/demo_image.png" width="100%"/> 
+ <br>
+</p>
+
+### Demo of Videos
+
+<video src="./assets/videos/295216b5909861ef737d277709ffc52f.mp4" width="100%" height="100%" controls="controls"></video>
+
 
 ## Diverse Configurations
 
