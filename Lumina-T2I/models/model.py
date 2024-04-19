@@ -13,12 +13,13 @@ import functools
 import math
 from typing import Optional, Tuple, List
 
-from apex.normalization import FusedRMSNorm as RMSNorm
+from .components import RMSNorm
 import fairscale.nn.model_parallel.initialize as fs_init
 from fairscale.nn.model_parallel.layers import (
     ColumnParallelLinear, RowParallelLinear, ParallelEmbedding,
 )
-from flash_attn import flash_attn_func
+from flash_attn import flash_attn_varlen_func
+from flash_attn.bert_padding import index_first_axis, pad_input, unpad_input  # noqa
 import torch
 import torch.distributed as dist
 import torch.nn as nn
@@ -266,8 +267,63 @@ class Attention(nn.Module):
             xk_out = torch.view_as_real(xk_ * freqs_cis).flatten(3)
             return xq_out.type_as(xq), xk_out.type_as(xk)
 
+    # copied from huggingface modeling_llama.py
+    def _upad_input(self, query_layer, key_layer, value_layer, attention_mask, query_length):
+
+        def _get_unpad_data(attention_mask):
+            seqlens_in_batch = attention_mask.sum(dim=-1, dtype=torch.int32)
+            indices = torch.nonzero(attention_mask.flatten(), as_tuple=False).flatten()
+            max_seqlen_in_batch = seqlens_in_batch.max().item()
+            cu_seqlens = F.pad(torch.cumsum(seqlens_in_batch, dim=0, dtype=torch.int32), (1, 0))
+            return (
+                indices,
+                cu_seqlens,
+                max_seqlen_in_batch,
+            )
+
+        indices_k, cu_seqlens_k, max_seqlen_in_batch_k = _get_unpad_data(attention_mask)
+        batch_size, kv_seq_len, num_key_value_heads, head_dim = key_layer.shape
+
+        key_layer = index_first_axis(
+            key_layer.reshape(batch_size * kv_seq_len, num_key_value_heads, head_dim), indices_k
+        )
+        value_layer = index_first_axis(
+            value_layer.reshape(batch_size * kv_seq_len, num_key_value_heads, head_dim), indices_k
+        )
+        if query_length == kv_seq_len:
+            query_layer = index_first_axis(
+                query_layer.reshape(batch_size * kv_seq_len, self.n_local_heads, head_dim), indices_k
+            )
+            cu_seqlens_q = cu_seqlens_k
+            max_seqlen_in_batch_q = max_seqlen_in_batch_k
+            indices_q = indices_k
+        elif query_length == 1:
+            max_seqlen_in_batch_q = 1
+            cu_seqlens_q = torch.arange(
+                batch_size + 1, dtype=torch.int32, device=query_layer.device
+            )  # There is a memcpy here, that is very bad.
+            indices_q = cu_seqlens_q[:-1]
+            query_layer = query_layer.squeeze(1)
+        else:
+            # The -q_len: slice assumes left padding.
+            attention_mask = attention_mask[:, -query_length:]
+            query_layer, indices_q, cu_seqlens_q, max_seqlen_in_batch_q = unpad_input(query_layer, attention_mask)
+
+        return (
+            query_layer,
+            key_layer,
+            value_layer,
+            indices_q,
+            (cu_seqlens_q, cu_seqlens_k),
+            (max_seqlen_in_batch_q, max_seqlen_in_batch_k),
+        )
+
     def forward(
-        self, x: torch.Tensor, freqs_cis: torch.Tensor, y: torch.Tensor, y_mask: torch.Tensor,
+        self,
+        x: torch.Tensor,
+        x_mask: torch.Tensor,
+        freqs_cis: torch.Tensor,
+        y: torch.Tensor, y_mask: torch.Tensor,
     ) -> torch.Tensor:
         """
         Forward pass of the attention module.
@@ -295,19 +351,32 @@ class Attention(nn.Module):
         xq, xk = xq.to(dtype), xk.to(dtype)
 
         if dtype in [torch.float16, torch.bfloat16]:
-            output = flash_attn_func(xq, xk, xv, dropout_p=0., causal=False)
+            # begin var_len flash attn
+            query_states, key_states, value_states, indices_q, cu_seq_lens, max_seq_lens = self._upad_input(
+                xq, xk, xv, x_mask, seqlen
+            )
+
+            cu_seqlens_q, cu_seqlens_k = cu_seq_lens
+            max_seqlen_in_batch_q, max_seqlen_in_batch_k = max_seq_lens
+
+            attn_output_unpad = flash_attn_varlen_func(
+                query_states,
+                key_states,
+                value_states,
+                cu_seqlens_q=cu_seqlens_q,
+                cu_seqlens_k=cu_seqlens_k,
+                max_seqlen_q=max_seqlen_in_batch_q,
+                max_seqlen_k=max_seqlen_in_batch_k,
+                dropout_p=0.,
+                causal=False,
+            )
+            output = pad_input(attn_output_unpad, indices_q, bsz, seqlen)
+            # end var_len_flash_attn
+
         else:
-            n_rep = self.n_local_heads // self.n_local_kv_heads
-            if n_rep >= 1:
-                xk = xk.unsqueeze(3).repeat(1, 1, 1, n_rep, 1).flatten(2, 3)
-                xv = xv.unsqueeze(3).repeat(1, 1, 1, n_rep, 1).flatten(2, 3)
-            output = F.scaled_dot_product_attention(
-                xq.permute(0, 2, 1, 3),
-                xk.permute(0, 2, 1, 3),
-                xv.permute(0, 2, 1, 3),
-                dropout_p=0., is_causal=False,
-            ).permute(0, 2, 1, 3)
-        output = output.flatten(-2)
+            raise NotImplementedError(
+                "Lumina-T2I currently require fp/bf16 computation for flash_attn"
+            )
 
         if hasattr(self, "wk_y"):
             yk = self.ky_norm(self.wk_y(y)).view(bsz, -1, self.n_local_kv_heads, self.head_dim)
@@ -323,8 +392,9 @@ class Attention(nn.Module):
                 y_mask.view(bsz, 1, 1, -1).expand(bsz, self.n_local_heads, seqlen, -1)
             ).permute(0, 2, 1, 3)
             output_y = output_y * self.gate.tanh().view(1, 1, -1, 1)
-            output_y = output_y.flatten(-2)
             output = output + output_y
+
+        output = output.flatten(-2)
 
         return self.wo(output)
 
@@ -378,7 +448,7 @@ class FeedForward(nn.Module):
             init_method=nn.init.xavier_uniform_,
         )
 
-    @torch.compile
+    # @torch.compile
     def _forward_silu_gating(self, x1, x3):
         return F.silu(x1) * x3
 
@@ -400,12 +470,9 @@ class TransformerBlock(nn.Module):
             n_kv_heads (Optional[int]): Number of attention heads in key and
                 value features (if using GQA), or set to None for the same as
                 query.
-            multiple_of (int): Value to ensure hidden dimension is a multiple
-                of this value in the FeedForward block.
-            ffn_dim_multiplier (float, optional): Custom multiplier for hidden
-                dimension in the FeedForward block. Defaults to None.
-            norm_eps (float): A small value added to the norm layer
-                denominators to avoid division-by-zero.
+            multiple_of (int):
+            ffn_dim_multiplier (float):
+            norm_eps (float):
 
         Attributes:
             n_heads (int): Number of attention heads.
@@ -443,6 +510,7 @@ class TransformerBlock(nn.Module):
     def forward(
         self,
         x: torch.Tensor,
+        x_mask: torch.Tensor,
         y: torch.Tensor,
         y_mask: torch.Tensor,
         freqs_cis: torch.Tensor,
@@ -468,6 +536,7 @@ class TransformerBlock(nn.Module):
 
             x = x + gate_msa.unsqueeze(1) * self.attention(
                 modulate(self.attention_norm(x), shift_msa, scale_msa),
+                x_mask,
                 freqs_cis,
                 self.attention_y_norm(y), y_mask
             )
@@ -477,7 +546,7 @@ class TransformerBlock(nn.Module):
 
         else:
             x = x + self.attention(
-                self.attention_norm(x), freqs_cis, self.attention_y_norm(y), y_mask,
+                self.attention_norm(x), x_mask, freqs_cis, self.attention_y_norm(y), y_mask,
             )
             x = x + self.feed_forward(self.ffn_norm(x))
 
@@ -518,7 +587,6 @@ class DiT_Llama(nn.Module):
     def __init__(
         self,
         patch_size: int = 2,
-        max_seq_len: int = 288,
         in_channels: int = 4,
         dim: int = 4096,
         n_layers: int = 32,
@@ -537,7 +605,6 @@ class DiT_Llama(nn.Module):
         self.in_channels = in_channels
         self.out_channels = in_channels * 2 if learn_sigma else in_channels
         self.patch_size = patch_size
-        self.max_seq_len = max_seq_len
 
         self.x_embedder = ColumnParallelLinear(
             in_features=patch_size * patch_size * in_channels,
@@ -565,7 +632,7 @@ class DiT_Llama(nn.Module):
         self.final_layer = ParallelFinalLayer(dim, patch_size, self.out_channels)
 
         self.freqs_cis = DiT_Llama.precompute_freqs_cis(
-            dim // n_heads, max_seq_len, rope_scaling_factor=rope_scaling_factor
+            dim // n_heads, 40000, rope_scaling_factor=rope_scaling_factor
         )
         self.eol_token = nn.Parameter(torch.empty(dim))
         self.pad_token = nn.Parameter(torch.empty(dim))
@@ -596,7 +663,10 @@ class DiT_Llama(nn.Module):
                 )[:, :-1, :, :, :].permute(4, 0, 2, 1, 3).flatten(3, 4).flatten(1, 2))
         return imgs
 
-    def patchify_and_embed(self, x: List[torch.Tensor] | torch.Tensor) -> Tuple[torch.Tensor, List[Tuple[int, int]]]:
+    def patchify_and_embed(
+        self,
+        x: List[torch.Tensor] | torch.Tensor
+    ) -> Tuple[torch.Tensor, torch.Tensor, List[Tuple[int, int]]]:
         if isinstance(x, torch.Tensor):
             pH = pW = self.patch_size
             B, C, H, W = x.size()
@@ -607,16 +677,14 @@ class DiT_Llama(nn.Module):
                 self.eol_token.view(1, 1, 1, -1).expand(B, H // pH, 1, -1),
             ], dim=2)
             x = x.flatten(1, 2)
-            if x.size(1) < self.max_seq_len:
-                x = torch.cat([
-                    x,
-                    self.pad_token.view(1, 1, -1).expand(B, self.max_seq_len - x.size(1), -1),
-                ], dim=1)
-            return x, [(H, W)] * B
+
+            mask = torch.ones(x.shape[0], x.shape[1], dtype=torch.int32, device=x.device)
+            return x, mask, [(H, W)] * B
         else:
             pH = pW = self.patch_size
             x_embed = []
             img_size = []
+            l_effective_seq_len = []
 
             for img in x:
                 C, H, W = img.size()
@@ -628,14 +696,22 @@ class DiT_Llama(nn.Module):
                     self.eol_token.view(1, 1, -1).expand(H // pH, 1, -1),
                 ], dim=1)
                 img = img.flatten(0, 1)
-                if img.size(0) < self.max_seq_len:
-                    img = torch.cat([
-                        img,
-                        self.pad_token.view(1, -1).expand(self.max_seq_len - img.size(0), -1),
-                    ], dim=0)
+                l_effective_seq_len.append(len(img))
                 x_embed.append(img)
-            x_embed = torch.stack(x_embed, dim=0)
-            return x_embed, img_size
+
+            max_seq_len = max(l_effective_seq_len)
+            mask = torch.zeros(len(x), max_seq_len, dtype=torch.int32, device=x[0].device)
+            padded_x_embed = []
+            for i, (item_embed, item_seq_len) in enumerate(zip(x_embed, l_effective_seq_len)):
+                item_embed = torch.cat([
+                        item_embed,
+                        self.pad_token.view(1, -1).expand(max_seq_len - item_seq_len, -1),
+                ], dim=0)
+                padded_x_embed.append(item_embed)
+                mask[i][:item_seq_len] = 1
+
+            x_embed = torch.stack(padded_x_embed, dim=0)
+            return x_embed, mask, img_size
 
     def forward(self, x, t, cap_feats, cap_mask):
         """
@@ -644,18 +720,19 @@ class DiT_Llama(nn.Module):
         y: (N,) tensor of class labels
         """
         x_is_tensor = isinstance(x, torch.Tensor)
-        x, img_size = self.patchify_and_embed(x)
+        x, mask, img_size = self.patchify_and_embed(x)
         self.freqs_cis = self.freqs_cis.to(x.device)
 
         t = self.t_embedder(t)                   # (N, D)
         cap_mask_float = cap_mask.float().unsqueeze(-1)
         cap_feats_pool = (cap_feats * cap_mask_float).sum(dim=1) / cap_mask_float.sum(dim=1)
+        cap_feats_pool = cap_feats_pool.to(cap_feats)
         cap_emb = self.cap_embedder(cap_feats_pool)
         adaln_input = t + cap_emb
 
         for layer in self.layers:
             x = layer(
-                x, cap_feats, cap_mask, self.freqs_cis[:x.size(1)],
+                x, mask, cap_feats, cap_mask, self.freqs_cis[:x.size(1)],
                 adaln_input=adaln_input
             )
 
