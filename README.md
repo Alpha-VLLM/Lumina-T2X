@@ -104,6 +104,6 @@ For more about training and inference, please refer to [Lumina-T2I README.md](./
 }
 ```
 
-## Start History
+## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=Alpha-VLLM/Lumina-T2X&type=Date)](https://star-history.com/#Alpha-VLLM/Lumina-T2X&Date)
