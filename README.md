@@ -3,7 +3,7 @@
  <br>
 </p>
 
-# $\textbf{Lumina-T2X}$ : Transform text to any modality with Flow-based Large Diffusion Transformer
+# $\textbf{Lumina-T2X}$: Transform text to any modality with a Flow-based Large Diffusion Transformer
 
 [[中文版本]](./README_cn.md)
 
@@ -25,9 +25,9 @@ Furthermore, training $\textbf{Lumina-T2X}$ is computationally efficient. The la
 
 ## 📰 News
 
-- [2024-04-19] 🔥🔥🔥 Demo, project introduction and **release
-- [2024-04-05] 😆😆😆 Code release
-- [2024-04-01] 🚀🚀🚀 We release the initial version of Lumina-T2I for text-to-image generation
+- [2024-04-19] 🔥🔥🔥 Demo, project introduction and **release**.
+- [2024-04-05] 😆😆😆 Code release.
+- [2024-04-01] 🚀🚀🚀 We release the initial version of Lumina-T2I for text-to-image generation.
 
 ## 📽️ Demos
 
@@ -81,7 +81,7 @@ Furthermore, training $\textbf{Lumina-T2X}$ is computationally efficient. The la
 
 ## ⚙️ Diverse Configurations
 
-We support diverse configurations, including various text encoders, DiTs of different parameter sizes, various inference methods, and different VAE encoders. Additionally, we offer features such as 1D-RoPE, image enhancement, and more.
+We support diverse configurations, including text encoders, DiTs of different parameter sizes, inference methods, and VAE encoders. Additionally, we offer features such as 1D-RoPE, image enhancement, and more.
 
 <p align="center">
  <img src="./assets/diverse_config.png" width="100%"/> 
