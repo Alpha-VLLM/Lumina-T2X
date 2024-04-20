@@ -29,15 +29,34 @@ Furthermore, training $\textbf{Lumina-T2X}$ is computationally efficient. The la
 
 ## 📽️ Demos
 
-### Demo of Images
+### Image Generation
 <p align="center">
  <img src="./assets/images/demo_image.png" width="100%"/> 
  <br>
 </p>
 
-### Demo of Videos
+### Video Generation
 
-https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/2b6f7a94-35bf-442c-94b8-97952a9eb0c6
+<p align="center">
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/2dddcd0c-ce04-4a53-bf5e-060155902ce8" width="100%"/> 
+ <br>
+</p>
+
+### Multi-view Generation
+
+<p align="center">
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/120e5bf9-a7f0-4139-8c53-c9650740f3f7" width="100%"/> 
+ <br>
+</p>
+
+
+### High-res. Image Editing
+
+### Compositional Generation
+
+### Resolution Extrapolation
+
+### Consistent-Style Generation
 
 ## Diverse Configurations
 
@@ -51,3 +70,15 @@ We support diverse configurations, including various text encoders, DiTs of diff
 ## 🚀 Training & Inference
 
 For more about training and inference, please refer to [Lumina-T2I README.md](./Lumina-T2I/README.md#Installation)
+
+## Citation
+
+```
+@inproceedings{luminat2x,
+  author    = {},
+  title     = {},
+  booktitle = {},
+  pages     = {}
+  year      = {2024}
+}
+```
