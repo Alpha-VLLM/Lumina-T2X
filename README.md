@@ -3,7 +3,7 @@
  <br>
 </p>
 
-# $\textbf{Lumina-T2X}$ : Transform text to any modality with Flow-based Large Diffusion Transformer
+# $\textbf{Lumina-T2X}$: Transform text to any modality with a Flow-based Large Diffusion Transformer
 
 [[中文版本]](./README_cn.md)
 
@@ -21,6 +21,8 @@ Furthermore, training $\textbf{Lumina-T2X}$ is computationally efficient. The la
 - Any Resolution and Duration Generation
 - Low Training Resources
 
+![framework](https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/fa17f953-d25b-4248-97f7-c82948821f2d)
+
 ## 📰 News
 
 - [2024-04-19] 🔥🔥🔥 Demo, project introduction and **release**.
@@ -29,37 +31,79 @@ Furthermore, training $\textbf{Lumina-T2X}$ is computationally efficient. The la
 
 ## 📽️ Demos
 
-### Demos of Images
+### Image Generation
 <p align="center">
  <img src="./assets/images/demo_image.png" width="100%"/> 
  <br>
 </p>
 
-### Demos of Videos
+### Video Generation
 
-<video controls>
-  <source src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/2b6f7a94-35bf-442c-94b8-97952a9eb0c6" type="video/mp4">
-</video>
+<p align="center">
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/2dddcd0c-ce04-4a53-bf5e-060155902ce8" width="100%"/> 
+ <br>
+</p>
 
-### Demos of Multi-views
+### Multi-view Generation
 
-<video controls>
-  <source src="./assets/videos/demo_multi_view.mp4" type="video/mp4">
-</video>
+<p align="center">
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/120e5bf9-a7f0-4139-8c53-c9650740f3f7" width="100%"/> 
+ <br>
+</p>
 
+### High-res. Image Editing
 
-### Demos of Text2Speech
+<p align="center">
+ <img src="<drag img to here and delete this content>" width="100%"/> 
+ <br>
+</p>
 
+### Compositional Generation
 
-## Diverse Configurations
+<p align="center">
+ <img src="<drag img to here and delete this content>" width="100%"/> 
+ <br>
+</p>
 
-We support diverse configurations, including various text encoders, DiTs of different parameter sizes, various inference methods, and different VAE encoders. Additionally, we offer features such as 1D-RoPE, image enhancement, and more.
+### Resolution Extrapolation
+
+<p align="center">
+ <img src="<drag img to here and delete this content>" width="100%"/> 
+ <br>
+</p>
+
+### Consistent-Style Generation
+
+<p align="center">
+ <img src="<drag img to here and delete this content>" width="100%"/> 
+ <br>
+</p>
+
+## ⚙️ Diverse Configurations
+
+We support diverse configurations, including text encoders, DiTs of different parameter sizes, inference methods, and VAE encoders. Additionally, we offer features such as 1D-RoPE, image enhancement, and more.
 
 <p align="center">
  <img src="./assets/diverse_config.png" width="100%"/> 
  <br>
 </p>
 
-## 🚀 Training & Inference
+## 🚀 Quick Start
 
 For more about training and inference, please refer to [Lumina-T2I README.md](./Lumina-T2I/README.md#Installation)
+
+## 📄 Citation
+
+```
+@inproceedings{luminat2x,
+  author    = {},
+  title     = {},
+  booktitle = {},
+  pages     = {}
+  year      = {2024}
+}
+```
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=Alpha-VLLM/Lumina-T2X&type=Date)](https://star-history.com/#Alpha-VLLM/Lumina-T2X&Date)
