@@ -21,6 +21,12 @@ More checkpoints of our model will be released soon~
 | 512        | 600M           | To be released                                                                              |
 | 1024       | 5B             | [hugging face](https://huggingface.co/Alpha-VLLM/Lumina-T2X/tree/main/Lumina-T2I/5B/1024px) |
 
+Using git for cloning the model you want to use:
+
+```bash
+git clone https://huggingface.co/Alpha-VLLM/Lumina-T2X
+```
+
 ## Installation
 
 Before installation, ensure that you have a working ``nvcc``
@@ -52,7 +58,7 @@ Note: You may want to adjust the CUDA version [according to your driver version]
 ### 2. Install dependencies
 
   ```bash
-  pip install diffusers fairscale accelerate tensorboard transformers gradio
+  pip install diffusers fairscale accelerate tensorboard transformers gradio torchdiffeq click
   ```
 
   or you can use
