@@ -23,7 +23,6 @@ Furthermore, training $\textbf{Lumina-T2X}$ is computationally efficient. The la
 
 ![framework](https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/fa17f953-d25b-4248-97f7-c82948821f2d)
 
-
 ## 📰 News
 
 - [2024-04-19] 🔥🔥🔥 Demo, project introduction and **release
@@ -54,13 +53,33 @@ Furthermore, training $\textbf{Lumina-T2X}$ is computationally efficient. The la
 
 ### High-res. Image Editing
 
+<p align="center">
+ <img src="<drag img to here and delete this content>" width="100%"/> 
+ <br>
+</p>
+
 ### Compositional Generation
+
+<p align="center">
+ <img src="<drag img to here and delete this content>" width="100%"/> 
+ <br>
+</p>
 
 ### Resolution Extrapolation
 
+<p align="center">
+ <img src="<drag img to here and delete this content>" width="100%"/> 
+ <br>
+</p>
+
 ### Consistent-Style Generation
 
-## Diverse Configurations
+<p align="center">
+ <img src="<drag img to here and delete this content>" width="100%"/> 
+ <br>
+</p>
+
+## ⚙️ Diverse Configurations
 
 We support diverse configurations, including various text encoders, DiTs of different parameter sizes, various inference methods, and different VAE encoders. Additionally, we offer features such as 1D-RoPE, image enhancement, and more.
 
@@ -69,11 +88,11 @@ We support diverse configurations, including various text encoders, DiTs of diff
  <br>
 </p>
 
-## 🚀 Training & Inference
+## 🚀 Quick Start
 
 For more about training and inference, please refer to [Lumina-T2I README.md](./Lumina-T2I/README.md#Installation)
 
-## Citation
+## 📄 Citation
 
 ```
 @inproceedings{luminat2x,
