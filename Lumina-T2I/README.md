@@ -21,22 +21,28 @@ More checkpoints of our model will be released soon~
 | 512        | 600M           | To be released                                                                              |
 | 1024       | 5B             | [hugging face](https://huggingface.co/Alpha-VLLM/Lumina-T2X/tree/main/Lumina-T2I/5B/1024px) |
 
+Using git for cloning the model you want to use:
+
+```bash
+git clone https://huggingface.co/Alpha-VLLM/Lumina-T2X
+```
+
 ## Installation
 
 Before installation, ensure that you have a working ``nvcc``
 
 ```bash
+# The command should work and show the same version number as in our case. (12.1 in our case).
 nvcc --version
-# The command should work and show the same version number as in step 1 (12.1 in our case).
 ```
 
 On some outdated distros (e.g., CentOS 7), you may also want to check that a late enough version of
 ``gcc`` is available
 
 ```bash
-gcc --version
 # The command should work and show a version of at least 6.0.
 # If not, consult distro-specific tutorials to obtain a newer version or build manually.
+gcc --version
 ```
 
 ### 1. Create a conda environment and install PyTorch
@@ -52,7 +58,7 @@ Note: You may want to adjust the CUDA version [according to your driver version]
 ### 2. Install dependencies
 
   ```bash
-  pip install diffusers fairscale accelerate tensorboard transformers gradio
+  pip install diffusers fairscale accelerate tensorboard transformers gradio torchdiffeq click
   ```
 
   or you can use
