@@ -103,3 +103,7 @@ For more about training and inference, please refer to [Lumina-T2I README.md](./
   year      = {2024}
 }
 ```
+
+## Start History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=Alpha-VLLM/Lumina-T2X&type=Date)](https://star-history.com/#Alpha-VLLM/Lumina-T2X&Date)
