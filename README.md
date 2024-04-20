@@ -61,21 +61,21 @@ Furthermore, training $\textbf{Lumina-T2X}$ is computationally efficient. The la
 ### Compositional Generation
 
 <p align="center">
- <img src="<drag img to here and delete this content>" width="100%"/> 
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/8c8eb921-134c-4f55-918a-0ad07f9a47f4" width="100%"/> 
  <br>
 </p>
 
 ### Resolution Extrapolation
 
 <p align="center">
- <img src="<drag img to here and delete this content>" width="100%"/> 
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/e37e2db7-3ead-451e-ba18-b375eb773578" width="100%"/> 
  <br>
 </p>
 
 ### Consistent-Style Generation
 
 <p align="center">
- <img src="<drag img to here and delete this content>" width="100%"/> 
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/6403417a-42c6-4048-9419-375d211e14bb" width="100%"/> 
  <br>
 </p>
 
