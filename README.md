@@ -72,6 +72,7 @@ Furthermore, training $\textbf{Lumina-T2X}$ is computationally efficient. The la
 <p align="center">
  <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/e37e2db7-3ead-451e-ba18-b375eb773578" width="90%"/> 
  <br>
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/9da47c34-5e09-48d3-9c48-78663fd01cc8" width="100%"/> 
 </p>
 
 ### Consistent-Style Generation
