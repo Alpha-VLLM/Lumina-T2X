@@ -21,7 +21,7 @@ Furthermore, training $\textbf{Lumina-T2X}$ is computationally efficient. The la
 - Any Resolution and Duration Generation
 - Low Training Resources
 
-![framework](https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/fa17f953-d25b-4248-97f7-c82948821f2d)
+![lumina_2_00](https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/d5c1f83e-d843-4105-81e5-d5a669d6a18e)
 
 ## 📰 News
 
@@ -33,49 +33,51 @@ Furthermore, training $\textbf{Lumina-T2X}$ is computationally efficient. The la
 
 ### Image Generation
 <p align="center">
- <img src="./assets/images/demo_image.png" width="100%"/> 
+ <img src="./assets/images/demo_image.png" width="90%"/> 
  <br>
 </p>
 
 ### Video Generation
 
 <p align="center">
- <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/2dddcd0c-ce04-4a53-bf5e-060155902ce8" width="100%"/> 
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/2dddcd0c-ce04-4a53-bf5e-060155902ce8" width="90%"/> 
  <br>
 </p>
 
 ### Multi-view Generation
 
 <p align="center">
- <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/120e5bf9-a7f0-4139-8c53-c9650740f3f7" width="100%"/> 
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/120e5bf9-a7f0-4139-8c53-c9650740f3f7" width="90%"/> 
  <br>
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/cf06c3dc-7102-4548-8955-e3cb6fca1284" width="90%"/> 
 </p>
 
 ### High-res. Image Editing
 
 <p align="center">
- <img src="<drag img to here and delete this content>" width="100%"/> 
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/55981976-c989-4f07-982a-1e567c7078ef" width="90%"/> 
  <br>
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/a1ac7190-c49c-4d8b-965c-9ccf83a4f6a7" width="90%"/> 
 </p>
 
 ### Compositional Generation
 
 <p align="center">
- <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/8c8eb921-134c-4f55-918a-0ad07f9a47f4" width="100%"/> 
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/8c8eb921-134c-4f55-918a-0ad07f9a47f4" width="90%"/> 
  <br>
 </p>
 
 ### Resolution Extrapolation
 
 <p align="center">
- <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/e37e2db7-3ead-451e-ba18-b375eb773578" width="100%"/> 
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/e37e2db7-3ead-451e-ba18-b375eb773578" width="90%"/> 
  <br>
 </p>
 
 ### Consistent-Style Generation
 
 <p align="center">
- <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/6403417a-42c6-4048-9419-375d211e14bb" width="100%"/> 
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/6403417a-42c6-4048-9419-375d211e14bb" width="90%"/> 
  <br>
 </p>
 
@@ -84,13 +86,15 @@ Furthermore, training $\textbf{Lumina-T2X}$ is computationally efficient. The la
 We support diverse configurations, including text encoders, DiTs of different parameter sizes, inference methods, and VAE encoders. Additionally, we offer features such as 1D-RoPE, image enhancement, and more.
 
 <p align="center">
- <img src="./assets/diverse_config.png" width="100%"/> 
+<!--  <img src="./assets/diverse_config.png" width="100%"/>  -->
  <br>
 </p>
 
 ## 🚀 Quick Start
 
 For more about training and inference, please refer to [Lumina-T2I README.md](./Lumina-T2I/README.md#Installation)
+
+<!--
 
 ## 📄 Citation
 
@@ -106,4 +110,4 @@ For more about training and inference, please refer to [Lumina-T2I README.md](./
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=Alpha-VLLM/Lumina-T2X&type=Date)](https://star-history.com/#Alpha-VLLM/Lumina-T2X&Date)
+ [![Star History Chart](https://api.star-history.com/svg?repos=Alpha-VLLM/Lumina-T2X&type=Date)](https://star-history.com/#Alpha-VLLM/Lumina-T2X&Date) -->
