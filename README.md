@@ -86,7 +86,7 @@ Furthermore, training $\textbf{Lumina-T2X}$ is computationally efficient. The la
 We support diverse configurations, including text encoders, DiTs of different parameter sizes, inference methods, and VAE encoders. Additionally, we offer features such as 1D-RoPE, image enhancement, and more.
 
 <p align="center">
-<!--  <img src="./assets/diverse_config.png" width="100%"/>  -->
+  <img src="./assets/diverse_config.png" width="100%"/>
  <br>
 </p>
 
