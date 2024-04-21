@@ -21,7 +21,7 @@ Furthermore, training $\textbf{Lumina-T2X}$ is computationally efficient. The la
 - Any Resolution and Duration Generation
 - Low Training Resources
 
-![lumina_2_00](https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/d5c1f83e-d843-4105-81e5-d5a669d6a18e)
+![framework](https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/60d2f248-67b1-43ef-a530-c75530cf26c5)
 
 ## 📰 News
 
@@ -32,8 +32,9 @@ Furthermore, training $\textbf{Lumina-T2X}$ is computationally efficient. The la
 ## 📽️ Demos
 
 ### Image Generation
+
 <p align="center">
- <img src="./assets/images/demo_image.png" width="90%"/> 
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/27bd36a8-8411-47dd-a3a7-3607c1d5d644" width="90%"/> 
  <br>
 </p>
 
@@ -72,6 +73,7 @@ Furthermore, training $\textbf{Lumina-T2X}$ is computationally efficient. The la
 <p align="center">
  <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/e37e2db7-3ead-451e-ba18-b375eb773578" width="90%"/> 
  <br>
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/9da47c34-5e09-48d3-9c48-78663fd01cc8" width="100%"/> 
 </p>
 
 ### Consistent-Style Generation
