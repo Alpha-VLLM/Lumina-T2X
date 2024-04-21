@@ -21,7 +21,7 @@ Furthermore, training $\textbf{Lumina-T2X}$ is computationally efficient. The la
 - Any Resolution and Duration Generation
 - Low Training Resources
 
-![lumina_2_00](https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/d5c1f83e-d843-4105-81e5-d5a669d6a18e)
+![framework](https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/27bd36a8-8411-47dd-a3a7-3607c1d5d644)
 
 ## 📰 News
 
@@ -32,8 +32,9 @@ Furthermore, training $\textbf{Lumina-T2X}$ is computationally efficient. The la
 ## 📽️ Demos
 
 ### Image Generation
+
 <p align="center">
- <img src="./assets/images/demo_image.png" width="90%"/> 
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/60d2f248-67b1-43ef-a530-c75530cf26c5" width="90%"/> 
  <br>
 </p>
 
