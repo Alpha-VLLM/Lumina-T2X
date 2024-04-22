@@ -5,7 +5,7 @@
 
 # Lumina-T2I
 
-Lumina-T2I is a model that generates images base on text condition, supporting various text encoders and models of different parameter sizes. With minimal computational power, it achieves high-quality image generation. Additionally, it offers usage through CLI console programs and Web Demo displays.
+Lumina-T2I is a model that generates images base on text condition, supporting various text encoders and models of different parameter sizes. With minimal training costs, it achieves high-quality image generation by training from scratch. Additionally, it offers usage through CLI console programs and Web Demo displays.
 
 ## 📰 News
 
@@ -15,11 +15,9 @@ Lumina-T2I is a model that generates images base on text condition, supporting v
 
 More checkpoints of our model will be released soon~
 
-| Resolution | Parameter Size | Download URL                                                                                |
-| ---------- | -------------- | ------------------------------------------------------------------------------------------- |
-| 256        | 300M           | To be released                                                                              |
-| 512        | 600M           | To be released                                                                              |
-| 1024       | 5B             | [hugging face](https://huggingface.co/Alpha-VLLM/Lumina-T2X/tree/main/Lumina-T2I/5B/1024px) |
+| Resolution | Flag-DiT Parameter Size | Text Encoder | Prediction | Download URL  |
+| ---------- | ----------------------- | ------------ | -----------|-------------- |
+| 1024       | 5B             |    LLaMa-7B  |   Rectified Flow | [hugging face](https://huggingface.co/Alpha-VLLM/Lumina-T2X/tree/main/Lumina-T2I/5B/1024px) |
 
 Using git for cloning the model you want to use:
 
