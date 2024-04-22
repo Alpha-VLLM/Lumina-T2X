@@ -15,7 +15,7 @@ Lumina-T2I is a model that generates images base on text condition, supporting v
 
 More checkpoints of our model will be released soon~
 
-| Resolution | Flag-DiT Parameter Size | Text Encoder | Prediction | Download URL  |
+| Resolution | Flag-DiT Parameter| Text Encoder | Prediction | Download URL  |
 | ---------- | ----------------------- | ------------ | -----------|-------------- |
 | 1024       | 5B             |    LLaMa-7B  |   Rectified Flow | [hugging face](https://huggingface.co/Alpha-VLLM/Lumina-T2X/tree/main/Lumina-T2I/5B/1024px) |
 
