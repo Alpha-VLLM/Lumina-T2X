@@ -8,7 +8,7 @@ from tqdm import tqdm
 class sde:
     """SDE solver class"""
     def __init__(
-        self, 
+        self,
         drift,
         diffusion,
         *,
@@ -35,7 +35,7 @@ class sde:
         mean_x = x + drift * self.dt
         x = mean_x + th.sqrt(2 * diffusion) * dw
         return x, mean_x
-    
+
     def __Heun_step(self, x, _, t, model, **model_kwargs):
         w_cur = th.randn(x.size()).to(x)
         dw = w_cur * th.sqrt(self.dt)
@@ -58,13 +58,13 @@ class sde:
             sampler = sampler_dict[self.sampler_type]
         except:
             raise NotImplementedError("Smapler type not implemented.")
-    
+
         return sampler
 
     def sample(self, init, model, **model_kwargs):
         """forward loop of sde"""
         x = init
-        mean_x = init 
+        mean_x = init
         samples = []
         sampler = self.__forward_fn()
         for ti in self.t[:-1]:
@@ -86,17 +86,20 @@ class ode:
         num_steps,
         atol,
         rtol,
+        time_shifting_factor=None,
     ):
         assert t0 < t1, "ODE sampler has to be in forward time"
 
         self.drift = drift
         self.t = th.linspace(t0, t1, num_steps)
+        if time_shifting_factor:
+            self.t = self.t / (self.t + time_shifting_factor - time_shifting_factor * self.t)
         self.atol = atol
         self.rtol = rtol
         self.sampler_type = sampler_type
 
     def sample(self, x, model, **model_kwargs):
-        
+
         device = x[0].device if isinstance(x, tuple) else x.device
         def _fn(t, x):
             t = th.ones(x[0].size(0)).to(device) * t if isinstance(x, tuple) else th.ones(x.size(0)).to(device) * t

@@ -4,7 +4,6 @@ import json
 import multiprocessing as mp
 import os
 import socket
-import sys
 import traceback
 
 import fairscale.nn.model_parallel.initialize as fs_init
@@ -22,17 +21,18 @@ class ModelFailure: pass
 
 @torch.no_grad()
 def model_main(args, master_port, rank, request_queue, response_queue, mp_barrier):
-
     # import here to avoid huggingface Tokenizer parallelism warnings
     from diffusers.models import AutoencoderKL
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
     # override the default print function since the delay can be large for child process
     original_print = builtins.print
+
     # Redefine the print function with flush=True by default
     def print(*args, **kwargs):
         kwargs.setdefault('flush', True)
         original_print(*args, **kwargs)
+
     # Override the built-in print with the new version
     builtins.print = print
 
@@ -56,7 +56,14 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
 
     if dist.get_rank() == 0:
         print(f"Creating lm: {train_args.lm}")
-    model_lm = AutoModelForCausalLM.from_pretrained(train_args.lm).cuda().eval().bfloat16()  # meta-llama/Llama-2-7b-hf
+
+    dtype = {
+        "bf16": torch.bfloat16,
+        "fp16": torch.float16,
+        "fp32": torch.float32
+    }[args.precision]
+
+    model_lm = AutoModelForCausalLM.from_pretrained(train_args.lm, torch_dtype=dtype, device_map="cuda")
     cap_feat_dim = model_lm.config.hidden_size
     if args.num_gpus > 1:
         raise NotImplementedError("Inference with >1 GPUs not yet supported")
@@ -69,8 +76,9 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
     vae = AutoencoderKL.from_pretrained(
         f"stabilityai/sd-vae-ft-{train_args.vae}"
         if train_args.vae != "sdxl"
-        else "stabilityai/sdxl-vae"
-    ).cuda().eval().bfloat16()
+        else "stabilityai/sdxl-vae",
+        torch_dtype=torch.float32
+    ).cuda()
 
     if dist.get_rank() == 0:
         print(f"Creating DiT: {train_args.model}")
@@ -79,7 +87,7 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
         qk_norm=train_args.qk_norm,
         cap_feat_dim=cap_feat_dim,
     )
-    model.cuda().eval().bfloat16()
+    model.eval().to("cuda", dtype=dtype)
 
     assert train_args.model_parallel_size == args.num_gpus
     ckpt = torch.load(os.path.join(
@@ -89,95 +97,90 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
 
     mp_barrier.wait()
 
-    while True:
-        caption, resolution, num_sampling_steps, cfg_scale, solver_method = request_queue.get()
+    with torch.autocast("cuda", dtype):
+        while True:
+            (
+                cap, resolution, num_sampling_steps, cfg_scale, solver, t_shift, seed, ntk_scaling, proportional_attn
+            ) = request_queue.get()
 
-        try:
-            # begin sampler
-            transport = create_transport(
-                args.path_type,
-                args.prediction,
-                args.loss_weight,
-                args.train_eps,
-                args.sample_eps
-            )
-            sampler = Sampler(transport)
-            if args.sampler_mode == "ODE":
-                if args.likelihood:
-                    # assert args.cfg_scale == 1, "Likelihood is incompatible with guidance"
-                    sample_fn = sampler.sample_ode_likelihood(
-                        sampling_method=solver_method,
-                        num_steps=num_sampling_steps,
-                        atol=args.atol,
-                        rtol=args.rtol,
-                    )
-                else:
-                    sample_fn = sampler.sample_ode(
-                        sampling_method=solver_method,
-                        num_steps=num_sampling_steps,
-                        atol=args.atol,
-                        rtol=args.rtol,
-                        reverse=args.reverse
-                    )
-            elif args.sampler_mode == "SDE":
-                sample_fn = sampler.sample_sde(
-                    sampling_method=solver_method,
-                    diffusion_form=args.diffusion_form,
-                    diffusion_norm=args.diffusion_norm,
-                    last_step=args.last_step,
-                    last_step_size=args.last_step_size,
-                    num_steps=num_sampling_steps,
+            try:
+                # begin sampler
+                transport = create_transport(
+                    args.path_type,
+                    args.prediction,
+                    args.loss_weight,
+                    args.train_eps,
+                    args.sample_eps
+
                 )
-            else:
-                raise ValueError(f"Unknown sampler {args.sampler_mode}")
-            # end sampler
+                sampler = Sampler(transport)
+                sample_fn = sampler.sample_ode(
+                    sampling_method=solver,
+                    num_steps=num_sampling_steps,
+                    atol=args.atol,
+                    rtol=args.rtol,
+                    reverse=args.reverse,
+                    time_shifting_factor=t_shift
+                )
+                # end sampler
 
-            w, h = resolution.split("x")
-            w, h = int(w), int(h)
-            latent_w, latent_h = w // 8, h // 8
-            z = torch.randn([1, 4, latent_h, latent_w], device="cuda").bfloat16()
-            z = z.repeat(2, 1, 1, 1)
+                resolution = resolution.split(" ")[-1]
+                w, h = resolution.split("x")
+                w, h = int(w), int(h)
+                latent_w, latent_h = w // 8, h // 8
+                if int(seed) != 0:
+                    torch.random.manual_seed(int(seed))
+                z = torch.randn([1, 4, latent_h, latent_w], device="cuda").to(dtype)
+                z = z.repeat(2, 1, 1, 1)
 
-            cap_tok = tokenizer.encode(caption, truncation=False)
-            null_cap_tok = tokenizer.encode("", truncation=False)
-            tok = torch.zeros([2, max(len(cap_tok), len(null_cap_tok))], dtype=torch.long, device="cuda")
-            tok_mask = torch.zeros_like(tok, dtype=torch.bool)
-            tok[0, :len(cap_tok)] = torch.tensor(cap_tok)
-            tok[1, :len(null_cap_tok)] = torch.tensor(null_cap_tok)
-            tok_mask[0, :len(cap_tok)] = True
-            tok_mask[1, :len(null_cap_tok)] = True
+                cap_tok = tokenizer.encode(cap, truncation=False)
+                null_cap_tok = tokenizer.encode("", truncation=False)
+                tok = torch.zeros([2, max(len(cap_tok), len(null_cap_tok))], dtype=torch.long, device="cuda")
+                tok_mask = torch.zeros_like(tok, dtype=torch.bool)
+                tok[0, :len(cap_tok)] = torch.tensor(cap_tok)
+                tok[1, :len(null_cap_tok)] = torch.tensor(null_cap_tok)
+                tok_mask[0, :len(cap_tok)] = True
+                tok_mask[1, :len(null_cap_tok)] = True
 
-            with torch.no_grad():
                 cap_feats = model_lm.get_decoder()(input_ids=tok).last_hidden_state
-            model_kwargs = dict(cap_feats=cap_feats, cap_mask=tok_mask, cfg_scale=cfg_scale)
 
-            if dist.get_rank() == 0:
-                print(f"caption: {caption}")
-                print(f"num_sampling_steps: {num_sampling_steps}")
-                print(f"cfg_scale: {cfg_scale}")
+                model_kwargs = dict(
+                    cap_feats=cap_feats, cap_mask=tok_mask, cfg_scale=cfg_scale,
+                )
+                if proportional_attn:
+                    model_kwargs['proportional_attn'] = True
+                    model_kwargs['base_seqlen'] = (train_args.image_size // 16) ** 2 + (train_args.image_size // 16) * 2
+                if ntk_scaling:
+                    model_kwargs['ntk_factor'] = ((w // 16) * (h // 16)) / ((train_args.image_size // 16) ** 2)
 
-            samples = sample_fn(z, model.forward_with_cfg, **model_kwargs)[-1]
-            samples = samples[:1]
+                if dist.get_rank() == 0:
+                    print(f"caption: {cap}")
+                    print(f"num_sampling_steps: {num_sampling_steps}")
+                    print(f"cfg_scale: {cfg_scale}")
 
-            factor = 0.18215 if train_args.vae != 'sdxl' else 0.13025
-            print(f"vae factor: {factor}")
-            samples = vae.decode(samples / factor).sample
-            samples = (samples + 1.) / 2.
-            samples.clamp_(0., 1.)
-            img = to_pil_image(samples[0])
+                samples = sample_fn(z, model.forward_with_cfg, **model_kwargs)[-1]
+                samples = samples[:1]
 
-            if response_queue is not None:
-                response_queue.put(img)
+                factor = 0.18215 if train_args.vae != 'sdxl' else 0.13025
+                print(f"vae factor: {factor}")
+                samples = vae.decode(samples / factor).sample
+                samples = (samples + 1.) / 2.
+                samples.clamp_(0., 1.)
+                img = to_pil_image(samples[0])
 
-        except Exception:
-            print(traceback.format_exc())
-            response_queue.put(ModelFailure())
+                if response_queue is not None:
+                    response_queue.put(img)
+
+            except Exception:
+                print(traceback.format_exc())
+                response_queue.put(ModelFailure())
 
 
 def none_or_str(value):
     if value == 'None':
         return None
     return value
+
 
 def parse_transport_args(parser):
     group = parser.add_argument_group("Transport arguments")
@@ -188,12 +191,14 @@ def parse_transport_args(parser):
     group.add_argument("--sample-eps", type=float)
     group.add_argument("--train-eps", type=float)
 
+
 def parse_ode_args(parser):
     group = parser.add_argument_group("ODE arguments")
     group.add_argument("--atol", type=float, default=1e-6, help="Absolute tolerance")
     group.add_argument("--rtol", type=float, default=1e-3, help="Relative tolerance")
     group.add_argument("--reverse", action="store_true")
     group.add_argument("--likelihood", action="store_true")
+
 
 def parse_sde_args(parser):
     group = parser.add_argument_group("SDE arguments")
@@ -221,31 +226,18 @@ def find_free_port() -> int:
 def main():
     parser = argparse.ArgumentParser()
 
-    # use python demo.py mode --kwargs to specify sampling mode to ODE or SDE
-    # e.g. python demo.py ODE --ckpt ${ckpt_path}
-    # ODE will be used if mode is not explicitly provided
-    mode = sys.argv[1]
-    if mode not in ["ODE", "SDE"]:
-        mode = "ODE"
-
     parser.add_argument("--num_gpus", type=int, default=1)
     parser.add_argument("--ckpt", type=str, required=True)
     parser.add_argument("--ema", action="store_true")
+    parser.add_argument("--precision", default="bf16", choices=["bf16", "fp32"])
 
     parse_transport_args(parser)
-    if mode == "ODE":
-        parse_ode_args(parser)
-        # Further processing for ODE
-    elif mode == "SDE":
-        parse_sde_args(parser)
-        # Further processing for SDE
+    parse_ode_args(parser)
 
     args = parser.parse_known_args()[0]
 
     if args.num_gpus != 1:
         raise NotImplementedError("Multi-GPU Inference is not yet supported")
-
-    args.sampler_mode = mode
 
     master_port = find_free_port()
 
@@ -263,18 +255,34 @@ def main():
     with gr.Blocks() as demo:
         with gr.Row():
             gr.Markdown(
-f"""# Lumina-T2I image generation demo
+                f"""# Lumina-T2I Image Generation Demo
 
 **Model path:** {os.path.abspath(args.ckpt)}
  
-**ema**: {args.ema}"""
+**ema**: {args.ema}
+                
+**precision**: {args.precision}"""
             )
         with gr.Row():
             with gr.Column():
-                cap = gr.Textbox(lines=2, label="Caption", interactive=True)
+                cap = gr.Textbox(
+                    lines=2, label="Caption", interactive=True,
+                    value="A fluffy mouse holding a watermelon, in a magical and colorful setting, "
+                          "illustrated in the style of Hayao Miyazaki anime by Studio Ghibli."
+                )
+                with gr.Row():
+                    res_choices = (
+                        ["1024x1024", "512x2048", "2048x512"] +
+                        ["(Extrapolation) 1664x1664", "(Extrapolation) 1024x2048", "(Extrapolation) 2048x1024"]
+                    )
+                    resolution = gr.Dropdown(
+                        value=res_choices[0],
+                        choices=res_choices,
+                        label="Resolution"
+                    )
                 with gr.Row():
                     num_sampling_steps = gr.Slider(
-                        minimum=1, maximum=1000, value=30, interactive=True,
+                        minimum=1, maximum=1000, value=60, interactive=True,
                         label="Sampling steps"
                     )
                     cfg_scale = gr.Slider(
@@ -284,28 +292,53 @@ f"""# Lumina-T2I image generation demo
                     solver = gr.Dropdown(
                         value="euler",
                         choices=["euler", "dopri5", "dopri8"],
-                        label = "solver"
+                        label="solver"
                     )
                 with gr.Row():
-                    train_args = torch.load(os.path.join(args.ckpt, "model_args.pth"))
-                    if train_args.image_size == 256:
-                        res_choices = ["256x256", "128x512", "512x128"]
-                    elif train_args.image_size == 512:
-                        res_choices = ["512x512", "256x1024", "1024x256"]
-                    elif train_args.image_size == 1024:
-                        res_choices = ["1024x1024", "512x2048", "2048x512"]
-                    else:
-                        raise NotImplementedError
-
-                    resolution = gr.Dropdown(
-                        value=res_choices[0],
-                        choices=res_choices
+                    t_shift = gr.Slider(
+                        minimum=1, maximum=20, value=4, step=1, interactive=True,
+                        label="Time shift"
                     )
+                    seed = gr.Slider(
+                        minimum=0, maximum=int(1e5), value=1, step=1, interactive=True,
+                        label="Seed (0 for random)"
+                    )
+                with gr.Accordion("Advanced Settings for Resolution Extrapolation", open=False):
+                    with gr.Row():
+                        ntk_scaling = gr.Checkbox(
+                            value=True,
+                            interactive=True,
+                            label="ntk scaling",
+                        )
+                        proportional_attn = gr.Checkbox(
+                            value=True,
+                            interactive=True,
+                            label="Proportional attention",
+                        )
                 with gr.Row():
                     submit_btn = gr.Button("Submit", variant="primary")
-                    reset_btn = gr.ClearButton([cap, num_sampling_steps, cfg_scale])
+                    # reset_btn = gr.ClearButton([
+                    #     cap, resolution,
+                    #     num_sampling_steps, cfg_scale, solver,
+                    #     t_shift, seed,
+                    #     ntk_scaling, proportional_attn
+                    # ])
             with gr.Column():
                 output_img = gr.Image(label="Generated image", interactive=False)
+
+        with gr.Row():
+            gr.Examples(
+                [
+                    ["A fluffy mouse holding a watermelon, in a magical and colorful setting, illustrated in the style of Hayao Miyazaki anime by Studio Ghibli."],  # noqa
+                    ["A humanoid eagle soldier of the First World War."],  # noqa
+                    ["A cute Christmas mockup on an old wooden industrial desk table with Christmas decorations and bokeh lights in the background."],  # noqa
+                    ["A scared cute rabbit in Happy Tree Friends style and punk vibe."],  # noqa
+                    ["A front view of a romantic flower shop in France filled with various blooming flowers including lavenders and roses."],  # noqa
+                    ["An old man, portrayed as a retro superhero, stands in the streets of New York City at night"],  # noqa
+                ],
+                [cap],
+                label="Examples"
+            )
 
         def on_submit(*args):
             for q in request_queues:
@@ -315,12 +348,17 @@ f"""# Lumina-T2I image generation demo
                 raise RuntimeError
             return result
 
-        submit_btn.click(on_submit, [cap, resolution, num_sampling_steps, cfg_scale, solver], [output_img])
+        submit_btn.click(
+            on_submit,
+            [cap, resolution, num_sampling_steps, cfg_scale, solver, t_shift, seed, ntk_scaling, proportional_attn],
+            [output_img]
+        )
 
     mp_barrier.wait()
     demo.queue().launch(
         share=True, server_name="0.0.0.0",
     )
+
 
 if __name__ == "__main__":
     mp.set_start_method("spawn")

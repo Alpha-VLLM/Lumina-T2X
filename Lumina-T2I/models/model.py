@@ -204,6 +204,10 @@ class Attention(nn.Module):
             self.q_norm = self.k_norm = nn.Identity()
             self.ky_norm = nn.Identity()
 
+        # for proportional attention computation
+        self.base_seqlen = None
+        self.proportional_attn = False
+
     @staticmethod
     def reshape_for_broadcast(freqs_cis: torch.Tensor, x: torch.Tensor):
         """
@@ -320,8 +324,7 @@ class Attention(nn.Module):
 
     def forward(
         self,
-        x: torch.Tensor,
-        x_mask: torch.Tensor,
+        x: torch.Tensor, x_mask: torch.Tensor,
         freqs_cis: torch.Tensor,
         y: torch.Tensor, y_mask: torch.Tensor,
     ) -> torch.Tensor:
@@ -359,6 +362,10 @@ class Attention(nn.Module):
             cu_seqlens_q, cu_seqlens_k = cu_seq_lens
             max_seqlen_in_batch_q, max_seqlen_in_batch_k = max_seq_lens
 
+            if self.proportional_attn:
+                softmax_scale = math.sqrt(math.log(seqlen, self.base_seqlen) / self.head_dim)
+            else:
+                softmax_scale = math.sqrt(1 / self.head_dim)
             attn_output_unpad = flash_attn_varlen_func(
                 query_states,
                 key_states,
@@ -369,14 +376,18 @@ class Attention(nn.Module):
                 max_seqlen_k=max_seqlen_in_batch_k,
                 dropout_p=0.,
                 causal=False,
+                softmax_scale=softmax_scale
             )
             output = pad_input(attn_output_unpad, indices_q, bsz, seqlen)
             # end var_len_flash_attn
 
         else:
-            raise NotImplementedError(
-                "Lumina-T2I currently require fp/bf16 computation for flash_attn"
-            )
+            output = F.scaled_dot_product_attention(
+                xq.permute(0, 2, 1, 3),
+                xk.permute(0, 2, 1, 3),
+                xv.permute(0, 2, 1, 3),
+                attn_mask=x_mask.bool().view(bsz, 1, 1, seqlen).expand(-1, self.n_local_heads, seqlen, -1),
+            ).permute(0, 2, 1, 3).to(dtype)
 
         if hasattr(self, "wk_y"):
             yk = self.ky_norm(self.wk_y(y)).view(bsz, -1, self.n_local_kv_heads, self.head_dim)
@@ -538,7 +549,7 @@ class TransformerBlock(nn.Module):
                 modulate(self.attention_norm(x), shift_msa, scale_msa),
                 x_mask,
                 freqs_cis,
-                self.attention_y_norm(y), y_mask
+                self.attention_y_norm(y), y_mask,
             )
             x = x + gate_mlp.unsqueeze(1) * self.feed_forward(
                 modulate(self.ffn_norm(x), shift_mlp, scale_mlp),
@@ -599,6 +610,7 @@ class DiT_Llama(nn.Module):
         qk_norm: bool = False,
         cap_feat_dim: int = 5120,
         rope_scaling_factor: float = 1.,
+        ntk_factor: float=1.
     ) -> None:
         super().__init__()
         self.learn_sigma = learn_sigma
@@ -632,8 +644,12 @@ class DiT_Llama(nn.Module):
         self.final_layer = ParallelFinalLayer(dim, patch_size, self.out_channels)
 
         self.freqs_cis = DiT_Llama.precompute_freqs_cis(
-            dim // n_heads, 40000, rope_scaling_factor=rope_scaling_factor
+            dim // n_heads, 40000, rope_scaling_factor=rope_scaling_factor, ntk_factor=ntk_factor
         )
+        self.dim = dim
+        self.n_heads = n_heads
+        self.rope_scaling_factor = rope_scaling_factor
+        self.ntk_factor = ntk_factor
         self.eol_token = nn.Parameter(torch.empty(dim))
         self.pad_token = nn.Parameter(torch.empty(dim))
         nn.init.normal_(self.eol_token, std=0.02)
@@ -730,6 +746,7 @@ class DiT_Llama(nn.Module):
         cap_emb = self.cap_embedder(cap_feats_pool)
         adaln_input = t + cap_emb
 
+        cap_mask = cap_mask.bool()
         for layer in self.layers:
             x = layer(
                 x, mask, cap_feats, cap_mask, self.freqs_cis[:x.size(1)],
@@ -745,15 +762,49 @@ class DiT_Llama(nn.Module):
                 x = [_.chunk(2, dim=0)[0] for _ in x]
         return x
 
-    def forward_with_cfg(self, x, t, cap_feats, cap_mask, cfg_scale):
+    def forward_with_cfg(
+        self,
+        x,
+        t,
+        cap_feats,
+        cap_mask,
+        cfg_scale,
+        rope_scaling_factor=None,
+        ntk_factor=None,
+        base_seqlen: Optional[int] = None,
+        proportional_attn: bool = False
+    ):
         """
         Forward pass of DiT, but also batches the unconditional forward pass
         for classifier-free guidance.
         """
         # https://github.com/openai/glide-text2im/blob/main/notebooks/text2im.ipynb
+
+        if rope_scaling_factor is not None or ntk_factor is not None:
+            rope_scaling_factor = rope_scaling_factor if rope_scaling_factor is not None else self.rope_scaling_factor
+            ntk_factor = ntk_factor if ntk_factor is not None else self.ntk_factor
+            if rope_scaling_factor != self.rope_scaling_factor or ntk_factor != self.ntk_factor:
+                print(f"override freqs_cis, rope_scaling {rope_scaling_factor}, ntk {ntk_factor}", flush=True)
+                self.freqs_cis = DiT_Llama.precompute_freqs_cis(
+                    self.dim // self.n_heads, 40000,
+                    rope_scaling_factor=rope_scaling_factor, ntk_factor=ntk_factor
+                )
+                self.rope_scaling_factor = rope_scaling_factor
+                self.ntk_factor = ntk_factor
+
+        if proportional_attn:
+            assert base_seqlen is not None
+            for layer in self.layers:
+                layer.attention.base_seqlen = base_seqlen
+                layer.attention.proportional_attn = proportional_attn
+        else:
+            for layer in self.layers:
+                layer.attention.base_seqlen = None
+                layer.attention.proportional_attn = proportional_attn
+
         half = x[: len(x) // 2]
         combined = torch.cat([half, half], dim=0)
-        model_out = self.forward(combined, t, cap_feats, cap_mask)
+        model_out = self(combined, t, cap_feats, cap_mask)
         # For exact reproducibility reasons, we apply classifier-free guidance on only
         # three channels by default. The standard approach to cfg applies it to all channels.
         # This can be done by uncommenting the following line and commenting-out the line following that.
@@ -765,7 +816,13 @@ class DiT_Llama(nn.Module):
         return torch.cat([eps, rest], dim=1)
 
     @staticmethod
-    def precompute_freqs_cis(dim: int, end: int, theta: float = 10000.0, rope_scaling_factor: float = 1.0):
+    def precompute_freqs_cis(
+        dim: int,
+        end: int,
+        theta: float = 10000.0,
+        rope_scaling_factor: float = 1.0,
+        ntk_factor: float = 1.0
+    ):
         """
         Precompute the frequency tensor for complex exponentials (cis) with
         given dimensions.
@@ -785,8 +842,12 @@ class DiT_Llama(nn.Module):
             torch.Tensor: Precomputed frequency tensor with complex
                 exponentials.
         """
+
+        theta = theta * ntk_factor
+
+        print(f"theta {theta} rope scaling {rope_scaling_factor} ntk {ntk_factor}")
         freqs = 1.0 / (theta ** (
-            torch.arange(0, dim, 2)[: (dim // 2)].float() / dim
+            torch.arange(0, dim, 2)[: (dim // 2)].float().cuda() / dim
         ))
         t = torch.arange(end, device=freqs.device, dtype=torch.float)  # type: ignore
         t = t / rope_scaling_factor

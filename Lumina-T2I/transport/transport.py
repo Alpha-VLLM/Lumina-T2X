@@ -352,13 +352,14 @@ class Sampler:
         return _sample
 
     def sample_ode(
-        self,
-        *,
-        sampling_method="dopri5",
-        num_steps=50,
-        atol=1e-6,
-        rtol=1e-3,
-        reverse=False,
+            self,
+            *,
+            sampling_method="dopri5",
+            num_steps=50,
+            atol=1e-6,
+            rtol=1e-3,
+            reverse=False,
+            time_shifting_factor=None,
     ):
         """returns a sampling function with given ODE settings
         Args:
@@ -392,6 +393,7 @@ class Sampler:
             num_steps=num_steps,
             atol=atol,
             rtol=rtol,
+            time_shifting_factor=time_shifting_factor,
         )
 
         return _ode.sample
