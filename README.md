@@ -48,9 +48,9 @@ Furthermore, training $\textbf{Lumina-T2X}$ is computationally efficient. The la
 ### Multi-view Generation
 
 <p align="center">
- <img src="" width="90%"/> 
- <br>
  <img src="./assets/videos/multi_view_all_fix.gif" width="90%"/> 
+ <br>
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/cf06c3dc-7102-4548-8955-e3cb6fca1284" width="90%"/> 
 </p>
 
 ### High-res. Image Editing
