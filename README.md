@@ -6,6 +6,8 @@
 # $\textbf{Lumina-T2X}$: Transform Text into Any Modality, Res. and Duration via Flow-based Large Diffusion Transformer
 [[中文版本]](./README_cn.md)
 
+![intro](./assets/intro_large.png)
+
 ## Introduction
 
 We introduce the $\textbf{Lumina-T2X}$ family, a series of text-conditioned Diffusion Transformers (DiT) designed to convert noise into images, videos, multi-view images of 3D objects and generate speech based on textual instructions. At the core of $\textbf{Lumina-T2X}$ lies the Flow-based Large Diffusion Transformer (Flag-DiT), which supports **scaling up to 7 billion parameters** and **extending sequence lengths up to 128,000**. Inspired by Sora, $\textbf{Lumina-T2X}$ integrates images, videos, multi-views of 3D objects, and speech spectrograms within a spatial-temporal latent token space. 
