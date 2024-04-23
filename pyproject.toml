@@ -1,0 +1,72 @@
+# Guide (user-friendly):
+# https://packaging.python.org/en/latest/guides/writing-pyproject-toml/
+
+# Specification (technical, formal):
+# https://packaging.python.org/en/latest/specifications/pyproject-toml/
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lumina-t2x"  # REQUIRED, is the only field that cannot be marked as dynamic.
+version = "1.0.0"  # REQUIRED, although can be dynamic
+description = "Lumina-T2X is a model for Text to Any Modality Generation"
+readme = "README.md"
+
+requires-python = ">=3.10"
+
+license = {file = "LICENSE.txt"}
+
+keywords = ["generation", "multi-modal", "transformer"]
+
+authors = [
+  {name = "Alpha-VLLM", email = "author@example.com" }
+]
+
+maintainers = [
+  {name = "Chris Liu", email = "author@example.com" },
+  {name = "Chun-Lam Tse", email = "xepxa6823@gmail.com" }
+]
+
+classifiers = [
+  # How mature is this project? Common values are
+  #   3 - Alpha
+  #   4 - Beta
+  #   5 - Production/Stable
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python :: 3",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+]
+
+dependencies = [
+  "diffusers",
+  "fairscale",
+  "accelerate",
+  "tensorboard",
+  "transformers",
+  "gradio",
+  "torchdiffeq",
+  "click"
+]
+
+[project.optional-dependencies]
+train = ["check-manifest"]
+build = ["coverage"]
+
+[project.urls]
+"Homepage" = "https://github.com/pypa/sampleproject"
+"Bug Reports" = "https://github.com/pypa/sampleproject/issues"
+"Funding" = "https://donate.pypi.org"
+"Say Thanks!" = "http://saythanks.io/to/example"
+"Source" = "https://github.com/pypa/sampleproject/"
+
+[project.scripts]
+lumina = "lumina_t2i:entry_point"
+
+[tool.setuptools.packages.find]
+exclude = ["assets*"]
+
+[tool.wheel]
+exclude = ["assets*"]
