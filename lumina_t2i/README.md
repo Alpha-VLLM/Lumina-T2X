@@ -138,6 +138,7 @@ To host a local gradio demo for interactive inference, run the following command
 ```bash
 # `/path/to/ckpt` should be a directory containing `consolidated*.pth` and `model_args.pth`
 
+# default
 python -u demo.py --ckpt "/path/to/ckpt"
 
 # the demo by default uses bf16 precision. to switch to fp32:
@@ -145,6 +146,4 @@ python -u demo.py --ckpt "/path/to/ckpt" --precision fp32
 
 # use ema model
 python -u demo.py --ckpt "/path/to/ckpt" --ema
-
-
 ```
