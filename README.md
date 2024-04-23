@@ -41,16 +41,16 @@ Furthermore, training $\textbf{Lumina-T2X}$ is computationally efficient. The la
 ### Video Generation
 
 <p align="center">
- <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/2dddcd0c-ce04-4a53-bf5e-060155902ce8" width="90%"/> 
+ <img src="./assets/videos/video_without_black.gif" width="90%"/> 
  <br>
 </p>
 
 ### Multi-view Generation
 
 <p align="center">
- <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/120e5bf9-a7f0-4139-8c53-c9650740f3f7" width="90%"/> 
+ <img src="" width="90%"/> 
  <br>
- <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/cf06c3dc-7102-4548-8955-e3cb6fca1284" width="90%"/> 
+ <img src="./assets/videos/multi_view_all_fix.gif" width="90%"/> 
 </p>
 
 ### High-res. Image Editing
