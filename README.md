@@ -18,13 +18,13 @@
 
 ![intro](./assets/intro_large_update.png)
 
-[[中文版本]](./README_cn.md)
+<!-- [[中文版本]](./README_cn.md) -->
 
 ## 📰 News
 
 - **[2024-04-25]** 🔥🔥🔥 **Support 720p video generation with arbitary resolution. [Demo](#video-generation)** 🚀🚀🚀
 - [2024-04-19] 🔥🔥🔥 Demo released.
-- [2024-04-05] 😆😆😆 Code released.
+- [2024-04-05] 😆😆😆 Code released for Lumina-T2I.
 - [2024-04-01] 🚀🚀🚀 We release the initial version of Lumina-T2I for text-to-image generation.
 
 ## 🚀 Quick Start
@@ -62,29 +62,34 @@ $\textbf{Lumina-T2X}$ allows for the generation of outputs in **any resolution, 
 Furthermore, training $\textbf{Lumina-T2X}$ is computationally efficient. The largest model, with 5 billion parameters, **requires only 20% of the training time needed** for Pixart-alpha, which has 600 million parameters.
 
 🌟 **Features**:
-- Flow-based Large Diffusion Transformer (Flag-DiT): Lumina-T2X is trained **with flow matching pipeline**. For supporting training stability and model scalability, we support a bunch of techniques, such as RoPE, RMSNorm, and KQ-norm, **demonstrating faster training convergence, stable training dynamics, and a simplified pipeline**.
+- Flow-based Large Diffusion Transformer (Flag-DiT): Lumina-T2X is trained **with the flow matching object**. To increase training stability and model scalability, we support a bunch of techniques, such as RoPE, RMSNorm, and KQ-norm, **demonstrating faster training convergence, stable training dynamics, and a simplified pipeline**.
 - Any Modalities, Res., and Duration within One Framework: 
   1. Lumina-T2X tokenizes images, videos, multi-views of 3D objects, and spectrograms into one-dimensional sequences. 
   2. Lumina-T2X can naturally **encode any modality—regardless of resolution, aspect ratios, and temporal durations into a unified 1-D token sequence** akin to LLMs, by utilizing Flag-DiT with text conditioning to iteratively transform noise into outputs across any modality, resolution, and duration during inference time. 
-  3. Due to any modality—regardless of resolution, aspect ratios, and temporal durations encoding, it even **enables resolution extrapolation**, which allows the generation of resolutions out-of-domain that **were unseen during training**.
-- Low Training Resources: increasing token length in transformers extends iteration times but **reduces overall training duration by decreasing the number of iterations needed**. Moreover, our Lumina-T2X model can generate high-resolution images and coherent videos **with minimal computational demands**. Remarkably, the default Lumina-T2I configuration, equipped with a 5 billion Flag-DiT and a 7 billion LLaMA as text encoder, **requires only 20% of the computational resources needed by Pixelart-**$\alpha$.
+  3. Due to the use of `nextline` and `nextframe` tokens, our model can **support resolution extrapolation**, which allows the generation of resolutions out-of-domain that **were unseen during training**.
+- Low Training Resources: increasing token length in transformers extends iteration times but **reduces overall training duration by decreasing the number of iterations needed**. Moreover, our Lumina-T2X model can generate high-resolution images and coherent videos **with minimal computational demands**. Remarkably, the default Lumina-T2I configuration, equipped with a 5B Flag-DiT and a 7B LLaMA as text encoder, **requires only 20% of the computational resources needed by Pixelart-**$\alpha$.
 
 ![framework](https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/60d2f248-67b1-43ef-a530-c75530cf26c5)
 
 ## 📽️ Demos
 
-### Image Generation
+### Text-to-Image Generation
 
 <p align="center">
  <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/27bd36a8-8411-47dd-a3a7-3607c1d5d644" width="90%"/> 
  <br>
 </p>
 
-### Video Generation
+### Text-to-Video Generation
 
 **720P Videos:**
 
+**Prompt:** The majestic beauty of a waterfall cascading down a cliff into a serene lake.
+
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/17187de8-7a07-49a8-92f9-fdb8e2f5e64c
+
+
+**Prompt:** A stylish woman walks down a Tokyo street filled with warm glowing neon and animated city signage. She wears a black leather jacket, a long red dress, and black boots, and carries a black purse. She wears sunglasses and red lipstick. She walks confidently and casually. The street is damp and reflective, creating a mirror effect of the colorful lights. Many pedestrians walk about.
 
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/0a20bb39-f6f7-430f-aaa0-7193a71b256a
 
@@ -92,12 +97,10 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/0a20bb39-f6f7-430f-aaa0
 
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/d7fec32c-3655-4fd1-aa14-c0cb3ace3845
 
-### Multi-view Generation
+### Text-to-Multi-views Generation
 
 <p align="center">
  <img src="./assets/videos/multi_view_all_fix.gif" width="90%"/> 
- <br>
- <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/cf06c3dc-7102-4548-8955-e3cb6fca1284" width="90%"/> 
 </p>
 
 
