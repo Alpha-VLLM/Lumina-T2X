@@ -36,7 +36,7 @@ For more about training and inference, please refer to [Lumina-T2I README.md](./
 - [x] Lumina-T2I (Training, Inference)
 - [ ] Lumina-T2V
 - [x] Web Demo
-- [x] One-stop Cli Demo
+- [x] Cli Demo
 
 ## 📜 Index of Content
 
@@ -67,7 +67,7 @@ Furthermore, training $\textbf{Lumina-T2X}$ is computationally efficient. The la
   1. Lumina-T2X tokenizes images, videos, multi-views of 3D objects, and spectrograms into one-dimensional sequences. 
   2. Lumina-T2X can naturally **encode any modality—regardless of resolution, aspect ratios, and temporal durations into a unified 1-D token sequence** akin to LLMs, by utilizing Flag-DiT with text conditioning to iteratively transform noise into outputs across any modality, resolution, and duration during inference time. 
   3. Due to any modality—regardless of resolution, aspect ratios, and temporal durations encoding, it even **enables resolution extrapolation**, which allows the generation of resolutions out-of-domain that **were unseen during training**.
-- Low Training Resources: increasing token length in transformers extends iteration times but **reduces overall training duration by decreasing the number of iterations needed**. Moreover, our Lumina-T2X model can generate high-resolution images and coherent videos **with minimal computational demands**. Remarkably, the default Lumina-T2I configuration, equipped with a 5 billion Flag-DiT and a 7 billion LLaMA as text encoder, **requires only $20\%$ of the computational resources needed by Pixelart-$\alpha$**.
+- Low Training Resources: increasing token length in transformers extends iteration times but **reduces overall training duration by decreasing the number of iterations needed**. Moreover, our Lumina-T2X model can generate high-resolution images and coherent videos **with minimal computational demands**. Remarkably, the default Lumina-T2I configuration, equipped with a 5 billion Flag-DiT and a 7 billion LLaMA as text encoder, **requires only 20% of the computational resources needed by Pixelart-**$\alpha$.
 
 ![framework](https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/60d2f248-67b1-43ef-a530-c75530cf26c5)
 
