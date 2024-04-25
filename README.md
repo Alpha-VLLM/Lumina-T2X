@@ -12,8 +12,8 @@
 ## 📰 News
 
 - **[2024-04-25]** 🔥🔥🔥 **Support 720p video generation with arbitary resolution. [Demo](#video-generation)** 🚀🚀🚀
-- [2024-04-19] 🔥🔥🔥 Demo, project introduction and **release**.
-- [2024-04-05] 😆😆😆 Code release.
+- [2024-04-19] 🔥🔥🔥 Demo released.
+- [2024-04-05] 😆😆😆 Code released.
 - [2024-04-01] 🚀🚀🚀 We release the initial version of Lumina-T2I for text-to-image generation.
 
 ## 🚀 Quick Start
@@ -26,7 +26,6 @@ Lumina-T2V and Lumina-T2A are coming soon, training...
 
 - [x] Lumina-T2I (Training, Inference)
 - [ ] Lumina-T2V
-- [ ] Lumina-T2A
 - [x] Web Demo
 - [x] One-stop Cli Demo
 
