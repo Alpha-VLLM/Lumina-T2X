@@ -1,0 +1,30 @@
+- settings:
+  transport:
+    path_type: Linear
+    prediction: velocity
+    loss_weight: velocity
+    sample_eps: 0.1
+    train-eps: 0.2
+
+  ode:
+    atol: 1e-6
+    rtol: 1e-3
+    reverse: false
+    likelihood: true
+
+  sde:
+    sampling-method: Euler
+    diffusion-form: sigma
+    diffusion-norm: 1.0
+    last-step: Mean
+    last-step-size: 0.04
+
+  infer:
+      resolution: ""
+      num_sampling_steps: 11
+      cfg_scale: 2
+      solver: "euler" # ["euler", "dopri5", "dopri8"]
+      t_shift: 2
+      ntk_scaling: true
+      proportional_attn: true
+      seed: 0
