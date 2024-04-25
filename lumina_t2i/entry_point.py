@@ -29,6 +29,7 @@ global_options = [
     click.option("--ema", is_flag=True, help="whether to load ema model."),
     click.option("--precision", type=click.Choice(["bf16", "fp32"]), default="bf16", help="precision of inference for model."),
     click.option("-c", "--config", type=str, default="cofing/infer/settings.yaml", help="setting for inference with different parameter."),
+    click.option("--token", default=False, help="huggingface token for accessing gated model.")
 ]
 
 transport_options = [
