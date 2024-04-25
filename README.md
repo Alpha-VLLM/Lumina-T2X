@@ -1,12 +1,49 @@
-<p align="center">
+<!-- <p align="center">
  <img src="./assets/lumina-logo.png" width="40%"/> 
  <br>
-</p>
+</p> -->
 
 # $\textbf{Lumina-T2X}$: Transform Text into Any Modality, Res. and Duration via Flow-based Large Diffusion Transformer
-[[中文版本]](./README_cn.md)
 
 ![intro](./assets/intro_large.png)
+
+[[中文版本]](./README_cn.md)
+
+## 📰 News
+
+- [2024-04-25] 🔥🔥🔥 **Support 720p video generation with arbitary resolution.** 🚀🚀🚀
+- [2024-04-19] 🔥🔥🔥 Demo, project introduction and **release**.
+- [2024-04-05] 😆😆😆 Code release.
+- [2024-04-01] 🚀🚀🚀 We release the initial version of Lumina-T2I for text-to-image generation.
+
+## 🚀 Quick Start
+
+For more about training and inference, please refer to [Lumina-T2I README.md](./Lumina-T2I/README.md#Installation)
+
+Lumina-T2V, Lumina-T2A is coming soon, training....
+
+## 📑 Opensource Plan
+
+- [x] Lumina-T2I (Training, Inference)
+- [ ] Lumina-T2V
+- [ ] Lumina-T2A
+- [x] Web Demo
+- [x] One-stop Cli Demo
+
+## 📜 Index of Content
+
+- [Lumina-T2X](#textbflumina-t2x-transform-text-into-any-modality-res-and-duration-via-flow-based-large-diffusion-transformer)
+  - [📰 News](#-news)
+  - [🚀 Quick Start](#-quick-start)
+  - [📑 Opensource Plan](#-opensource-plan)
+  - [📜 Index of Content](#-index-of-content)
+  - [Introduction](#introduction)
+  - [📽️ Demos](#️-demos)
+    - [Image Generation](#image-generation)
+    - [Video Generation](#video-generation)
+    - [Multi-view Generation](#multi-view-generation)
+    - [More demos](#more-demos)
+  - [⚙️ Diverse Configurations](#️-diverse-configurations)
 
 ## Introduction
 
@@ -17,18 +54,14 @@ $\textbf{Lumina-T2X}$ allows for the generation of outputs in **any resolution, 
 Furthermore, training $\textbf{Lumina-T2X}$ is computationally efficient. The largest model, with 5 billion parameters, **requires only 20% of the training time needed** for Pixart-alpha, which has 600 million parameters.
 
 🌟 **Features**:
-- Flow-based Large Diffusion Transformer (Flag-DiT): Lumina-T2X employs a Large-DiT architecture inspired by the design of GPT-series, ViT-22B, and LLaMA, which is trained with flow matching. The modifications, such as RoPE, RMSNorm, and KQ-norm, over the original DiT, significantly enhance the training stability and model scalability, supporting up to 7 billion parameters and sequences of 128K tokens. We have rigorously ablated the components over the label-conditioned generation on ImageNet, demonstrating faster training convergence, stable training dynamics and a simplified training/inference pipeline. 
-- Any Modalities, Res. and Duration within One Framework : Lumina-T2X tokenizes images, videos, multi-views of 3D objects, and spectrograms into one-dimensional sequences, similarly to how Large Language Models (LLMs) process natural languages. With the introduction of learnable placeholders, such as 'nextline' and 'nextframe' tokens, Lumina-T2X can naturally encode any modality—regardless of resolution, aspect ratios, and even temporal durations—into a unified 1-D token sequence akin to LLMs. It then utilizes Flag-DiT with text conditioning to iteratively transform noise into outputs across any modality, resolution, and duration by explicitly specifying the positions of 'nextline' and 'nextframe' during inference time. Remarkably, this flexibility even enables resolution extrapolation, which allows the generation of resolutions out-of-domain that were unseen during training. Specifically, Lumina-T2I can generate images ranging from $768 \times 768$ to $1792 \times 1792$ pixels, even though it was trained at $1024 \times 1024$ pixels, by simply adding more 'nextline' tokens. This discovery significantly broadens the potential applications of Lumina-T2X.
-- Low Training Resources : Our empirical observations indicate that the use of larger models, high-resolution images, and extended training durations remarkably enhances the convergence speed of diffusion transformer. Although increasing the token length leads to longer iteration times due to the quadratic complexity of transformers, it substantially reduces the overall training duration by decreasing the required number of iterations. Moreover, by employing meticulously curated text-image and text-video pairs featuring high aesthetic quality frames and detailed captions, our Lumina-T2X model is able to generate high-resolution images and coherent videos with minimal computational demands. Remarkably, the default Lumina-T2I configuration, equipped with a 5 billion Flag-DiT and a 7 billion LLaMa as text encoder, requires only 20\% of the computational resources needed by Pixelart-$\alpha$, which uses a 600 million DiT backbone and 3 billion T5 as text encoders.
+- Flow-based Large Diffusion Transformer (Flag-DiT): Lumina-T2X is trained **with flow matching pipeline**. For supporting training stability and model scalability, we support a bunch of techniques, such as RoPE, RMSNorm, and KQ-norm, **demonstrating faster training convergence, stable training dynamics, and a simplified pipeline**.
+- Any Modalities, Res., and Duration within One Framework: 
+  1. Lumina-T2X tokenizes images, videos, multi-views of 3D objects, and spectrograms into one-dimensional sequences. 
+  2. Lumina-T2X can naturally **encode any modality—regardless of resolution, aspect ratios, and temporal durations into a unified 1-D token sequence** akin to LLMs, by utilizing Flag-DiT with text conditioning to iteratively transform noise into outputs across any modality, resolution, and duration during inference time. 
+  3. Due to any modality—regardless of resolution, aspect ratios, and temporal durations encoding, it even **enables resolution extrapolation**, which allows the generation of resolutions out-of-domain that **were unseen during training**.
+- Low Training Resources: we are increasing token length in transformers extends iteration times but **reduces overall training duration by decreasing the number of iterations needed**. Moreover, our Lumina-T2X model can generate high-resolution images and coherent videos **with minimal computational demands**. Remarkably, the default Lumina-T2I configuration, equipped with a 5 billion Flag-DiT and a 7 billion LLaMA as text encoder, **requires only $20\%$ of the computational resources needed by Pixelart-$\alpha$**.
 
 ![framework](https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/60d2f248-67b1-43ef-a530-c75530cf26c5)
-
-## 📰 News
-
-- [2024-04-25] 🔥🔥🔥 Support 720p video generation with arbitary resolution.
-- [2024-04-19] 🔥🔥🔥 Demo, project introduction and **release**.
-- [2024-04-05] 😆😆😆 Code release.
-- [2024-04-01] 🚀🚀🚀 We release the initial version of Lumina-T2I for text-to-image generation.
 
 ## 📽️ Demos
 
@@ -41,8 +74,15 @@ Furthermore, training $\textbf{Lumina-T2X}$ is computationally efficient. The la
 
 ### Video Generation
 
+360P Videos:
 <p align="center">
- <img src="./assets/videos/video_without_black.gif" width="90%"/> 
+ <img src="./assets/videos/video_new.gif" width="90%"/> 
+ <br>
+</p>
+
+720P Videos:
+<p align="center">
+ <img src="./assets/videos/video_720.gif" width="90%"/> 
  <br>
 </p>
 
@@ -54,7 +94,11 @@ Furthermore, training $\textbf{Lumina-T2X}$ is computationally efficient. The la
  <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/cf06c3dc-7102-4548-8955-e3cb6fca1284" width="90%"/> 
 </p>
 
-### High-res. Image Editing
+
+### More demos
+
+For more demos visit [this website]()
+<!-- ### High-res. Image Editing
 
 <p align="center">
  <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/55981976-c989-4f07-982a-1e567c7078ef" width="90%"/> 
@@ -82,7 +126,7 @@ Furthermore, training $\textbf{Lumina-T2X}$ is computationally efficient. The la
 <p align="center">
  <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/6403417a-42c6-4048-9419-375d211e14bb" width="90%"/> 
  <br>
-</p>
+</p> -->
 
 ## ⚙️ Diverse Configurations
 
@@ -93,9 +137,6 @@ We support diverse configurations, including text encoders, DiTs of different pa
  <br>
 </p>
 
-## 🚀 Quick Start
-
-For more about training and inference, please refer to [Lumina-T2I README.md](./Lumina-T2I/README.md#Installation)
 
 <!--
 
