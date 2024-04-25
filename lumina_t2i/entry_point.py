@@ -1,90 +1,14 @@
 import click
 import warnings
+import builtins
 
-class DefaultCommandFormatter(object):
-    """Wraps a formatter to mark a default command."""
+from .utils.group import DefaultGroup
+from .utils.cli import main
 
-    def __init__(self, group, formatter, mark='*'):
-        self.group = group
-        self.formatter = formatter
-        self.mark = mark
-
-    def __getattr__(self, attr):
-        return getattr(self.formatter, attr)
-
-    def write_dl(self, rows, *args, **kwargs):
-        rows_ = []
-        for cmd_name, help in rows:
-            if cmd_name == self.group.default_cmd_name:
-                rows_.insert(0, (cmd_name + self.mark, help))
-            else:
-                rows_.append((cmd_name, help))
-        return self.formatter.write_dl(rows_, *args, **kwargs)
-
-
-class DefaultGroup(click.Group):
-    """Invokes a subcommand marked with `default=True` if any subcommand not
-    chosen.
-    :param default_if_no_args: resolves to the default command if no arguments
-                               passed.
-    """
-
-    def __init__(self, *args, **kwargs):
-        # To resolve as the default command.
-        if not kwargs.get('ignore_unknown_options', True):
-            raise ValueError('Default group accepts unknown options')
-        self.ignore_unknown_options = True
-        self.default_cmd_name = kwargs.pop('default', None)
-        if self.default_cmd_name is None:
-            raise ValueError("You don't have set @entryPoint.command(default=True) on any entry points.")
-        self.default_if_no_args = kwargs.pop('default_if_no_args', False)
-        super(DefaultGroup, self).__init__(*args, **kwargs)
-
-    def set_default_command(self, command):
-        """Sets a command function as the default command."""
-        cmd_name = command.name
-        self.add_command(command)
-        self.default_cmd_name = cmd_name
-
-    def parse_args(self, ctx, args):
-        if (args in (["-h"], ["--help"])) or (not args and self.default_if_no_args):
-            args.insert(0, self.default_cmd_name)
-        return super(DefaultGroup, self).parse_args(ctx, args)
-
-    def get_command(self, ctx, cmd_name):
-        if cmd_name not in self.commands:
-            # No command name matched.
-            ctx.arg0 = cmd_name
-            cmd_name = self.default_cmd_name
-        return super(DefaultGroup, self).get_command(ctx, cmd_name)
-
-    def resolve_command(self, ctx, args):
-        base = super(DefaultGroup, self)
-        cmd_name, cmd, args = base.resolve_command(ctx, args)
-        if hasattr(ctx, 'arg0'):
-            args.insert(0, ctx.arg0)
-            cmd_name = cmd.name
-        return cmd_name, cmd, args
-
-    def format_commands(self, ctx, formatter):
-        formatter = DefaultCommandFormatter(self, formatter, mark='*')
-        return super(DefaultGroup, self).format_commands(ctx, formatter)
-
-    def command(self, *args, **kwargs):
-        default = kwargs.pop('default', False)
-        decorator = super(DefaultGroup, self).command(*args, **kwargs)
-        if not default:
-            return decorator
-        warnings.warn('Use default param of DefaultGroup or '
-                      'set_default_command() instead', DeprecationWarning)
-
-        def _decorator(f):
-            cmd = decorator(f)
-            self.set_default_command(cmd)
-            return cmd
-
-        return _decorator
-
+def none_or_str(value):
+    if value == 'None':
+        return None
+    return value
 
 def version(ctx, _, value):
     if not value or ctx.resilient_parsing:
@@ -92,20 +16,75 @@ def version(ctx, _, value):
     click.echo("1.0.0")
     ctx.exit()
 
+def add_options(options):
+    def _add_options(func):
+        for option in reversed(options):
+            func = option(func)
+        return func
+    return _add_options
+
+global_options = [
+    click.option("--num_gpus", type=int, default=1, help="number of gpus you want to use."),
+    click.option("--ckpt", type=str, required=True, help="pretrained model checkpoint path."),
+    click.option("--ema", is_flag=True, help="whether to load ema model."),
+    click.option("--precision", type=click.Choice(["bf16", "fp32"]), default="bf16", help="precision of inference for model."),
+    click.option("-c", "--config", type=str, default="cofing/infer/settings.yaml", help="setting for inference with different parameter."),
+]
+
+transport_options = [
+    click.option("--path-type", type=click.Choice(["Linear", "GVP", "VP"]), default="Linear"),
+    click.option("--prediction", type=click.Choice(["velocity", "score", "noise"]), default="velocity"),
+    click.option("--loss-weight", type=click.Choice([None, "velocity", "likelihood"]), default=None),
+    click.option("--sample-eps", type=float),
+    click.option("--train-eps", type=float),
+]
+
+ode_options = [
+    click.option("-a", "--atol", type=float, default=1e-6, help="Absolute tolerance"),
+    click.option("-r", "--rtol", type=float, default=1e-3, help="Relative tolerance"),
+    click.option("--reverse", is_flag=True, help=""),
+    click.option("--likelihood", is_flag=True, help=""),
+]
+
+sde_options = [
+    click.option("--sampling-method", type=click.Choice(["Euler", "Heun"]), default="Euler"),
+    click.option("--diffusion-form", type=click.Choice(["constant", "SBDM", "sigma", "linear", "decreasing", "increasing-decreasing"]), default="sigma", help="form of diffusion coefficient in the SDE"),
+    click.option("--diffusion-norm", type=float, default=1.0),
+    click.option("--last-step", type=click.Choice([None, "Mean", "Tweedie", "Euler"]), default="Mean", help="form of last step taken in the SDE"),
+    click.option("--last-step-size", type=float, default=0.04, help="size of the last step taken"),
+]
+
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
-@click.group(cls=DefaultGroup, context_settings=CONTEXT_SETTINGS)
+@click.group(cls=DefaultGroup, context_settings=CONTEXT_SETTINGS, default='infer')
 @click.option("-v", "--version", is_flag=True, callback=version, expose_value=False, is_eager=True, help="Print version info.")
 def entry_point():
     pass
 
 
-@click.argument("mode", type=bool, required=False, nargs=1)
-@click.argument("text", type=click.Path(exists=True, file_okay=False, resolve_path=True), required=False, nargs=1)
-@entry_point.command()
-def infer(mode, text):
-    pass
+@add_options(global_options)
+@click.argument("output", type=str, default="./", required=False, nargs=1)
+@click.argument("text", type=str, required=True, nargs=1)
+@entry_point.command(default=True)
+def infer(*args, **kwargs):
+    click.echo(kwargs['num_gpus'])
+    main(args, kwargs)
 
 
+@add_options(global_options)
+@click.argument("text", type=str, required=False, nargs=1)
 @entry_point.command()
-def cli():
+def infer_sde(sampling_method, diffusion_form, diffusion_norm, last_step, last_step_size, text):
+    click.echo(text)
+    
     pass
+
+@add_options(global_options)
+@click.option("--path-type", type=click.Choice(["Linear", "GVP", "VP"]), default="Linear")
+@click.option("--prediction", type=click.Choice(["velocity", "score", "noise"]), default="velocity")
+@click.option("--loss-weight", type=click.Choice([None, "velocity", "likelihood"]), default=None)
+@click.option("--sample-eps", type=float)
+@click.option("--train-eps", type=float)
+@entry_point.command()
+def transport(path_type, prediction, loss_weight, sample_eps, train_eps):
+    pass
+
