@@ -2,6 +2,7 @@ import builtins
 import json
 import multiprocessing as mp
 import os
+import warnings
 import socket
 import traceback
 
@@ -37,7 +38,7 @@ def dtype_select(precision):
     return dtype[precision]
 
 
-def load_model(ckpt, dtype, master_port, rank=0, num_gpus=1, is_ema=False):
+def load_model(ckpt, dtype, master_port, rank=0, num_gpus=1, is_ema=False, token: str | bool=False):
     # import here to avoid huggingface Tokenizer parallelism warnings
     from diffusers.models import AutoencoderKL
     from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -56,10 +57,14 @@ def load_model(ckpt, dtype, master_port, rank=0, num_gpus=1, is_ema=False):
     fs_init.initialize_model_parallel(num_gpus)
     torch.cuda.set_device(rank)
 
-    rank0_print(f"Creating lm: {train_args.lm}")
     train_args = torch.load(os.path.join(ckpt, "model_args.pth"))
+    rank0_print(f"Creating lm: {train_args.lm}")
+    
+    if not token:
+        warnings.warn("Attention! You need to input your access token in the huggingface when loading the gated repo, "
+                      "or use the `huggingface-cli login` (stored in ~/.huggingface by default) to log in.")
     model_lm = AutoModelForCausalLM.from_pretrained(
-        train_args.lm, torch_dtype=dtype, device_map="cuda"
+        train_args.lm, torch_dtype=dtype, device_map="cuda", token=token
     )
     cap_feat_dim = model_lm.config.hidden_size
     if num_gpus > 1:
@@ -237,14 +242,14 @@ def inference(cap, dtype, vae, config, model_dit, model_lm, tokenizer, *args, **
                 return None
 
 
-def main(num_gpus, ckpt, is_ema, precision, config_path, cap, output_path, *args, **kwargs):
+def main(num_gpus, ckpt, is_ema, precision, config_path, cap, output_path, token, *args, **kwargs):
     # step 1: find available port
     master_port = find_free_port()
     # step 2: loading pretrained model with multi-gpu or not.
     print("[INFO]: loading pretrained model.")
     dtype = dtype_select(precision)
     vae, model_dit, model_lm, tokenizer, train_args = load_model(
-        ckpt, dtype, master_port, 0, num_gpus, is_ema
+        ckpt, dtype, master_port, 0, num_gpus, is_ema, token
     )
     # step 3: inference
     rank0_print("[INFO]: loading inference settings.")
