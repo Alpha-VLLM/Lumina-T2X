@@ -20,7 +20,7 @@
 
 For more about training and inference, please refer to [Lumina-T2I README.md](./Lumina-T2I/README.md#Installation)
 
-Lumina-T2V, Lumina-T2A is coming soon, training....
+Lumina-T2V, and Lumina-T2A are coming soon, training...
 
 ## 📑 Opensource Plan
 
@@ -75,16 +75,14 @@ Furthermore, training $\textbf{Lumina-T2X}$ is computationally efficient. The la
 ### Video Generation
 
 360P Videos:
-<p align="center">
- <img src="./assets/videos/video_new.gif" width="90%"/> 
- <br>
-</p>
+
+https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/d7fec32c-3655-4fd1-aa14-c0cb3ace3845
+
 
 720P Videos:
-<p align="center">
- <img src="./assets/videos/video_720.gif" width="90%"/> 
- <br>
-</p>
+
+https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/e997f435-6452-4e68-ac83-50f71cfe1c7e
+
 
 ### Multi-view Generation
 
