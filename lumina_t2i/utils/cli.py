@@ -237,19 +237,11 @@ def inference(cap, dtype, vae, config, model_dit, model_lm, tokenizer, *args, **
                 return None
 
 
-def main(*args, **kwargs):
-    ckpt = kwargs["ckpt"]
-    precision = kwargs["precision"]
-    num_gpus = kwargs["num_gpus"]
-    is_ema = kwargs["ema"]
-    config_path = kwargs["config"]
-    cap = kwargs["text"]
-    output_path = kwargs["output"]
-
+def main(num_gpus, ckpt, is_ema, precision, config_path, cap, output_path, *args, **kwargs):
     # step 1: find available port
     master_port = find_free_port()
     # step 2: loading pretrained model with multi-gpu or not.
-    rank0_print("[INFO]: loading pretrained model.")
+    print("[INFO]: loading pretrained model.")
     dtype = dtype_select(precision)
     vae, model_dit, model_lm, tokenizer, train_args = load_model(
         ckpt, dtype, master_port, 0, num_gpus, is_ema
