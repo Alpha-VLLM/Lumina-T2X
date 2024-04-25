@@ -62,12 +62,11 @@ def entry_point():
 
 
 @add_options(global_options)
-@click.argument("output", type=str, default="./", required=False, nargs=1)
+@click.argument("output_path", type=str, default="./", required=False, nargs=1)
 @click.argument("text", type=str, required=True, nargs=1)
 @entry_point.command(default=True)
-def infer(*args, **kwargs):
-    click.echo(kwargs['num_gpus'])
-    main(args, kwargs)
+def infer(num_gpus, ckpt, ema, precision, config, text, output_path):
+    main(num_gpus, ckpt, ema, precision, config, text, output_path)
 
 
 @add_options(global_options)
