@@ -5,7 +5,7 @@
 
 # $\textbf{Lumina-T2X}$: Transform Text into Any Modality, Res. and Duration via Flow-based Large Diffusion Transformer
 
-![intro](./assets/intro_large.png)
+![intro](./assets/intro_large_update.png)
 
 [[中文版本]](./README_cn.md)
 
