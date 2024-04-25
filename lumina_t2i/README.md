@@ -99,22 +99,6 @@ pip install -v --disable-pip-version-check --no-cache-dir --no-build-isolation -
 pip install -v --disable-pip-version-check --no-cache-dir --no-build-isolation --global-option="--cpp_ext" --global-option="--cuda_ext" ./
 ```
 
-## Training
-
-### Data Preparation
-
-### Run training
-
-1. Setting data path for trainings
-
-
-
-2. Running train
-
-```bash
-python train.py
-```
-
 ## Inference
 
 To ensure that our generative model is ready to use right out of the box, we provide a user-friendly CLI program and a locally deployable Web Demo site.
