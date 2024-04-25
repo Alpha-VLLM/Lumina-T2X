@@ -74,9 +74,11 @@ Furthermore, training $\textbf{Lumina-T2X}$ is computationally efficient. The la
 
 ### Video Generation
 
-720P Videos:
+**720P Videos:**
 
-https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/e997f435-6452-4e68-ac83-50f71cfe1c7e
+https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/17187de8-7a07-49a8-92f9-fdb8e2f5e64c
+
+https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/0a20bb39-f6f7-430f-aaa0-7193a71b256a
 
 360P Videos:
 
