@@ -25,6 +25,7 @@ Furthermore, training $\textbf{Lumina-T2X}$ is computationally efficient. The la
 
 ## 📰 News
 
+- [2024-04-25] 🔥🔥🔥 Support 720p video generation with arbitary resolution.
 - [2024-04-19] 🔥🔥🔥 Demo, project introduction and **release**.
 - [2024-04-05] 😆😆😆 Code release.
 - [2024-04-01] 🚀🚀🚀 We release the initial version of Lumina-T2I for text-to-image generation.
