@@ -25,11 +25,12 @@ def add_options(options):
 
 global_options = [
     click.option("--num_gpus", type=int, default=1, help="number of gpus you want to use."),
-    click.option("--ckpt", type=str, required=True, help="pretrained model checkpoint path."),
+    click.option("--ckpt", type=str, default=None, help="pretrained Lumina-T2X model checkpoint path."),
+    click.option("--ckpt_lm", type=str, default=None, help="pretrained LLM model checkpoint path."),
     click.option("--ema", is_flag=True, help="whether to load ema model."),
     click.option("--precision", type=click.Choice(["bf16", "fp32"]), default="bf16", help="precision of inference for model."),
     click.option("-c", "--config", type=str, default="cofing/infer/settings.yaml", help="setting for inference with different parameter."),
-    click.option("--token", default=False, help="huggingface token for accessing gated model.")
+    click.option("--token", type=str, default=False, help="huggingface token for accessing gated model.")
 ]
 
 transport_options = [
@@ -66,8 +67,8 @@ def entry_point():
 @click.argument("output_path", type=str, default="./", required=False, nargs=1)
 @click.argument("text", type=str, required=True, nargs=1)
 @entry_point.command(default=True)
-def infer(num_gpus, ckpt, ema, precision, config, text, output_path):
-    main(num_gpus, ckpt, ema, precision, config, text, output_path)
+def infer(num_gpus, ckpt, ckpt_lm, ema, precision, config, token, text, output_path):
+    main(num_gpus, ckpt, ckpt_lm, ema, precision, config, token, text, output_path)
 
 
 @add_options(global_options)
