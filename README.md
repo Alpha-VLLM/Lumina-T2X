@@ -29,7 +29,7 @@
 
 ## 🚀 Quick Start
 
-For more about training and inference, please refer to [Lumina-T2I README.md](./Lumina-T2I/README.md#Installation)
+For more about training and inference, please refer to [Lumina-T2I README.md](./lumina_t2i/README.md#Installation)
 
 ## 📑 Open-source Plan
 
