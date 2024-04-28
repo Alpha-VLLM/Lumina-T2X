@@ -22,7 +22,7 @@
 
 ## 📰 News
 
-- **[2024-04-25]** 🔥🔥🔥 **Support 720p video generation with arbitary resolution. [Demo](#text-to-video-generation)** 🚀🚀🚀
+- **[2024-04-25]** 🔥🔥🔥 **Support 720P video generation with arbitary aspect ratio. [Demo](#text-to-video-generation)** 🚀🚀🚀
 - [2024-04-19] 🔥🔥🔥 Demo released.
 - [2024-04-05] 😆😆😆 Code released for Lumina-T2I.
 - [2024-04-01] 🚀🚀🚀 We release the initial version of Lumina-T2I for text-to-image generation.
@@ -49,7 +49,7 @@ For more about training and inference, please refer to [Lumina-T2I README.md](./
   - [📽️ Demos](#️-demos)
     - [Text-to-Image Generation](#text-to-image-generation)
     - [Text-to-Video Generation](#text-to-video-generation)
-    - [Text-to-Multi-views Generation](#text-to-multi-views-generation)
+    - [Text-to-3D Generation](#text-to-3d-generation)
     - [More demos](#more-demos)
   - [⚙️ Diverse Configurations](#️-diverse-configurations)
 
@@ -97,7 +97,7 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/7bf9ce7e-f454-4430-babe
 
 
 
-360P Videos:
+**360P Videos:**
 
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/d7fec32c-3655-4fd1-aa14-c0cb3ace3845
 
