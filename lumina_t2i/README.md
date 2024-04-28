@@ -43,6 +43,12 @@ On some outdated distros (e.g., CentOS 7), you may also want to check that a lat
 gcc --version
 ```
 
+Downloading Lumina-T2X repo from github:
+
+```bash
+git clone https://github.com/Alpha-VLLM/Lumina-T2X
+```
+
 ### 1. Create a conda environment and install PyTorch
 
 Note: You may want to adjust the CUDA version [according to your driver version](https://docs.nvidia.com/deploy/cuda-compatibility/#default-to-minor-version).
@@ -62,7 +68,7 @@ Note: You may want to adjust the CUDA version [according to your driver version]
   or you can use
 
   ```bash
-  cd Lumina-T2I
+  cd lumina-t2i
   pip install -r requirements.txt
   ```
 
