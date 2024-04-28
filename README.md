@@ -22,7 +22,7 @@
 
 ## 📰 News
 
-- **[2024-04-25]** 🔥🔥🔥 **Support 720p video generation with arbitary resolution. [Demo](#video-generation)** 🚀🚀🚀
+- **[2024-04-25]** 🔥🔥🔥 **Support 720P video generation with arbitary aspect ratio. [Demo](#Text-to-Video Generation)** 🚀🚀🚀
 - [2024-04-19] 🔥🔥🔥 Demo released.
 - [2024-04-05] 😆😆😆 Code released for Lumina-T2I.
 - [2024-04-01] 🚀🚀🚀 We release the initial version of Lumina-T2I for text-to-image generation.
