@@ -2,9 +2,10 @@ import builtins
 import json
 import multiprocessing as mp
 import os
-import warnings
 import socket
 import traceback
+import time
+import warnings
 
 import fairscale.nn.model_parallel.initialize as fs_init
 import torch
@@ -283,5 +284,10 @@ def main(num_gpus, ckpt, ckpt_lm, is_ema, precision, config_path, token, cap, ou
     rank0_print(f"> Saving processed images.")
     img = to_pil_image(results.float())
 
+    os.makedirs(output_path, exist_ok=True)
+    if os.path.isdir(output_path):
+        rank0_print(f"> Image saved in {output_path}.")
     img_name = '_'.join(cap.split(" "))
-    img.save(os.path.join(output_path, f"{img_name}_lumina.png"))
+    current_time = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
+
+    img.save(os.path.join(output_path, f"{img_name}_{current_time}_lumina.png"))

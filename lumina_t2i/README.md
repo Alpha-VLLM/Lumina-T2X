@@ -105,20 +105,15 @@ To ensure that our generative model is ready to use right out of the box, we pro
 
 ### CLI
 
-#### Usage
-
 1. Install Lumina-T2I
+
 ```bash
 pip install -e .
 ```
 
-2. Run with CLI
-```bash
-lumina infer "a snow man of ..."
-```
+2. Setting your personal inference configuration
 
-
-#### Inference config structure
+Update your own personal inference settings to generate different styles of images, checking `config/infer/config.yaml` for detailed settings. Detailed config structure:
 
 ```yaml
 - settings:
@@ -160,35 +155,49 @@ lumina infer "a snow man of ..."
 ```
 
 - model:
-  - `ckpt`: 
-  - `ckpt_lm`: 
-  - `token`: 
+  - `ckpt`: lumina-t2i checkpoint path from [huggingface repo](https://huggingface.co/Alpha-VLLM/Lumina-T2I) containing `consolidated*.pth` and `model_args.pth`.
+  - `ckpt_lm`: LLM checkpoint.
+  - `token`: huggingface access token for accessing gated repo.
 - transport: 
-  - `path_type`:   
-  - `prediction`:
-  - `loss_weight`:
-  - `sample_eps`:
-  - `train_eps`:
-- ode
-  - `atol`: 
-  - `rtol`: 
-  - `reverse`: 
-  - `likelihood`: 
+  - `path_type`: the type of path for transport: 'Linear', 'GVP' (Geodesic Vector Pursuit), or 'VP' (Vector Pursuit).
+  - `prediction`: the prediction model for the transport dynamics.
+  - `loss_weight`: the weighting of different components in the loss function, can be 'velocity' for dynamic modeling, 'likelihood' for statistical consistency, or None for no weighting
+  - `sample_eps`: sampling in the transport model.
+  - `train_eps`: training to stabilize the learning process.
+- ode:
+  - `atol`: Absolute tolerance for the ODE solver. (options: ["Linear", "GVP", "VP"])
+  - `rtol`: Relative tolerance for the ODE solver. (option: ["velocity", "score", "noise"])
+  - `reverse`: run the ODE solver in reverse. (option: [None, "velocity", "likelihood"])
+  - `likelihood`: Enable calculation of likelihood during the ODE solving process.
 - sde
-  - `sampling-method`:
-  - `diffusion-form`:
-  - `diffusion-norm`:
-  - `last-step`: 
-  - `last-step-size`: 
+  - `sampling-method`: the numerical method used for sampling the stochastic differential equation: 'Euler' for simplicity or 'Heun' for improved accuracy.
+  - `diffusion-form`: form of diffusion coefficient in the SDE
+  - `diffusion-norm`: Normalizes the diffusion coefficient, affecting the scale of the stochastic component.
+  - `last-step`: form of last step taken in the SDE
+  - `last-step-size`: size of the last step taken
 - infer
-  - `resolution`: 
-  - `num_sampling_steps`: 
-  - `cfg_scale`:   
-  - `solver`: 
-  - `t_shift`:
-  - `ntk_scaling`:     
-  - `proportional_attn`:
-  - `seed`:              
+  - `resolution`: generated image resolution.
+  - `num_sampling_steps`: sampling step for generating image.
+  - `cfg_scale`: classifier-free guide scaling factor
+  - `solver`: solver for image generation.
+  - `t_shift`: time shift factor.
+  - `ntk_scaling`: ntk rope scaling factor.
+  - `proportional_attn`: Whether to use proportional attention.
+  - `seed`: random initialization seeds.
+
+1. Run with CLI
+
+inference command:
+```bash
+lumina infer -c <config_path> <caption_here> <output_dir>
+```
+
+e.g. Demo command:
+
+```bash
+cd lumina-t2i
+lumina infer -c "config/infer/settings.yaml" "a snow man of ..." "./outputs"
+```
 
 ### Web Demo
 

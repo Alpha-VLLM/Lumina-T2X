@@ -181,38 +181,38 @@ def none_or_str(value):
         return None
     return value
 
-
 def parse_transport_args(parser):
     group = parser.add_argument_group("Transport arguments")
-    group.add_argument("--path-type", type=str, default="Linear", choices=["Linear", "GVP", "VP"])
-    group.add_argument("--prediction", type=str, default="velocity", choices=["velocity", "score", "noise"])
+    group.add_argument("--path-type", type=str, default="Linear", choices=["Linear", "GVP", "VP"], help="the type of path for transport: 'Linear', 'GVP' (Geodesic Vector Pursuit), or 'VP' (Vector Pursuit).")
+    group.add_argument("--prediction", type=str, default="velocity", choices=["velocity", "score", "noise"], help="the prediction model for the transport dynamics.")
     group.add_argument("--loss-weight", type=none_or_str, default=None,
-                       choices=[None, "velocity", "likelihood"])
-    group.add_argument("--sample-eps", type=float)
-    group.add_argument("--train-eps", type=float)
+                       choices=[None, "velocity", "likelihood"], help="the weighting of different components in the loss function, can be 'velocity' for dynamic modeling, 'likelihood' for statistical consistency, or None for no weighting.")
+    group.add_argument("--sample-eps", type=float, help="sampling in the transport model.")
+    group.add_argument("--train-eps", type=float, help="training to stabilize the learning process.")
 
 
 def parse_ode_args(parser):
     group = parser.add_argument_group("ODE arguments")
-    group.add_argument("--atol", type=float, default=1e-6, help="Absolute tolerance")
-    group.add_argument("--rtol", type=float, default=1e-3, help="Relative tolerance")
-    group.add_argument("--reverse", action="store_true")
-    group.add_argument("--likelihood", action="store_true")
+    group.add_argument("--atol", type=float, default=1e-6, help="Absolute tolerance for the ODE solver.")
+    group.add_argument("--rtol", type=float, default=1e-3, help="Relative tolerance for the ODE solver.")
+    group.add_argument("--reverse", action="store_true", help="run the ODE solver in reverse.")
+    group.add_argument("--likelihood", action="store_true", help="Enable calculation of likelihood during the ODE solving process.")
 
 
 def parse_sde_args(parser):
     group = parser.add_argument_group("SDE arguments")
-    group.add_argument("--sampling-method", type=str, default="Euler", choices=["Euler", "Heun"])
+    group.add_argument("--sampling-method", type=str, default="Euler", choices=["Euler", "Heun"], help="the numerical method used for sampling the stochastic differential equation: 'Euler' for simplicity or 'Heun' for improved accuracy.")
     group.add_argument("--diffusion-form", type=str, default="sigma",
                        choices=["constant", "SBDM", "sigma", "linear", "decreasing",
                                 "increasing-decreasing"],
                        help="form of diffusion coefficient in the SDE")
-    group.add_argument("--diffusion-norm", type=float, default=1.0)
+    group.add_argument("--diffusion-norm", type=float, default=1.0, help="Normalizes the diffusion coefficient, affecting the scale of the stochastic component.")
     group.add_argument("--last-step", type=none_or_str, default="Mean",
                        choices=[None, "Mean", "Tweedie", "Euler"],
                        help="form of last step taken in the SDE")
     group.add_argument("--last-step-size", type=float, default=0.04,
                        help="size of the last step taken")
+
 
 
 def find_free_port() -> int:
