@@ -15,8 +15,7 @@
 <!-- [![GitHub closed issues](https://img.shields.io/github/issues-closed/Alpha-VLLM/Lumina-T2X?color=success&label=Issues)](https://github.com/PKU-YuanGroup/Video-LLaVA/issues?q=is%3Aissue+is%3Aclosed) <br> -->
 <!-- [![GitHub repo forks](https://img.shields.io/github/forks/Alpha-VLLM/Lumina-T2X?style=flat&logo=github&logoColor=whitesmoke&label=Forks)](https://github.com/Alpha-VLLM/Lumina-T2X/network)&#160; -->
 
-
-![intro](./assets/intro_large_update.png)
+![intro_large](https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/9f52eabb-07dc-4881-8257-6d8a5f2a0a5a)
 
 <!-- [[中文版本]](./README_cn.md) -->
 
@@ -62,7 +61,7 @@ $\textbf{Lumina-T2X}$ allows for the generation of outputs in **any resolution, 
 Furthermore, training $\textbf{Lumina-T2X}$ is computationally efficient. The largest model, with 5 billion parameters, **requires only 20% of the training time needed** for Pixart-alpha, which has 600 million parameters.
 
 🌟 **Features**:
-- Flow-based Large Diffusion Transformer (Flag-DiT): Lumina-T2X is trained **with the flow matching object**. To increase training stability and model scalability, we support a bunch of techniques, such as RoPE, RMSNorm, and KQ-norm, **demonstrating faster training convergence, stable training dynamics, and a simplified pipeline**.
+- Flow-based Large Diffusion Transformer (Flag-DiT): Lumina-T2X is trained **with the flow matching object**. To increase training stability and model scalability, we support many techniques, such as RoPE, RMSNorm, and KQ-norm, **demonstrating faster training convergence, stable training dynamics, and a simplified pipeline**.
 - Any Modalities, Res., and Duration within One Framework: 
   1. Lumina-T2X tokenizes images, videos, multi-views of 3D objects, and spectrograms into one-dimensional sequences. 
   2. Lumina-T2X can naturally **encode any modality—regardless of resolution, aspect ratios, and temporal durations into a unified 1-D token sequence** akin to LLMs, by utilizing Flag-DiT with text conditioning to iteratively transform noise into outputs across any modality, resolution, and duration during inference time. 
@@ -95,18 +94,13 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/0a20bb39-f6f7-430f-aaa0
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/7bf9ce7e-f454-4430-babe-b14264e0f194
 
 
-
-
 **360P Videos:**
 
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/d7fec32c-3655-4fd1-aa14-c0cb3ace3845
 
 ### Text-to-3D Generation
 
-<p align="center">
- <img src="./assets/videos/multi_view_all_fix.gif" width="90%"/> 
-</p>
-
+https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/cd061b8d-c47b-4c0c-b775-2cbaf8014be9
 
 ### More demos
 
@@ -146,7 +140,7 @@ For more demos visit [this website](https://lumina-t2-x-web.vercel.app)
 We support diverse configurations, including text encoders, DiTs of different parameter sizes, inference methods, and VAE encoders. Additionally, we offer features such as 1D-RoPE, image enhancement, and more.
 
 <p align="center">
-  <img src="./assets/diverse_config.png" width="100%"/>
+  <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/221de325-d9fb-4b7e-a97c-4b24cd2df0fc" width="100%"/>
  <br>
 </p>
 
