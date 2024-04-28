@@ -49,7 +49,7 @@ For more about training and inference, please refer to [Lumina-T2I README.md](./
   - [📽️ Demos](#️-demos)
     - [Text-to-Image Generation](#text-to-image-generation)
     - [Text-to-Video Generation](#text-to-video-generation)
-    - [Text-to-Multi-views Generation](#text-to-multi-views-generation)
+    - [Text-to-3D Generation](#text-to-3d-generation)
     - [More demos](#more-demos)
   - [⚙️ Diverse Configurations](#️-diverse-configurations)
 
