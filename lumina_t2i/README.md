@@ -7,6 +7,12 @@
 
 Lumina-T2I is a model that generates images base on text condition, supporting various text encoders and models of different parameter sizes. With minimal training costs, it achieves high-quality image generation by training from scratch. Additionally, it offers usage through CLI console programs and Web Demo displays.
 
+Our generative model has `LargeDiT` as the backbone, the text encoder is the `LLaMa` 7B model, and the VAE uses a version of `sdxl` fine-tuned by stabilityai.
+
+- Generation Model: Large-DiT
+- Text Encoder: LLaMa-7B
+- VAE: stabilityai/sd-vae-ft-sdxl
+
 ## 📰 News
 
 - [2024-4-1] 🚀🚀🚀 We release the initial version of Lumina-T2I for text-to-image generation
@@ -18,12 +24,6 @@ More checkpoints of our model will be released soon~
 | Resolution | Flag-DiT Parameter| Text Encoder | Prediction | Download URL  |
 | ---------- | ----------------------- | ------------ | -----------|-------------- |
 | 1024       | 5B             |    LLaMa-7B  |   Rectified Flow | [hugging face](https://huggingface.co/Alpha-VLLM/Lumina-T2X/tree/main/Lumina-T2I/5B/1024px) |
-
-Using git for cloning the model you want to use:
-
-```bash
-git clone https://huggingface.co/Alpha-VLLM/Lumina-T2X
-```
 
 ## Installation
 
@@ -111,17 +111,33 @@ To ensure that our generative model is ready to use right out of the box, we pro
 pip install -e .
 ```
 
-2. Setting your personal inference configuration
+2. Prepare the pretrained model
+
+⭐⭐ (Recommanded) you can use huggingface_cli downloading our model:
+
+```bash
+huggingface-cli download --resume-download Alpha-VLLM/Lumina-T2I --local-dir /path/to/ckpt
+```
+
+or using git for cloning the model you want to use:
+
+```bash
+git clone https://huggingface.co/Alpha-VLLM/Lumina-T2I
+``` 
+
+1. Setting your personal inference configuration
 
 Update your own personal inference settings to generate different styles of images, checking `config/infer/config.yaml` for detailed settings. Detailed config structure:
+
+> `/path/to/ckpt` should be a directory containing `consolidated*.pth` and `model_args.pth`
 
 ```yaml
 - settings:
 
   model:
-    ckpt: ""
-    ckpt_lm: ""
-    token: ""
+    ckpt: "/path/to/ckpt"           # if ckpt is "", you should use `--ckpt` for passing model path when using `lumina` cli.
+    ckpt_lm: ""                     # if ckpt is "", you should use `--ckpt_lm` for passing model path when using `lumina` cli.
+    token: ""                       # if LLM is a huggingface gated repo, you should input your access token from huggingface and when token is "", you should `--token` for accessing the model.
 
   transport:
     path_type: "Linear"             # option: ["Linear", "GVP", "VP"]
