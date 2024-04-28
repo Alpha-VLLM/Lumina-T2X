@@ -3,7 +3,7 @@
  <br>
 </p> -->
 
-# $\textbf{Lumina-T2X}$: Transform Text into Any Modality, Res. and Duration via Flow-based Large Diffusion Transformer
+# $\textbf{Lumina-T2X}$: Transform Text into Any Modality, Resolution and Duration via Flow-based Large Diffusion Transformer
 
 [![GitHub repo contributors](https://img.shields.io/github/contributors-anon/Alpha-VLLM/Lumina-T2X?style=flat&label=Contributors)](https://github.com/Alpha-VLLM/Lumina-T2X/graphs/contributors) 
 [![GitHub Commit](https://img.shields.io/github/commit-activity/m/Alpha-VLLM/Lumina-T2X?label=Commit)](https://github.com/Alpha-VLLM/Lumina-T2X/commits/main/)
