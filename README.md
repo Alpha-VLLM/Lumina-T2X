@@ -54,11 +54,7 @@ For training and inference, please refer to [Lumina-T2I README.md](./lumina_t2i/
 
 ## Introduction
 
-We introduce the $\textbf{Lumina-T2X}$ family, a series of text-conditioned Diffusion Transformers (DiT) capable of transforming textual descriptions into vivid images, dynamic videos, detailed multi-view 3D images, and synthesized speech. At the core of Lumina-T2X lies the **Flow-based Large Diffusion Transformer (Flag-DiT)**—a robust engine that supports up to **7 billion parameters** and extends sequence lengths to **128,000** tokens. Drawing inspiration from Sora, Lumina-T2X integrates images, videos, multi-views of 3D objects, and speech spectrograms within a spatial-temporal latent token space. 
-
-Importantly, $\textbf{Lumina-T2X}$ allows for the generation of outputs in **any resolution, aspect ratio, and duration**, facilitated by specialized learnable tokens like `newline` and `newframe`.
-
-Furthermore, $\textbf{Lumina-T2X}$ achieves substantial computational efficiency — our model with 5 billion parameters only requires **20% of the training time** compared to Pixart-alpha's 600 million parameters.
+We introduce the $\textbf{Lumina-T2X}$ family, a series of text-conditioned Diffusion Transformers (DiT) capable of transforming textual descriptions into vivid images, dynamic videos, detailed multi-view 3D images, and synthesized speech. At the core of Lumina-T2X lies the **Flow-based Large Diffusion Transformer (Flag-DiT)**—a robust engine that supports up to **7 billion parameters** and extends sequence lengths to **128,000** tokens. Drawing inspiration from Sora, Lumina-T2X integrates images, videos, multi-views of 3D objects, and speech spectrograms within a spatial-temporal latent token space, and can generate outputs in **any resolution, aspect ratio, and duration**.
 
 🌟 **Features**:
 - Flow-based Large Diffusion Transformer (Flag-DiT): Lumina-T2X is trained with the **flow matching objective** and is equipped with many techniques, such as RoPE, RMSNorm, and KQ-norm, **demonstrating faster training convergence, stable training dynamics, and a simplified pipeline**.
