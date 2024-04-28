@@ -3,7 +3,7 @@
  <br>
 </p> -->
 
-# $\textbf{Lumina-T2X}$: Transform Text into Any Modality, Resolution and Duration via Flow-based Large Diffusion Transformer
+# $\textbf{Lumina-T2X}$: Transform Text into Any Modality, Resolution, and Duration via Flow-based Large Diffusion Transformers
 
 [![GitHub repo contributors](https://img.shields.io/github/contributors-anon/Alpha-VLLM/Lumina-T2X?style=flat&label=Contributors)](https://github.com/Alpha-VLLM/Lumina-T2X/graphs/contributors) 
 [![GitHub Commit](https://img.shields.io/github/commit-activity/m/Alpha-VLLM/Lumina-T2X?label=Commit)](https://github.com/Alpha-VLLM/Lumina-T2X/commits/main/)
@@ -21,14 +21,14 @@
 
 ## 📰 News
 
-- **[2024-04-25]** 🔥🔥🔥 **Support 720P video generation with arbitary aspect ratio. [Demo](#text-to-video-generation)** 🚀🚀🚀
+- **[2024-04-25]** 🔥🔥🔥 **Support 720P video generation with arbitrary aspect ratio. [Demo](#text-to-video-generation)** 🚀🚀🚀
 - [2024-04-19] 🔥🔥🔥 Demo released.
 - [2024-04-05] 😆😆😆 Code released for Lumina-T2I.
 - [2024-04-01] 🚀🚀🚀 We release the initial version of Lumina-T2I for text-to-image generation.
 
 ## 🚀 Quick Start
 
-For more about training and inference, please refer to [Lumina-T2I README.md](./lumina_t2i/README.md#Installation)
+For training and inference, please refer to [Lumina-T2I README.md](./lumina_t2i/README.md#Installation)
 
 ## 📑 Open-source Plan
 
@@ -54,19 +54,14 @@ For more about training and inference, please refer to [Lumina-T2I README.md](./
 
 ## Introduction
 
-We introduce the $\textbf{Lumina-T2X}$ family, a series of text-conditioned Diffusion Transformers (DiT) designed to convert noise into images, videos, and multi-view images of 3D objects and generate speech based on textual instructions. At the core of Lumina-T2X lies the Flow-based Large Diffusion Transformer (Flag-DiT), which supports **scaling up to 7 billion parameters** and **extending sequence lengths up to 128,000**. Inspired by Sora, Lumina-T2X integrates images, videos, multi-views of 3D objects, and speech spectrograms within a spatial-temporal latent token space. 
-
-$\textbf{Lumina-T2X}$ allows for the generation of outputs in **any resolution, aspect ratio, and duration**, facilitated by learnable `newline` and `newframe` tokens.
-
-Furthermore, training $\textbf{Lumina-T2X}$ is computationally efficient. The largest model, with 5 billion parameters, **requires only 20% of the training time needed** for Pixart-alpha, which has 600 million parameters.
+We introduce the $\textbf{Lumina-T2X}$ family, a series of text-conditioned Diffusion Transformers (DiT) capable of transforming textual descriptions into vivid images, dynamic videos, detailed multi-view 3D images, and synthesized speech. At the core of Lumina-T2X lies the **Flow-based Large Diffusion Transformer (Flag-DiT)**—a robust engine that supports up to **7 billion parameters** and extends sequence lengths to **128,000** tokens. Drawing inspiration from Sora, Lumina-T2X integrates images, videos, multi-views of 3D objects, and speech spectrograms within a spatial-temporal latent token space, and can generate outputs at **any resolution, aspect ratio, and duration**.
 
 🌟 **Features**:
-- Flow-based Large Diffusion Transformer (Flag-DiT): Lumina-T2X is trained **with the flow matching object**. To increase training stability and model scalability, we support many techniques, such as RoPE, RMSNorm, and KQ-norm, **demonstrating faster training convergence, stable training dynamics, and a simplified pipeline**.
-- Any Modalities, Res., and Duration within One Framework: 
-  1. Lumina-T2X tokenizes images, videos, multi-views of 3D objects, and spectrograms into one-dimensional sequences. 
-  2. Lumina-T2X can naturally **encode any modality—regardless of resolution, aspect ratios, and temporal durations into a unified 1-D token sequence** akin to LLMs, by utilizing Flag-DiT with text conditioning to iteratively transform noise into outputs across any modality, resolution, and duration during inference time. 
-  3. Due to the use of `nextline` and `nextframe` tokens, our model can **support resolution extrapolation**, which allows the generation of resolutions out-of-domain that **were unseen during training**.
-- Low Training Resources: increasing token length in transformers extends iteration times but **reduces overall training duration by decreasing the number of iterations needed**. Moreover, our Lumina-T2X model can generate high-resolution images and coherent videos **with minimal computational demands**. Remarkably, the default Lumina-T2I configuration, equipped with a 5B Flag-DiT and a 7B LLaMA as text encoder, **requires only 20% of the computational resources needed by Pixelart-**$\alpha$.
+- Flow-based Large Diffusion Transformer (Flag-DiT): Lumina-T2X is trained with the **flow matching objective** and is equipped with many techniques, such as RoPE, RMSNorm, and KQ-norm, **demonstrating faster training convergence, stable training dynamics, and a simplified pipeline**.
+- Any Modalities, Resolution, and Duration within one framework: 
+  1. $\textbf{Lumina-T2X}$ can **encode any modality, including mages, videos, multi-views of 3D objects, and spectrograms into a unified 1-D token sequence at any resolution, aspect ratios, and temporal durations.**
+  2. By introducing the `nextline` and `nextframe` tokens, our model can **support resolution extrapolation**, i.e., generating images/videos with out-of-domain resolutions **not encountered during training**.
+- Low Training Resources: Despite increasing token length, which generally extends iteration times, our Large-DiT reduces the total number of training iterations needed, thus **minimizing overall training time** and computational resources. Moreover, by employing meticulously curated text-image and text-video pairs featuring high aesthetic quality frames and detailed captions, our $\textbf{Lumina-T2X}$ model can generate high-resolution images and coherent videos with minimal computational demands. Remarkably, the default Lumina-T2I configuration, equipped with a 5B Flag-DiT and a 7B LLaMA as the text encoder, **requires only 20% of the computational resources needed by Pixelart-**$\alpha$.
 
 ![framework](https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/60d2f248-67b1-43ef-a530-c75530cf26c5)
 
