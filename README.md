@@ -30,8 +30,8 @@
 
 ## 📰 News
 - **[2024-04-29]** 🔥🔥🔥 **We released the 5B model [checkpoint](https://huggingface.co/Alpha-VLLM/Lumina-T2I) and a [GUI demo](https://lumina.sylin.host/) built upon it for text-to-image generation.**
-- **[2024-04-25]** 🔥🔥🔥 **Support 720P video generation with arbitrary aspect ratio. [Demo](#text-to-video-generation)** 🚀🚀🚀
-- [2024-04-19] 🔥🔥🔥 Demo released.
+- **[2024-04-25]** 🔥🔥🔥 **Support 720P video generation with arbitrary aspect ratio. [Examples](#text-to-video-generation)** 🚀🚀🚀
+- [2024-04-19] 🔥🔥🔥 Demo examples released.
 - [2024-04-05] 😆😆😆 Code released for Lumina-T2I.
 - [2024-04-01] 🚀🚀🚀 We release the initial version of Lumina-T2I for text-to-image generation.
 
@@ -41,7 +41,7 @@ For training and inference, please refer to [Lumina-T2I README.md](./lumina_t2i/
 
 ## 📑 Open-source Plan
 
-- [x] Lumina-T2I (Training, Inference)
+- [x] Lumina-T2I (Training, Inference, Checkpoints)
 - [ ] Lumina-T2V
 - [x] Web Demo
 - [x] Cli Demo
@@ -54,11 +54,11 @@ For training and inference, please refer to [Lumina-T2I README.md](./lumina_t2i/
   - [📑 Open-source Plan](#-open-source-plan)
   - [📜 Index of Content](#-index-of-content)
   - [Introduction](#introduction)
-  - [📽️ Demos](#️-demos)
+  - [📽️ Demo Examples](#️-demo-examples)
     - [Text-to-Image Generation](#text-to-image-generation)
     - [Text-to-Video Generation](#text-to-video-generation)
     - [Text-to-3D Generation](#text-to-3d-generation)
-    - [More demos](#more-demos)
+    - [More examples](#more-examples)
   - [⚙️ Diverse Configurations](#️-diverse-configurations)
 
 ## Introduction
@@ -74,7 +74,7 @@ We introduce the $\textbf{Lumina-T2X}$ family, a series of text-conditioned Diff
 
 ![framework](https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/60d2f248-67b1-43ef-a530-c75530cf26c5)
 
-## 📽️ Demos
+## 📽️ Demo Examples
 
 ### Text-to-Image Generation
 
@@ -106,7 +106,7 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/d7fec32c-3655-4fd1-aa14
 
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/cd061b8d-c47b-4c0c-b775-2cbaf8014be9
 
-### More demos
+### More examples
 
 For more demos visit [this website](https://lumina-t2-x-web.vercel.app)
 <!-- ### High-res. Image Editing
