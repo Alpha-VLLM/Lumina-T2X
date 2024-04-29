@@ -20,7 +20,7 @@
 <!-- [![GitHub closed issues](https://img.shields.io/github/issues-closed/Alpha-VLLM/Lumina-T2X?color=success&label=Issues)](https://github.com/PKU-YuanGroup/Video-LLaVA/issues?q=is%3Aissue+is%3Aclosed) <br> -->
 <!-- [![GitHub repo forks](https://img.shields.io/github/forks/Alpha-VLLM/Lumina-T2X?style=flat&logo=github&logoColor=whitesmoke&label=Forks)](https://github.com/Alpha-VLLM/Lumina-T2X/network)&#160; -->
 
-[[🤖️ Lumina-T2I Model](https://huggingface.co/Alpha-VLLM/Lumina-T2I)] [[🎮 Demo](https://lumina.sylin.host/)]
+[[🤖️ Lumina-T2I Checkpoints](https://huggingface.co/Alpha-VLLM/Lumina-T2I)] [[🎮 GUI Demo](https://lumina.sylin.host/)]
 
 </div>
 
@@ -29,7 +29,7 @@
 <!-- [[中文版本]](./README_cn.md) -->
 
 ## 📰 News
-
+- **[2024-04-29]** 🔥🔥🔥 **We released the 5B model [checkpoint](https://huggingface.co/Alpha-VLLM/Lumina-T2I) and a [GUI demo](https://lumina.sylin.host/) built upon it for text-to-image generation.**
 - **[2024-04-25]** 🔥🔥🔥 **Support 720P video generation with arbitrary aspect ratio. [Demo](#text-to-video-generation)** 🚀🚀🚀
 - [2024-04-19] 🔥🔥🔥 Demo released.
 - [2024-04-05] 😆😆😆 Code released for Lumina-T2I.
