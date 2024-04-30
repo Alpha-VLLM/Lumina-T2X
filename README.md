@@ -43,6 +43,7 @@ For training and inference, please refer to [Lumina-T2I README.md](./lumina_t2i/
 
 - [x] Lumina-T2I (Training, Inference, Checkpoints)
 - [ ] Lumina-T2V
+- [ ] Training Code
 - [x] Web Demo
 - [x] Cli Demo
 
@@ -67,7 +68,7 @@ We introduce the $\textbf{Lumina-T2X}$ family, a series of text-conditioned Diff
 
 🌟 **Features**:
 - **Flow-based Large Diffusion Transformer (Flag-DiT)**: Lumina-T2X is trained with the **flow matching objective** and is equipped with many techniques, such as RoPE, RMSNorm, and KQ-norm, **demonstrating faster training convergence, stable training dynamics, and a simplified pipeline**.
-- **Any Modalities, Resolution, and Duration within one framework**: 
+- **Any Modalities, Aspect, and Duration within one framework**: 
   1. $\textbf{Lumina-T2X}$ can **encode any modality, including mages, videos, multi-views of 3D objects, and spectrograms into a unified 1-D token sequence at any resolution, aspect ratio, and temporal duration.**
   2. By introducing the `nextline` and `nextframe` tokens, our model can **support resolution extrapolation**, i.e., generating images/videos with out-of-domain resolutions **not encountered during training**.
 - **Low Training Resources**: Despite increasing token length, which generally extends training time, our Large-DiT reduces the total number of training iterations needed, thus **minimizing overall training time** and computational resources. Moreover, by employing meticulously curated text-image and text-video pairs featuring high aesthetic quality frames and detailed captions, our $\textbf{Lumina-T2X}$ model is learned to generate high-resolution images and coherent videos with minimal computational demands. Remarkably, the default Lumina-T2I configuration, equipped with a 5B Flag-DiT and a 7B LLaMA as the text encoder, **requires only 20% of the computational resources needed by Pixelart-**$\alpha$.
