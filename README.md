@@ -20,7 +20,9 @@
 <!-- [![GitHub closed issues](https://img.shields.io/github/issues-closed/Alpha-VLLM/Lumina-T2X?color=success&label=Issues)](https://github.com/PKU-YuanGroup/Video-LLaVA/issues?q=is%3Aissue+is%3Aclosed) <br> -->
 <!-- [![GitHub repo forks](https://img.shields.io/github/forks/Alpha-VLLM/Lumina-T2X?style=flat&logo=github&logoColor=whitesmoke&label=Forks)](https://github.com/Alpha-VLLM/Lumina-T2X/network)&#160; -->
 
-[[🤖️ Lumina-T2I Checkpoints](https://huggingface.co/Alpha-VLLM/Lumina-T2I)] [[🎮 GUI Demo](https://lumina.sylin.host/)]
+[[🤖️ Lumina-T2I Checkpoints](https://huggingface.co/Alpha-VLLM/Lumina-T2I)] 
+
+<!-- [[🎮 GUI Demo](https://lumina.sylin.host/)] -->
 
 </div>
 
