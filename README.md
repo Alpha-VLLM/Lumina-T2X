@@ -29,7 +29,7 @@
 <!-- [[中文版本]](./README_cn.md) -->
 
 ## 📰 News
-- **[2024-04-29]** 🔥🔥🔥 **We released the 5B model [checkpoint](https://huggingface.co/Alpha-VLLM/Lumina-T2I) and a [GUI demo](https://lumina.sylin.host/) built upon it for text-to-image generation.**
+- **[2024-04-29]** 🔥🔥🔥 **We released the 5B model [checkpoint](https://huggingface.co/Alpha-VLLM/Lumina-T2I) built upon it for text-to-image generation.**
 - **[2024-04-25]** 🔥🔥🔥 **Support 720P video generation with arbitrary aspect ratio. [Examples](#text-to-video-generation)** 🚀🚀🚀
 - [2024-04-19] 🔥🔥🔥 Demo examples released.
 - [2024-04-05] 😆😆😆 Code released for Lumina-T2I.
@@ -44,7 +44,7 @@ For training and inference, please refer to [Lumina-T2I README.md](./lumina_t2i/
 - [x] Lumina-T2I (Training, Inference, Checkpoints)
 - [ ] Lumina-T2V
 - [ ] Training Code
-- [x] Web Demo
+- [ ] Web Demo
 - [x] Cli Demo
 
 ## 📜 Index of Content
