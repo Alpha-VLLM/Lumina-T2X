@@ -115,7 +115,7 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/cd061b8d-c47b-4c0c-b775
 > [!Note]
 > **Attention: Mouse over the playbar and click the audio button on the playbar to unmute it.**
 >
-> 🌟🌟🌟 **We recommend visiting the Lumina Website to try it out! [🌟 visit](https://https://lumina-t2-x-web.vercel.app/docs/demos/demo-of-audio)**
+> 🌟🌟🌟 **We recommend visiting the Lumina Website to try it out! [🌟 visit](https://lumina-t2-x-web.vercel.app/docs/demos/demo-of-audio)**
 
 **Prompt:** Semiautomatic gunfire occurs with slight echo
 
@@ -123,7 +123,7 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/cd061b8d-c47b-4c0c-b775
 
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/25f2a6a8-0386-41e8-ab10-d1303554b944
 
-**Generated Audio Groundtruth:**
+**Groundtruth:**
 
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/6722a68a-1a5a-4a44-ba9c-405372dc27ef
 
@@ -133,7 +133,7 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/6722a68a-1a5a-4a44-ba9c
 
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/7467dd6d-b163-4436-ac5b-36662d1f9ddf
 
-**Generated Audio Groundtruth:**
+**Groundtruth:**
 
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/703ea405-6eb4-4161-b5ff-51a93f81d013
 
@@ -201,11 +201,11 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/da93e13d-6462-48d2-b6dc
 
 -->
 
-For more audio demos visit [lumina website - audio demos](https://lumina-t2-x-web.vercel.app)
+For more audio demos visit [lumina website - audio demos](https://lumina-t2-x-web.vercel.app/docs/demos/demo-of-audio)
 
 ### More examples
 
-For more demos visit [this website](https://lumina-t2-x-web.vercel.app)
+For more demos visit [this website](https://lumina-t2-x-web.vercel.app/docs/demos)
 <!-- ### High-res. Image Editing
 
 <p align="center">
