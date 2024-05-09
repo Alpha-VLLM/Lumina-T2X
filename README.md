@@ -15,14 +15,13 @@
 [![GitHub repo watchers](https://img.shields.io/github/watchers/Alpha-VLLM/Lumina-T2X?style=flat&logo=github&logoColor=whitesmoke&label=Watchers)](https://github.com/Alpha-VLLM/Lumina-T2X/watchers)&#160;
 [![GitHub repo size](https://img.shields.io/github/repo-size/Alpha-VLLM/Lumina-T2X?style=flat&logo=github&logoColor=whitesmoke&label=Repo%20Size)](https://github.com/Alpha-VLLM/Lumina-T2X/archive/refs/heads/main.zip)
 ![Static Badge](https://img.shields.io/badge/-MIT-MIT?logoColor=%231082c3&label=Code%20License&link=https%3A%2F%2Fgithub.com%2FAlpha-VLLM%2FLumina-T2X%2Fblob%2Fmain%2FLICENSE)
-<!-- [![Static Badge](https://img.shields.io/badge/Demo-6B88E3?logo=youtubegaming&logoColor=DAE4EE)](https://lumina.sylin.host/) -->
+[![Static Badge](https://img.shields.io/badge/Demo-6B88E3?logo=youtubegaming&logoColor=DAE4EE)](https://lumina.sylin.host/)
 <!-- [![GitHub issues](https://img.shields.io/github/issues/Alpha-VLLM/Lumina-T2X?color=critical&label=Issues)](https://github.com/PKU-YuanGroup/Video-LLaVA/issues?q=is%3Aopen+is%3Aissue) -->
 <!-- [![GitHub closed issues](https://img.shields.io/github/issues-closed/Alpha-VLLM/Lumina-T2X?color=success&label=Issues)](https://github.com/PKU-YuanGroup/Video-LLaVA/issues?q=is%3Aissue+is%3Aclosed) <br> -->
 <!-- [![GitHub repo forks](https://img.shields.io/github/forks/Alpha-VLLM/Lumina-T2X?style=flat&logo=github&logoColor=whitesmoke&label=Forks)](https://github.com/Alpha-VLLM/Lumina-T2X/network)&#160; -->
 
 [[🤖️ Lumina-T2I Checkpoints](https://huggingface.co/Alpha-VLLM/Lumina-T2I)] 
-
-<!-- [[🎮 GUI Demo](https://lumina.sylin.host/)] -->
+[[🎮 GUI Demo](https://lumina.sylin.host/)]
 
 </div>
 
@@ -31,7 +30,7 @@
 <!-- [[中文版本]](./README_cn.md) -->
 
 ## 📰 News
-- **[2024-04-29]** 🔥🔥🔥 **We released the 5B model [checkpoint](https://huggingface.co/Alpha-VLLM/Lumina-T2I) built upon it for text-to-image generation.**
+- **[2024-04-29]** 🔥🔥🔥 **We released the 5B model [checkpoint](https://huggingface.co/Alpha-VLLM/Lumina-T2I) and [demo](https://lumina.sylin.host) built upon it for text-to-image generation.**
 - **[2024-04-25]** 🔥🔥🔥 **Support 720P video generation with arbitrary aspect ratio. [Examples](#text-to-video-generation)** 🚀🚀🚀
 - [2024-04-19] 🔥🔥🔥 Demo examples released.
 - [2024-04-05] 😆😆😆 Code released for Lumina-T2I.
@@ -46,7 +45,7 @@ For training and inference, please refer to [Lumina-T2I README.md](./lumina_t2i/
 - [x] Lumina-T2I (Training, Inference, Checkpoints)
 - [ ] Lumina-T2V
 - [ ] Training Code
-- [ ] Web Demo
+- [x] Web Demo
 - [x] Cli Demo
 
 ## 📜 Index of Content
