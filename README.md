@@ -21,8 +21,8 @@
 <!-- [![GitHub repo forks](https://img.shields.io/github/forks/Alpha-VLLM/Lumina-T2X?style=flat&logo=github&logoColor=whitesmoke&label=Forks)](https://github.com/Alpha-VLLM/Lumina-T2X/network)&#160; -->
 
 [[🤖️ Lumina-T2I Checkpoints](https://huggingface.co/Alpha-VLLM/Lumina-T2I)]
-[[📺 Website](https://lumina-t2-x-web.vercel.app/)]
 [[🎮 GUI Demo](https://lumina.sylin.host/)]
+<!-- [[📺 Website](https://lumina-t2-x-web.vercel.app/)] -->
 
 </div>
 
@@ -115,7 +115,7 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/cd061b8d-c47b-4c0c-b775
 > [!Note]
 > **Attention: Mouse over the playbar and click the audio button on the playbar to unmute it.**
 >
-> 🌟🌟🌟 **We recommend visiting the Lumina Website to try it out! [🌟 visit](https://lumina-t2-x-web.vercel.app/docs/demos/demo-of-audio)**
+<!-- > 🌟🌟🌟 **We recommend visiting the Lumina website to try it out! [🌟 visit](https://lumina-t2-x-web.vercel.app/docs/demos/demo-of-audio)** -->
 
 **Prompt:** Semiautomatic gunfire occurs with slight echo
 
@@ -137,7 +137,7 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/7467dd6d-b163-4436-ac5b
 
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/703ea405-6eb4-4161-b5ff-51a93f81d013
 
-<!--
+
 **Prompt:** An engine running followed by the engine revving and tires screeching
 
 **Generated Audio:**
@@ -158,7 +158,7 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/b776aacb-783b-4f47-bf74
 
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/a11333e4-695e-4a8c-8ea1-ee5b83e34682
 
-
+<!--
 **Prompt:** Water trickling rapidly and draining
 
 **Generated Audio:**
@@ -201,11 +201,11 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/da93e13d-6462-48d2-b6dc
 
 -->
 
-For more audio demos visit [lumina website - audio demos](https://lumina-t2-x-web.vercel.app/docs/demos/demo-of-audio)
+<!-- For more audio demos visit [lumina website - audio demos](https://lumina-t2-x-web.vercel.app/docs/demos/demo-of-audio) -->
 
 ### More examples
 
-For more demos visit [this website](https://lumina-t2-x-web.vercel.app/docs/demos)
+<!-- For more demos visit [this website](https://lumina-t2-x-web.vercel.app/docs/demos) -->
 <!-- ### High-res. Image Editing
 
 <p align="center">
