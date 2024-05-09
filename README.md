@@ -3,7 +3,7 @@
  <br>
 </p> -->
 
-# $\textbf{Lumina-T2X}$: Transform Text into Any Modality, Resolution, and Duration via Flow-based Large Diffusion Transformers
+# $\textbf{Lumina-T2X}$: Transforming Text into Any Modality, Resolution, and Duration via Flow-based Large Diffusion Transformers
 
 <div align="center">
 
