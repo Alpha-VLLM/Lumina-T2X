@@ -113,13 +113,14 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/cd061b8d-c47b-4c0c-b775
 | Prompts | Generated Audio | Generated Audio Groundtruth |
 | -------- | -------- | -------- |
 | Semiautomatic gunfire occurs with slight echo     |      |      |
-| A telephone bell rings     |      |      |
+| A telephone bell rings     |  <audio controls="controls"><source src="assets/audios/a_telephone_bell_rings.wav" autoplay=""></audio>    |   <audio controls="controls"><source src="assets/audios/a_telephone_bell_rings_gt.wav" autoplay=""></audio>   |
 | An engine running followed by the engine revving and tires screeching     |      |      |
 | Birds chirping with insects buzzing and outdoor ambiance     |      |      |
 | Water trickling rapidly and draining     |      |      |
 | Thunderstorm sounds while raining     |      |      |
 | Birds chirping repeatedly     |      |      |
 | Several large bells ring     |      |      |
+
 
 
 ### More examples
