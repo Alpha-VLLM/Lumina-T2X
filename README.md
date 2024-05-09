@@ -110,18 +110,90 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/cd061b8d-c47b-4c0c-b775
 
 ### Text-to-Audio Generation
 
-| Prompts | Generated Audio | Generated Audio Groundtruth |
-| -------- | -------- | -------- |
-| Semiautomatic gunfire occurs with slight echo     |      |      |
-| A telephone bell rings     |  <audio controls="controls"><source src="assets/audios/a_telephone_bell_rings.wav" autoplay=""></audio>    |   <audio controls="controls"><source src="assets/audios/a_telephone_bell_rings_gt.wav" autoplay=""></audio>   |
-| An engine running followed by the engine revving and tires screeching     |      |      |
-| Birds chirping with insects buzzing and outdoor ambiance     |      |      |
-| Water trickling rapidly and draining     |      |      |
-| Thunderstorm sounds while raining     |      |      |
-| Birds chirping repeatedly     |      |      |
-| Several large bells ring     |      |      |
+> [!Note]
+> **Attention: Mouse over the playbar and click the audio button on the playbar to unmute it.**
 
+**Prompt:** Semiautomatic gunfire occurs with slight echo
 
+**Generated Audio:**
+
+https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/25f2a6a8-0386-41e8-ab10-d1303554b944
+
+**Generated Audio Groundtruth:**
+
+https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/6722a68a-1a5a-4a44-ba9c-405372dc27ef
+
+**Prompt:** A telephone bell rings
+
+**Generated Audio:**
+
+https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/7467dd6d-b163-4436-ac5b-36662d1f9ddf
+
+**Generated Audio Groundtruth:**
+
+https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/703ea405-6eb4-4161-b5ff-51a93f81d013
+
+**Prompt:** An engine running followed by the engine revving and tires screeching
+
+**Generated Audio:**
+
+https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/5d9dd431-b8b4-41a0-9e78-bb0a234a30b9
+
+**Generated Audio Groundtruth:**
+
+https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/9ca4af9e-cee3-4596-b826-d6c25761c3c1
+
+**Prompt:** Birds chirping with insects buzzing and outdoor ambiance
+
+**Generated Audio:**
+
+https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/b776aacb-783b-4f47-bf74-89671a17d38d
+
+**Generated Audio Groundtruth:**
+
+https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/a11333e4-695e-4a8c-8ea1-ee5b83e34682
+
+**Prompt:** Water trickling rapidly and draining
+
+**Generated Audio:**
+
+https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/88fcf0e1-b71a-4e94-b9a6-138db6a670f0
+
+**Generated Audio Groundtruth:**
+
+https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/6fb9963f-46a5-4020-b160-f9a004528d7e
+
+**Prompt:** Thunderstorm sounds while raining
+
+**Generated Audio:**
+
+https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/fad8baf3-d80b-4915-ba31-aab13db5ce06
+
+**Generated Audio Groundtruth:**
+
+https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/c01a7e6e-3421-4a28-93c5-831523ec061d
+
+**Prompt:** Birds chirping repeatedly
+
+**Generated Audio:**
+
+https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/0fa673a3-f9de-487b-8812-1f96a335e913
+
+**Generated Audio Groundtruth:**
+
+https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/718289f9-a93e-4ea9-b7db-a14c2b209b28
+
+**Prompt:** Several large bells ring
+
+**Generated Audio:**
+
+https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/362fde84-e4ae-4152-aeb5-4355155c8719
+
+**Generated Audio Groundtruth:**
+
+https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/da93e13d-6462-48d2-b6dc-af6ff0c4d07d
+
+For more audio demos visit [lumina website - audio demos](https://lumina-t2-x-web.vercel.app)
 
 ### More examples
 
