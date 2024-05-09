@@ -114,6 +114,8 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/cd061b8d-c47b-4c0c-b775
 
 > [!Note]
 > **Attention: Mouse over the playbar and click the audio button on the playbar to unmute it.**
+>
+> 🌟🌟🌟 **We recommend visiting the Lumina Website to try it out! [🌟 visit](https://https://lumina-t2-x-web.vercel.app/docs/demos/demo-of-audio)**
 
 **Prompt:** Semiautomatic gunfire occurs with slight echo
 
@@ -135,6 +137,7 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/7467dd6d-b163-4436-ac5b
 
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/703ea405-6eb4-4161-b5ff-51a93f81d013
 
+<!--
 **Prompt:** An engine running followed by the engine revving and tires screeching
 
 **Generated Audio:**
@@ -154,6 +157,7 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/b776aacb-783b-4f47-bf74
 **Generated Audio Groundtruth:**
 
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/a11333e4-695e-4a8c-8ea1-ee5b83e34682
+
 
 **Prompt:** Water trickling rapidly and draining
 
@@ -194,6 +198,8 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/362fde84-e4ae-4152-aeb5
 **Generated Audio Groundtruth:**
 
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/da93e13d-6462-48d2-b6dc-af6ff0c4d07d
+
+-->
 
 For more audio demos visit [lumina website - audio demos](https://lumina-t2-x-web.vercel.app)
 
