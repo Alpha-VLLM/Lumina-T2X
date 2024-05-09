@@ -108,6 +108,20 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/d7fec32c-3655-4fd1-aa14
 
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/cd061b8d-c47b-4c0c-b775-2cbaf8014be9
 
+### Text-to-Audio Generation
+
+| Prompts | Generated Audio | Generated Audio Groundtruth |
+| -------- | -------- | -------- |
+| Semiautomatic gunfire occurs with slight echo     |      |      |
+| A telephone bell rings     |      |      |
+| An engine running followed by the engine revving and tires screeching     |      |      |
+| Birds chirping with insects buzzing and outdoor ambiance     |      |      |
+| Water trickling rapidly and draining     |      |      |
+| Thunderstorm sounds while raining     |      |      |
+| Birds chirping repeatedly     |      |      |
+| Several large bells ring     |      |      |
+
+
 ### More examples
 
 For more demos visit [this website](https://lumina-t2-x-web.vercel.app)
