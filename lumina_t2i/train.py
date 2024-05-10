@@ -284,10 +284,10 @@ def main(args):
         "Image size must be divisible by 8 (for the VAE encoder)."
     )
     model = models.__dict__[args.model](
-        max_seq_len=args.max_seq_len,
         qk_norm=args.qk_norm,
         cap_feat_dim=cap_feat_dim,
         rope_scaling_factor=args.rope_scaling_factor,
+        ntk_factor=args.ntk_factor
     )
     logger.info(f"DiT Parameters: {model.parameter_count():,}")
     model_patch_size = model.patch_size
