@@ -45,7 +45,7 @@
 
 - **[2024-05-10]** 🔥🔥🔥 **We released the technical report on [arXiv](https://arxiv.org/abs/2405.05945).**
 - **[2024-05-09]** 🚀🚀🚀 **We released Lumina-T2A (Text-to-Audio) Demos. [Examples](#text-to-audio-generation)**
-- **[2024-04-29]** 🔥🔥🔥 **We released the 5B model [checkpoint](https://huggingface.co/Alpha-VLLM/Lumina-T2I) and [demo](https://lumina.sylin.host) built upon it for text-to-image generation.**
+- **[2024-04-29]** 🔥🔥🔥 **We released the 5B model [checkpoint](https://huggingface.co/Alpha-VLLM/Lumina-T2I) and [demo](http://106.14.2.150:10023/) built upon it for text-to-image generation.**
 - **[2024-04-25]** 🔥🔥🔥 **Support 720P video generation with arbitrary aspect ratio. [Examples](#text-to-video-generation)** 🚀🚀🚀
 - [2024-04-19] 🔥🔥🔥 Demo examples released.
 - [2024-04-05] 😆😆😆 Code released for Lumina-T2I.
