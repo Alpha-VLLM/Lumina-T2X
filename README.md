@@ -16,7 +16,7 @@
 [![GitHub repo size](https://img.shields.io/github/repo-size/Alpha-VLLM/Lumina-T2X?style=flat&logo=github&logoColor=whitesmoke&label=Repo%20Size)](https://github.com/Alpha-VLLM/Lumina-T2X/archive/refs/heads/main.zip)&#160;
 ![Static Badge](https://img.shields.io/badge/-MIT-MIT?logoColor=%231082c3&label=Code%20License&link=https%3A%2F%2Fgithub.com%2FAlpha-VLLM%2FLumina-T2X%2Fblob%2Fmain%2FLICENSE)
 [![Static Badge](https://img.shields.io/badge/Demo-6B88E3?logo=youtubegaming&logoColor=DAE4EE)](https://lumina.sylin.host/)&#160;
-[![Static Badge](https://img.shields.io/badge/Video%20Introduction-test?logo=youtube&color=red&link=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DKFtHmS5eUCM)](https://www.youtube.com/watch?v=KFtHmS5eUCM)
+[![Static Badge](https://img.shields.io/badge/Video%20Introduction%20of%20Lumina--T2X-test?logo=youtube&color=red&link=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DKFtHmS5eUCM)](https://www.youtube.com/watch?v=KFtHmS5eUCM)
 
 <!-- [![GitHub issues](https://img.shields.io/github/issues/Alpha-VLLM/Lumina-T2X?color=critical&label=Issues)](https://github.com/PKU-YuanGroup/Video-LLaVA/issues?q=is%3Aopen+is%3Aissue) -->
 
@@ -25,7 +25,7 @@
 <!-- [![GitHub repo forks](https://img.shields.io/github/forks/Alpha-VLLM/Lumina-T2X?style=flat&logo=github&logoColor=whitesmoke&label=Forks)](https://github.com/Alpha-VLLM/Lumina-T2X/network)  -->
 
 [[📄 Lumina-T2X arXiv](https://arxiv.org/abs/2405.05945)]
-[[📽️ Video Instruction](https://www.youtube.com/watch?v=KFtHmS5eUCM)]
+[[📽️ Video Introduction of Lumina-T2X](https://www.youtube.com/watch?v=KFtHmS5eUCM)]
 [[🤖️ Lumina-T2I Checkpoints](https://huggingface.co/Alpha-VLLM/Lumina-T2I)]
 [[🎮 GUI Demo](https://lumina.sylin.host/)]
 
