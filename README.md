@@ -7,7 +7,7 @@
 
 <div align="center">
 
-[![GitHub repo contributors](https://img.shields.io/github/contributors-anon/Alpha-VLLM/Lumina-T2X?style=flat&label=Contributors)](https://github.com/Alpha-VLLM/Lumina-T2X/graphs/contributors) 
+[![GitHub repo contributors](https://img.shields.io/github/contributors-anon/Alpha-VLLM/Lumina-T2X?style=flat&label=Contributors)](https://github.com/Alpha-VLLM/Lumina-T2X/graphs/contributors)
 [![GitHub Commit](https://img.shields.io/github/commit-activity/m/Alpha-VLLM/Lumina-T2X?label=Commit)](https://github.com/Alpha-VLLM/Lumina-T2X/commits/main/)
 [![Pr](https://img.shields.io/github/issues-pr-closed-raw/Alpha-VLLM/Lumina-T2X.svg?label=Merged+PRs&color=green)](https://github.com/Alpha-VLLM/Lumina-T2X/pulls)
 
@@ -16,12 +16,18 @@
 [![GitHub repo size](https://img.shields.io/github/repo-size/Alpha-VLLM/Lumina-T2X?style=flat&logo=github&logoColor=whitesmoke&label=Repo%20Size)](https://github.com/Alpha-VLLM/Lumina-T2X/archive/refs/heads/main.zip)
 ![Static Badge](https://img.shields.io/badge/-MIT-MIT?logoColor=%231082c3&label=Code%20License&link=https%3A%2F%2Fgithub.com%2FAlpha-VLLM%2FLumina-T2X%2Fblob%2Fmain%2FLICENSE)
 [![Static Badge](https://img.shields.io/badge/Demo-6B88E3?logo=youtubegaming&logoColor=DAE4EE)](https://lumina.sylin.host/)
+
 <!-- [![GitHub issues](https://img.shields.io/github/issues/Alpha-VLLM/Lumina-T2X?color=critical&label=Issues)](https://github.com/PKU-YuanGroup/Video-LLaVA/issues?q=is%3Aopen+is%3Aissue) -->
+
 <!-- [![GitHub closed issues](https://img.shields.io/github/issues-closed/Alpha-VLLM/Lumina-T2X?color=success&label=Issues)](https://github.com/PKU-YuanGroup/Video-LLaVA/issues?q=is%3Aissue+is%3Aclosed) <br> -->
-<!-- [![GitHub repo forks](https://img.shields.io/github/forks/Alpha-VLLM/Lumina-T2X?style=flat&logo=github&logoColor=whitesmoke&label=Forks)](https://github.com/Alpha-VLLM/Lumina-T2X/network)&#160; -->
+
+<!-- [![GitHub repo forks](https://img.shields.io/github/forks/Alpha-VLLM/Lumina-T2X?style=flat&logo=github&logoColor=whitesmoke&label=Forks)](https://github.com/Alpha-VLLM/Lumina-T2X/network)  -->
+
+[[📄 Lumina-T2X arXiv](https://arxiv.org/abs/2405.05945)]
 
 [[🤖️ Lumina-T2I Checkpoints](https://huggingface.co/Alpha-VLLM/Lumina-T2I)]
 [[🎮 GUI Demo](https://lumina.sylin.host/)]
+
 <!-- [[📺 Website](https://lumina-t2-x-web.vercel.app/)] -->
 
 </div>
@@ -31,6 +37,8 @@
 <!-- [[中文版本]](./README_cn.md) -->
 
 ## 📰 News
+
+- **[2024-05-10]** 🔥🔥🔥 **We released the technical report on [arXiv](https://arxiv.org/abs/2405.05945).**
 - **[2024-05-09]** 🚀🚀🚀 **We released Lumina-T2A (Text-to-Audio) Demos. [Examples](#text-to-audio-generation)**
 - **[2024-04-29]** 🔥🔥🔥 **We released the 5B model [checkpoint](https://huggingface.co/Alpha-VLLM/Lumina-T2I) and [demo](https://lumina.sylin.host) built upon it for text-to-image generation.**
 - **[2024-04-25]** 🔥🔥🔥 **Support 720P video generation with arbitrary aspect ratio. [Examples](#text-to-video-generation)** 🚀🚀🚀
@@ -44,11 +52,11 @@ For training and inference, please refer to [Lumina-T2I README.md](./lumina_t2i/
 
 ## 📑 Open-source Plan
 
-- [x] Lumina-T2I (Training, Inference, Checkpoints)
+- [X] Lumina-T2I (Training, Inference, Checkpoints)
 - [ ] Lumina-T2V
 - [ ] Training Code
-- [x] Web Demo
-- [x] Cli Demo
+- [X] Web Demo
+- [X] Cli Demo
 
 ## 📜 Index of Content
 
@@ -70,8 +78,9 @@ For training and inference, please refer to [Lumina-T2I README.md](./lumina_t2i/
 We introduce the $\textbf{Lumina-T2X}$ family, a series of text-conditioned Diffusion Transformers (DiT) capable of transforming textual descriptions into vivid images, dynamic videos, detailed multi-view 3D images, and synthesized speech. At the core of Lumina-T2X lies the **Flow-based Large Diffusion Transformer (Flag-DiT)**—a robust engine that supports up to **7 billion parameters** and extends sequence lengths to **128,000** tokens. Drawing inspiration from Sora, Lumina-T2X integrates images, videos, multi-views of 3D objects, and speech spectrograms within a spatial-temporal latent token space, and can generate outputs at **any resolution, aspect ratio, and duration**.
 
 🌟 **Features**:
+
 - **Flow-based Large Diffusion Transformer (Flag-DiT)**: Lumina-T2X is trained with the **flow matching objective** and is equipped with many techniques, such as RoPE, RMSNorm, and KQ-norm, **demonstrating faster training convergence, stable training dynamics, and a simplified pipeline**.
-- **Any Modalities, Aspect, and Duration within one framework**: 
+- **Any Modalities, Aspect, and Duration within one framework**:
   1. $\textbf{Lumina-T2X}$ can **encode any modality, including mages, videos, multi-views of 3D objects, and spectrograms into a unified 1-D token sequence at any resolution, aspect ratio, and temporal duration.**
   2. By introducing the `nextline` and `nextframe` tokens, our model can **support resolution extrapolation**, i.e., generating images/videos with out-of-domain resolutions **not encountered during training**.
 - **Low Training Resources**: Despite increasing token length, which generally extends training time, our Large-DiT reduces the total number of training iterations needed, thus **minimizing overall training time** and computational resources. Moreover, by employing meticulously curated text-image and text-video pairs featuring high aesthetic quality frames and detailed captions, our $\textbf{Lumina-T2X}$ model is learned to generate high-resolution images and coherent videos with minimal computational demands. Remarkably, the default Lumina-T2I configuration, equipped with a 5B Flag-DiT and a 7B LLaMA as the text encoder, **requires only 20% of the computational resources needed by Pixelart-**$\alpha$.
@@ -101,7 +110,6 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/0a20bb39-f6f7-430f-aaa0
 
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/7bf9ce7e-f454-4430-babe-b14264e0f194
 
-
 **360P Videos:**
 
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/d7fec32c-3655-4fd1-aa14-c0cb3ace3845
@@ -114,7 +122,7 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/cd061b8d-c47b-4c0c-b775
 
 > [!Note]
 > **Attention: Mouse over the playbar and click the audio button on the playbar to unmute it.**
->
+
 <!-- > 🌟🌟🌟 **We recommend visiting the Lumina website to try it out! [🌟 visit](https://lumina-t2-x-web.vercel.app/docs/demos/demo-of-audio)** -->
 
 **Prompt:** Semiautomatic gunfire occurs with slight echo
@@ -136,7 +144,6 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/7467dd6d-b163-4436-ac5b
 **Groundtruth:**
 
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/703ea405-6eb4-4161-b5ff-51a93f81d013
-
 
 **Prompt:** An engine running followed by the engine revving and tires screeching
 
@@ -206,6 +213,7 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/da93e13d-6462-48d2-b6dc
 ### More examples
 
 <!-- For more demos visit [this website](https://lumina-t2-x-web.vercel.app/docs/demos) -->
+
 <!-- ### High-res. Image Editing
 
 <p align="center">
@@ -245,21 +253,18 @@ We support diverse configurations, including text encoders, DiTs of different pa
  <br>
 </p>
 
-
-<!--
-
 ## 📄 Citation
 
 ```
-@inproceedings{luminat2x,
-  author    = {},
-  title     = {},
-  booktitle = {},
-  pages     = {}
-  year      = {2024}
+@article{gao2024luminat2x,
+      title={Lumina-T2X: Transforming Text into Any Modality, Resolution, and Duration via Flow-based Large Diffusion Transformers}, 
+      author={Peng Gao and Le Zhuo and Ziyi Lin and Chris Liu and Junsong Chen and Ruoyi Du and Enze Xie and Xu Luo and Longtian Qiu and Yuhang Zhang and Chen Lin and Rongjie Huang and Shijie Geng and Renrui Zhang and Junlin Xi and Wenqi Shao and Zhengkai Jiang and Tianshuo Yang and Weicai Ye and He Tong and Jingwen He and Yu Qiao and Hongsheng Li},
+      journal={arXiv preprint arXiv:2405.05945},
+      year={2024}
 }
 ```
 
+<!-- 
 ## Star History
 
  [![Star History Chart](https://api.star-history.com/svg?repos=Alpha-VLLM/Lumina-T2X&type=Date)](https://star-history.com/#Alpha-VLLM/Lumina-T2X&Date) -->
