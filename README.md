@@ -144,7 +144,7 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/703ea405-6eb4-4161-b5ff
 
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/5d9dd431-b8b4-41a0-9e78-bb0a234a30b9
 
-**Generated Audio Groundtruth:**
+**Groundtruth:**
 
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/9ca4af9e-cee3-4596-b826-d6c25761c3c1
 
@@ -154,7 +154,7 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/9ca4af9e-cee3-4596-b826
 
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/b776aacb-783b-4f47-bf74-89671a17d38d
 
-**Generated Audio Groundtruth:**
+**Groundtruth:**
 
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/a11333e4-695e-4a8c-8ea1-ee5b83e34682
 
@@ -165,7 +165,7 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/a11333e4-695e-4a8c-8ea1
 
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/88fcf0e1-b71a-4e94-b9a6-138db6a670f0
 
-**Generated Audio Groundtruth:**
+**Groundtruth:**
 
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/6fb9963f-46a5-4020-b160-f9a004528d7e
 
@@ -175,7 +175,7 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/6fb9963f-46a5-4020-b160
 
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/fad8baf3-d80b-4915-ba31-aab13db5ce06
 
-**Generated Audio Groundtruth:**
+**Groundtruth:**
 
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/c01a7e6e-3421-4a28-93c5-831523ec061d
 
@@ -185,7 +185,7 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/c01a7e6e-3421-4a28-93c5
 
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/0fa673a3-f9de-487b-8812-1f96a335e913
 
-**Generated Audio Groundtruth:**
+**Groundtruth:**
 
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/718289f9-a93e-4ea9-b7db-a14c2b209b28
 
@@ -195,7 +195,7 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/718289f9-a93e-4ea9-b7db
 
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/362fde84-e4ae-4152-aeb5-4355155c8719
 
-**Generated Audio Groundtruth:**
+**Groundtruth:**
 
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/da93e13d-6462-48d2-b6dc-af6ff0c4d07d
 
