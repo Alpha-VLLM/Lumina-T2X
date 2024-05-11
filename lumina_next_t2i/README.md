@@ -5,9 +5,9 @@
 
 # Lumina-Next-T2I
 
-Lumina-T2I is a model that generates images base on text condition, supporting various text encoders and models of different parameter sizes. With minimal training costs, it achieves high-quality image generation by training from scratch. Additionally, it offers usage through CLI console programs and Web Demo displays.
+The `Lumina-Next-T2I` model that uses Large-DiT with a 2B parameters model as well as using [Gemma-2B](https://huggingface.co/google/gemma-2b) as a text encoder. Compared with `Lumina-T2I`, it has faster inference speed, richer generation style, and more multilingual support, etc.
 
-Our generative model has `LargeDiT` as the backbone, the text encoder is the `LLaMa` 7B model, and the VAE uses a version of `sdxl` fine-tuned by stabilityai.
+Our generative model has `Large-DiT` as the backbone, the text encoder is the `Gemma` 2B model, and the VAE uses a version of `sdxl` fine-tuned by stabilityai.
 
 - Generation Model: Large-DiT
 - Text Encoder: Gemma 2B
