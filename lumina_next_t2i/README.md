@@ -211,14 +211,14 @@ Update your own personal inference settings to generate different styles of imag
 
 inference command:
 ```bash
-lumina infer -c <config_path> <caption_here> <output_dir>
+lumina_next infer -c <config_path> <caption_here> <output_dir>
 ```
 
 e.g. Demo command:
 
 ```bash
 cd lumina_next_t2i
-lumina infer -c "config/infer/settings.yaml" "a snow man of ..." "./outputs"
+lumina_next infer -c "config/infer/settings.yaml" "a snow man of ..." "./outputs"
 ```
 
 ### Web Demo
