@@ -10,7 +10,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lumina-t2x"  # REQUIRED, is the only field that cannot be marked as dynamic.
-version = "1.0.0"  # REQUIRED, although can be dynamic
+version = "1.2.1"  # REQUIRED, although can be dynamic
 description = "Lumina-T2X is a model for Text to Any Modality Generation"
 readme = "README.md"
 
@@ -64,6 +64,7 @@ build = ["coverage"]
 
 [project.scripts]
 lumina = "lumina_t2i:entry_point"
+lumina_next = "lumina_next_t2i:entry_point"
 
 [tool.setuptools.packages.find]
 exclude = ["assets*"]
