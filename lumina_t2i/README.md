@@ -217,7 +217,7 @@ lumina infer -c <config_path> <caption_here> <output_dir>
 e.g. Demo command:
 
 ```bash
-cd lumina-t2i
+cd lumina_t2i
 lumina infer -c "config/infer/settings.yaml" "a snow man of ..." "./outputs"
 ```
 
