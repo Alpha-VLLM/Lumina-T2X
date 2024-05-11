@@ -1,0 +1,36 @@
+- settings:
+
+  model:
+    ckpt: ""
+    ckpt_lm: ""
+    token: ""
+
+  transport:
+    path_type: "Linear"             # option: ["Linear", "GVP", "VP"]
+    prediction: "velocity"          # option: ["velocity", "score", "noise"]
+    loss_weight: "velocity"         # option: [None, "velocity", "likelihood"]
+    sample_eps: 0.1
+    train_eps: 0.2
+
+  ode:
+    atol: 1e-6                      # Absolute tolerance
+    rtol: 1e-3                      # Relative tolerance
+    reverse: false                  # option: true or false
+    likelihood: false               # option: true or false
+
+  sde:
+    sampling_method: "Euler"        # option: ["Euler", "Heun"]
+    diffusion_form: "sigma"         # option: ["constant", "SBDM", "sigma", "linear", "decreasing", "increasing-decreasing"]
+    diffusion_norm: 1.0             # range: 0-1
+    last_step: Mean                 # option: [None, "Mean", "Tweedie", "Euler"]
+    last_step_size: 0.04
+
+  infer:
+      resolution: "1024x1024"     # option: ["1024x1024", "512x2048", "2048x512", "(Extrapolation) 1664x1664", "(Extrapolation) 1024x2048", "(Extrapolation) 2048x1024"]
+      num_sampling_steps: 60      # range: 1-1000
+      cfg_scale: 4.               # range: 1-20
+      solver: "euler"             # option: ["euler", "dopri5", "dopri8"]
+      t_shift: 4                  # range: 1-20 (int only)
+      ntk_scaling: true           # option: true or false
+      proportional_attn: true     # option: true or false
+      seed: 0                     # rnage: any number
