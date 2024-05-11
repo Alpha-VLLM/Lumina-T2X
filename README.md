@@ -54,6 +54,15 @@
 
 ## 🚀 Quick Start
 
+In order to quickly get you guys using our model, we built different versions of the GUI demo site.
+
+**Lumina-T2I 5B model demo:**
+- [node1](http://106.14.2.150:10020/)
+
+**Lumina-Next-T2I 2B model demo:**
+- [node1](http://106.14.2.150:10021/)
+- [node2](http://106.14.2.150:10022/)
+
 For training and inference, please refer to [Lumina-T2I README.md](./lumina_t2i/README.md#Installation)
 
 ## 📑 Open-source Plan
