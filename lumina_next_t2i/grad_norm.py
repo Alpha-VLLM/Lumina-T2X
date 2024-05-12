@@ -4,7 +4,9 @@ import torch.nn as nn
 import torch.distributed as dist
 import fairscale.nn.model_parallel.initialize as fs_init
 from fairscale.nn.model_parallel.layers import (
-    ColumnParallelLinear, RowParallelLinear, ParallelEmbedding
+    ColumnParallelLinear,
+    RowParallelLinear,
+    ParallelEmbedding,
 )
 
 
@@ -23,15 +25,18 @@ def get_model_parallel_dim_dict(model: nn.Module) -> Dict[str, int]:
             ret_dict[module_name + ".weight"] = 1
         else:
             for param_name, param in module.named_parameters(recurse=False):
-                ret_dict[(module_name + "." if len(module_name) > 0 else "") + param_name] = -1
+                ret_dict[
+                    (module_name + "." if len(module_name) > 0 else "") + param_name
+                ] = -1
     return ret_dict
 
 
 def calculate_l2_grad_norm(
-    model: nn.Module, model_parallel_dim_dict: Dict[str, int],
+    model: nn.Module,
+    model_parallel_dim_dict: Dict[str, int],
 ) -> float:
-    mp_norm_sq = torch.tensor(0., dtype=torch.float32, device="cuda")
-    non_mp_norm_sq = torch.tensor(0., dtype=torch.float32, device="cuda")
+    mp_norm_sq = torch.tensor(0.0, dtype=torch.float32, device="cuda")
+    non_mp_norm_sq = torch.tensor(0.0, dtype=torch.float32, device="cuda")
 
     for name, param in model.named_parameters():
         if param.grad is None:
@@ -67,6 +72,6 @@ def get_param_norm_dict(
         norm_sq = norm_sq.item()
         if model_parallel_dim_dict[name] < 0:
             norm_sq /= fs_init.get_model_parallel_world_size()
-        norm = norm_sq ** 0.5
+        norm = norm_sq**0.5
         param_norm_dict[name] = norm
     return param_norm_dict
