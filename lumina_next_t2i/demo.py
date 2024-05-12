@@ -99,7 +99,7 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
         )
 
     if dist.get_rank() == 0:
-        print(f"Creating lm: LLaMA2-7B")
+        print(f"Creating lm: Gemma-2B")
 
     dtype = {
         "bf16": torch.bfloat16,
@@ -107,21 +107,20 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
         "fp32": torch.float32
     }[args.precision]
 
-    text_encoder = AutoModelForCausalLM.from_pretrained("/data/xjl/checkpoints/llama2", torch_dtype=dtype, device_map="cuda").get_decoder().eval()
+    text_encoder = AutoModelForCausalLM.from_pretrained("google/gemma-2b", torch_dtype=dtype, device_map="cuda").get_decoder().eval()
     cap_feat_dim = text_encoder.config.hidden_size
     if args.num_gpus > 1:
         raise NotImplementedError("Inference with >1 GPUs not yet supported")
 
-    tokenizer = AutoTokenizer.from_pretrained("/data/xjl/checkpoints/llama2", add_bos_token=True, add_eos_token=True)
+    tokenizer = AutoTokenizer.from_pretrained("google/gemma-2b", add_bos_token=True, add_eos_token=True)
     tokenizer.padding_side = 'right'
 
     if dist.get_rank() == 0:
         print(f"Creating vae: {train_args.vae}")
     vae = AutoencoderKL.from_pretrained(
-        "/data/xjl/checkpoints/vae",
-        # f"stabilityai/sd-vae-ft-{train_args.vae}"
-        # if train_args.vae != "sdxl"
-        # else "stabilityai/sdxl-vae",
+        f"stabilityai/sd-vae-ft-{train_args.vae}"
+        if train_args.vae != "sdxl"
+        else "stabilityai/sdxl-vae",
         torch_dtype=torch.float32
     ).cuda()
 
@@ -172,7 +171,6 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                             rtol=args.rtol,
                         )
                     else:
-                        print("go as expected")
                         sample_fn = sampler.sample_ode(
                             sampling_method=solver,
                             num_steps=num_sampling_steps,
@@ -345,21 +343,13 @@ def main():
         processes.append(p)
 
     description = """
-            # Lumina-T2I Image Generation Demo
+    # Lumina Next Text-to-Image
 
-            Lumina-T2I is a 5B Flag-DiT model with LLaMA2-7B text encoder.
+    Lumina-Next-T2I is a 2B Next-DiT model with 2B text encoder.
 
-            Demo current model: `Lumina-T2I 5B`
+    Demo current model: `Lumina-Next-T2I`
 
-            ### <span style='color: red;'>Due to the high volume of access, we have temporarily disabled the resolution extrapolation functionality.
-            
-            ### <span style='color: red;'>We also offer the Lumina-T2I 5B model, which provides different generation effects and styles.
-
-            ### Additionally, we offer two alternative links for Lumina-T2X access. Try to visit other demo sites. 
-            
-            Lumina-T2I 5B model: [[demo for 5B model](http://106.14.2.150:10022/)] 
-            Luimna-Next-T2I 2B model: [[demo for 2B model](http://106.14.2.150:10023/)]
-"""
+    """
     with gr.Blocks() as demo:
         with gr.Row():
             gr.Markdown(description)
@@ -374,9 +364,6 @@ def main():
                     res_choices = (
                         ["1024x1024", "512x2048", "2048x512"] +
                         ["(Extrapolation) 1664x1664", "(Extrapolation) 1024x2048", "(Extrapolation) 2048x1024"]
-                    )
-                    res_choices = (
-                        ["1024x1024"]
                     )
                     resolution = gr.Dropdown(
                         value=res_choices[0],
@@ -396,8 +383,7 @@ def main():
                     with gr.Row():
                         solver = gr.Dropdown(
                             value="euler",
-                            choices=["euler"],
-                            # choices=["euler", "dopri5", "dopri8"],
+                            choices=["euler", "dopri5", "dopri8"],
                             label="solver"
                         )
                         t_shift = gr.Slider(
@@ -470,12 +456,6 @@ def main():
             )
 
         def on_submit(*args):
-            import time
-            now_time = time.strftime('%Y-%m-%d-%H-%M-%S',time.localtime(time.time()))
-            with open("./user_prompt_5b.txt", "a+") as f:
-                print("recording user prompt...")
-                f.write(f"{now_time}@{args[0]}\n")
-
             for q in request_queues:
                 q.put(args)
             result = response_queue.get()
