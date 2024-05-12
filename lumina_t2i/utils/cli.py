@@ -39,7 +39,16 @@ def dtype_select(precision):
     return dtype[precision]
 
 
-def load_model(ckpt, dtype, master_port, rank=0, num_gpus=1, is_ema=False, token: str | bool=False, ckpt_lm=None):
+def load_model(
+    ckpt,
+    dtype,
+    master_port,
+    rank=0,
+    num_gpus=1,
+    is_ema=False,
+    token: str | bool = False,
+    ckpt_lm=None,
+):
     # import here to avoid huggingface Tokenizer parallelism warnings
     from diffusers.models import AutoencoderKL
     from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -63,8 +72,10 @@ def load_model(ckpt, dtype, master_port, rank=0, num_gpus=1, is_ema=False, token
     if ckpt_lm is None:
         rank0_print(f"> Creating LLM from train_args: {train_args.lm}")
         if not token:
-            warnings.warn("> Attention! You need to input your access token in the huggingface when loading the gated repo, "
-                        "or use the `huggingface-cli login` (stored in ~/.huggingface by default) to log in.")
+            warnings.warn(
+                "> Attention! You need to input your access token in the huggingface when loading the gated repo, "
+                "or use the `huggingface-cli login` (stored in ~/.huggingface by default) to log in."
+            )
         ckpt_lm = train_args.lm
 
     rank0_print(f"> Creating LLM model.")
@@ -243,7 +254,19 @@ def inference(cap, dtype, config, vae, model_dit, model_lm, tokenizer, *args, **
                 return None
 
 
-def main(num_gpus, ckpt, ckpt_lm, is_ema, precision, config_path, token, cap, output_path, *args, **kwargs):
+def main(
+    num_gpus,
+    ckpt,
+    ckpt_lm,
+    is_ema,
+    precision,
+    config_path,
+    token,
+    cap,
+    output_path,
+    *args,
+    **kwargs,
+):
     # step 1: find available port
     master_port = find_free_port()
     # step 2: loading pretrained model with multi-gpu or not.
@@ -251,17 +274,21 @@ def main(num_gpus, ckpt, ckpt_lm, is_ema, precision, config_path, token, cap, ou
     with open(config_path, "r") as f:
         config = yaml.safe_load(f)[0]
     # if user do not pass any parameter about model ckpt, using yaml config.
-    model_config = config['model']
+    model_config = config["model"]
     # parameter from cli
     if ckpt is None or ckpt_lm is None or token is None:
-        if model_config.get('ckpt', None) is None \
-        or model_config.get('ckpt_lm', None) is None \
-        or model_config.get('token', None) is None:
-            raise ValueError("please setting correct model path in yaml config, or pass `--ckpt`"
-                             "`--ckpt`, `--token` as cli options.")
-        ckpt = model_config['ckpt']
-        ckpt_lm = model_config['ckpt_lm']
-        token = model_config['token']
+        if (
+            model_config.get("ckpt", None) is None
+            or model_config.get("ckpt_lm", None) is None
+            or model_config.get("token", None) is None
+        ):
+            raise ValueError(
+                "please setting correct model path in yaml config, or pass `--ckpt`"
+                "`--ckpt`, `--token` as cli options."
+            )
+        ckpt = model_config["ckpt"]
+        ckpt_lm = model_config["ckpt_lm"]
+        token = model_config["token"]
     else:
         print("> loading model path from cli options.")
 
@@ -287,7 +314,7 @@ def main(num_gpus, ckpt, ckpt_lm, is_ema, precision, config_path, token, cap, ou
     os.makedirs(output_path, exist_ok=True)
     if os.path.isdir(output_path):
         rank0_print(f"> Image saved in {output_path}.")
-    img_name = '_'.join(cap.split(" "))
+    img_name = "_".join(cap.split(" "))
     current_time = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
 
     img.save(os.path.join(output_path, f"{img_name}_{current_time}_lumina.png"))
