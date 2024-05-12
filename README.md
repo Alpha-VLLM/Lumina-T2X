@@ -55,6 +55,12 @@
 
 ## 🚀 Quick Start
 
+> [!Warning]
+> **Since we are updating the code frequently, please pull the latest code:**
+> ```bash
+> git pull origin main
+> ```
+
 In order to quickly get you guys using our model, we built different versions of the GUI demo site.
 
 #### Lumina-T2I 5B model demo:
