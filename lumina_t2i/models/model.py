@@ -16,7 +16,9 @@ from typing import Optional, Tuple, List
 from .components import RMSNorm
 import fairscale.nn.model_parallel.initialize as fs_init
 from fairscale.nn.model_parallel.layers import (
-    ColumnParallelLinear, RowParallelLinear, ParallelEmbedding,
+    ColumnParallelLinear,
+    RowParallelLinear,
+    ParallelEmbedding,
 )
 from flash_attn import flash_attn_varlen_func
 from flash_attn.bert_padding import index_first_axis, pad_input, unpad_input  # noqa
@@ -34,21 +36,28 @@ def modulate(x, shift, scale):
 #             Embedding Layers for Timesteps and Class Labels               #
 #############################################################################
 
+
 class ParallelTimestepEmbedder(nn.Module):
     """
     Embeds scalar timesteps into vector representations.
     """
+
     def __init__(self, hidden_size, frequency_embedding_size=256):
         super().__init__()
         self.mlp = nn.Sequential(
             ColumnParallelLinear(
-                frequency_embedding_size, hidden_size, bias=True,
+                frequency_embedding_size,
+                hidden_size,
+                bias=True,
                 gather_output=False,
                 init_method=functools.partial(nn.init.normal_, std=0.02),
             ),
             nn.SiLU(),
             RowParallelLinear(
-                hidden_size, hidden_size, bias=True, input_is_parallel=True,
+                hidden_size,
+                hidden_size,
+                bias=True,
+                input_is_parallel=True,
                 init_method=functools.partial(nn.init.normal_, std=0.02),
             ),
         )
@@ -67,16 +76,16 @@ class ParallelTimestepEmbedder(nn.Module):
         # https://github.com/openai/glide-text2im/blob/main/glide_text2im/nn.py
         half = dim // 2
         freqs = torch.exp(
-            -math.log(max_period) * torch.arange(
-                start=0, end=half, dtype=torch.float32
-            ) / half
+            -math.log(max_period)
+            * torch.arange(start=0, end=half, dtype=torch.float32)
+            / half
         ).to(device=t.device)
         args = t[:, None].float() * freqs[None]
         embedding = torch.cat([torch.cos(args), torch.sin(args)], dim=-1)
         if dim % 2:
-            embedding = torch.cat([
-                embedding, torch.zeros_like(embedding[:, :1])
-            ], dim=-1)
+            embedding = torch.cat(
+                [embedding, torch.zeros_like(embedding[:, :1])], dim=-1
+            )
         return embedding
 
     def forward(self, t):
@@ -89,11 +98,13 @@ class ParallelLabelEmbedder(nn.Module):
     r"""Embeds class labels into vector representations. Also handles label
     dropout for classifier-free guidance.
     """
+
     def __init__(self, num_classes, hidden_size, dropout_prob):
         super().__init__()
         use_cfg_embedding = int(dropout_prob > 0)
         self.embedding_table = ParallelEmbedding(
-            num_classes + use_cfg_embedding, hidden_size,
+            num_classes + use_cfg_embedding,
+            hidden_size,
             init_method=functools.partial(nn.init.normal_, std=0.02),
         )
         self.num_classes = num_classes
@@ -104,9 +115,9 @@ class ParallelLabelEmbedder(nn.Module):
         Drops labels to enable classifier-free guidance.
         """
         if force_drop_ids is None:
-            drop_ids = torch.rand(
-                labels.shape[0], device=labels.device
-            ) < self.dropout_prob
+            drop_ids = (
+                torch.rand(labels.shape[0], device=labels.device) < self.dropout_prob
+            )
             drop_ids = drop_ids.cuda()
             dist.broadcast(
                 drop_ids,
@@ -134,7 +145,15 @@ class ParallelLabelEmbedder(nn.Module):
 
 class Attention(nn.Module):
     """Multi-head attention module."""
-    def __init__(self, dim: int, n_heads: int, n_kv_heads: Optional[int], qk_norm: bool, y_dim: int):
+
+    def __init__(
+        self,
+        dim: int,
+        n_heads: int,
+        n_kv_heads: Optional[int],
+        qk_norm: bool,
+        y_dim: int,
+    ):
         """
         Initialize the Attention module.
 
@@ -166,31 +185,49 @@ class Attention(nn.Module):
         self.head_dim = dim // n_heads
 
         self.wq = ColumnParallelLinear(
-            dim, n_heads * self.head_dim, bias=False, gather_output=False,
+            dim,
+            n_heads * self.head_dim,
+            bias=False,
+            gather_output=False,
             init_method=nn.init.xavier_uniform_,
         )
         self.wk = ColumnParallelLinear(
-            dim, self.n_kv_heads * self.head_dim, bias=False,
-            gather_output=False, init_method=nn.init.xavier_uniform_,
+            dim,
+            self.n_kv_heads * self.head_dim,
+            bias=False,
+            gather_output=False,
+            init_method=nn.init.xavier_uniform_,
         )
         self.wv = ColumnParallelLinear(
-            dim, self.n_kv_heads * self.head_dim, bias=False,
-            gather_output=False, init_method=nn.init.xavier_uniform_,
+            dim,
+            self.n_kv_heads * self.head_dim,
+            bias=False,
+            gather_output=False,
+            init_method=nn.init.xavier_uniform_,
         )
         if y_dim > 0:
             self.wk_y = ColumnParallelLinear(
-                y_dim, self.n_kv_heads * self.head_dim, bias=False,
-                gather_output=False, init_method=nn.init.xavier_uniform_,
+                y_dim,
+                self.n_kv_heads * self.head_dim,
+                bias=False,
+                gather_output=False,
+                init_method=nn.init.xavier_uniform_,
             )
             self.wv_y = ColumnParallelLinear(
-                y_dim, self.n_kv_heads * self.head_dim, bias=False,
-                gather_output=False, init_method=nn.init.xavier_uniform_,
+                y_dim,
+                self.n_kv_heads * self.head_dim,
+                bias=False,
+                gather_output=False,
+                init_method=nn.init.xavier_uniform_,
             )
             self.gate = nn.Parameter(torch.zeros([self.n_local_heads]))
 
         self.wo = RowParallelLinear(
-            n_heads * self.head_dim, dim, bias=False,
-            input_is_parallel=True, init_method=nn.init.xavier_uniform_,
+            n_heads * self.head_dim,
+            dim,
+            bias=False,
+            input_is_parallel=True,
+            init_method=nn.init.xavier_uniform_,
         )
 
         if qk_norm:
@@ -233,8 +270,7 @@ class Attention(nn.Module):
         ndim = x.ndim
         assert 0 <= 1 < ndim
         assert freqs_cis.shape == (x.shape[1], x.shape[-1])
-        shape = [d if i == 1 or i == ndim - 1 else 1
-                 for i, d in enumerate(x.shape)]
+        shape = [d if i == 1 or i == ndim - 1 else 1 for i, d in enumerate(x.shape)]
         return freqs_cis.view(*shape)
 
     @staticmethod
@@ -272,13 +308,17 @@ class Attention(nn.Module):
             return xq_out.type_as(xq), xk_out.type_as(xk)
 
     # copied from huggingface modeling_llama.py
-    def _upad_input(self, query_layer, key_layer, value_layer, attention_mask, query_length):
+    def _upad_input(
+        self, query_layer, key_layer, value_layer, attention_mask, query_length
+    ):
 
         def _get_unpad_data(attention_mask):
             seqlens_in_batch = attention_mask.sum(dim=-1, dtype=torch.int32)
             indices = torch.nonzero(attention_mask.flatten(), as_tuple=False).flatten()
             max_seqlen_in_batch = seqlens_in_batch.max().item()
-            cu_seqlens = F.pad(torch.cumsum(seqlens_in_batch, dim=0, dtype=torch.int32), (1, 0))
+            cu_seqlens = F.pad(
+                torch.cumsum(seqlens_in_batch, dim=0, dtype=torch.int32), (1, 0)
+            )
             return (
                 indices,
                 cu_seqlens,
@@ -289,14 +329,19 @@ class Attention(nn.Module):
         batch_size, kv_seq_len, num_key_value_heads, head_dim = key_layer.shape
 
         key_layer = index_first_axis(
-            key_layer.reshape(batch_size * kv_seq_len, num_key_value_heads, head_dim), indices_k
+            key_layer.reshape(batch_size * kv_seq_len, num_key_value_heads, head_dim),
+            indices_k,
         )
         value_layer = index_first_axis(
-            value_layer.reshape(batch_size * kv_seq_len, num_key_value_heads, head_dim), indices_k
+            value_layer.reshape(batch_size * kv_seq_len, num_key_value_heads, head_dim),
+            indices_k,
         )
         if query_length == kv_seq_len:
             query_layer = index_first_axis(
-                query_layer.reshape(batch_size * kv_seq_len, self.n_local_heads, head_dim), indices_k
+                query_layer.reshape(
+                    batch_size * kv_seq_len, self.n_local_heads, head_dim
+                ),
+                indices_k,
             )
             cu_seqlens_q = cu_seqlens_k
             max_seqlen_in_batch_q = max_seqlen_in_batch_k
@@ -311,7 +356,9 @@ class Attention(nn.Module):
         else:
             # The -q_len: slice assumes left padding.
             attention_mask = attention_mask[:, -query_length:]
-            query_layer, indices_q, cu_seqlens_q, max_seqlen_in_batch_q = unpad_input(query_layer, attention_mask)
+            query_layer, indices_q, cu_seqlens_q, max_seqlen_in_batch_q = unpad_input(
+                query_layer, attention_mask
+            )
 
         return (
             query_layer,
@@ -324,9 +371,11 @@ class Attention(nn.Module):
 
     def forward(
         self,
-        x: torch.Tensor, x_mask: torch.Tensor,
+        x: torch.Tensor,
+        x_mask: torch.Tensor,
         freqs_cis: torch.Tensor,
-        y: torch.Tensor, y_mask: torch.Tensor,
+        y: torch.Tensor,
+        y_mask: torch.Tensor,
     ) -> torch.Tensor:
         """
         Forward pass of the attention module.
@@ -355,15 +404,22 @@ class Attention(nn.Module):
 
         if dtype in [torch.float16, torch.bfloat16]:
             # begin var_len flash attn
-            query_states, key_states, value_states, indices_q, cu_seq_lens, max_seq_lens = self._upad_input(
-                xq, xk, xv, x_mask, seqlen
-            )
+            (
+                query_states,
+                key_states,
+                value_states,
+                indices_q,
+                cu_seq_lens,
+                max_seq_lens,
+            ) = self._upad_input(xq, xk, xv, x_mask, seqlen)
 
             cu_seqlens_q, cu_seqlens_k = cu_seq_lens
             max_seqlen_in_batch_q, max_seqlen_in_batch_k = max_seq_lens
 
             if self.proportional_attn:
-                softmax_scale = math.sqrt(math.log(seqlen, self.base_seqlen) / self.head_dim)
+                softmax_scale = math.sqrt(
+                    math.log(seqlen, self.base_seqlen) / self.head_dim
+                )
             else:
                 softmax_scale = math.sqrt(1 / self.head_dim)
             attn_output_unpad = flash_attn_varlen_func(
@@ -374,23 +430,31 @@ class Attention(nn.Module):
                 cu_seqlens_k=cu_seqlens_k,
                 max_seqlen_q=max_seqlen_in_batch_q,
                 max_seqlen_k=max_seqlen_in_batch_k,
-                dropout_p=0.,
+                dropout_p=0.0,
                 causal=False,
-                softmax_scale=softmax_scale
+                softmax_scale=softmax_scale,
             )
             output = pad_input(attn_output_unpad, indices_q, bsz, seqlen)
             # end var_len_flash_attn
 
         else:
-            output = F.scaled_dot_product_attention(
-                xq.permute(0, 2, 1, 3),
-                xk.permute(0, 2, 1, 3),
-                xv.permute(0, 2, 1, 3),
-                attn_mask=x_mask.bool().view(bsz, 1, 1, seqlen).expand(-1, self.n_local_heads, seqlen, -1),
-            ).permute(0, 2, 1, 3).to(dtype)
+            output = (
+                F.scaled_dot_product_attention(
+                    xq.permute(0, 2, 1, 3),
+                    xk.permute(0, 2, 1, 3),
+                    xv.permute(0, 2, 1, 3),
+                    attn_mask=x_mask.bool()
+                    .view(bsz, 1, 1, seqlen)
+                    .expand(-1, self.n_local_heads, seqlen, -1),
+                )
+                .permute(0, 2, 1, 3)
+                .to(dtype)
+            )
 
         if hasattr(self, "wk_y"):
-            yk = self.ky_norm(self.wk_y(y)).view(bsz, -1, self.n_local_kv_heads, self.head_dim)
+            yk = self.ky_norm(self.wk_y(y)).view(
+                bsz, -1, self.n_local_kv_heads, self.head_dim
+            )
             yv = self.wv_y(y).view(bsz, -1, self.n_local_kv_heads, self.head_dim)
             n_rep = self.n_local_heads // self.n_local_kv_heads
             if n_rep >= 1:
@@ -400,7 +464,7 @@ class Attention(nn.Module):
                 xq.permute(0, 2, 1, 3),
                 yk.permute(0, 2, 1, 3),
                 yv.permute(0, 2, 1, 3),
-                y_mask.view(bsz, 1, 1, -1).expand(bsz, self.n_local_heads, seqlen, -1)
+                y_mask.view(bsz, 1, 1, -1).expand(bsz, self.n_local_heads, seqlen, -1),
             ).permute(0, 2, 1, 3)
             output_y = output_y * self.gate.tanh().view(1, 1, -1, 1)
             output = output + output_y
@@ -442,20 +506,27 @@ class FeedForward(nn.Module):
         # custom dim factor multiplier
         if ffn_dim_multiplier is not None:
             hidden_dim = int(ffn_dim_multiplier * hidden_dim)
-        hidden_dim = multiple_of * (
-            (hidden_dim + multiple_of - 1) // multiple_of
-        )
+        hidden_dim = multiple_of * ((hidden_dim + multiple_of - 1) // multiple_of)
 
         self.w1 = ColumnParallelLinear(
-            dim, hidden_dim, bias=False, gather_output=False,
+            dim,
+            hidden_dim,
+            bias=False,
+            gather_output=False,
             init_method=nn.init.xavier_uniform_,
         )
         self.w2 = RowParallelLinear(
-            hidden_dim, dim, bias=False, input_is_parallel=True,
+            hidden_dim,
+            dim,
+            bias=False,
+            input_is_parallel=True,
             init_method=nn.init.xavier_uniform_,
         )
         self.w3 = ColumnParallelLinear(
-            dim, hidden_dim, bias=False, gather_output=False,
+            dim,
+            hidden_dim,
+            bias=False,
+            gather_output=False,
             init_method=nn.init.xavier_uniform_,
         )
 
@@ -468,9 +539,18 @@ class FeedForward(nn.Module):
 
 
 class TransformerBlock(nn.Module):
-    def __init__(self, layer_id: int, dim: int, n_heads: int, n_kv_heads: int,
-                 multiple_of: int, ffn_dim_multiplier: float, norm_eps: float,
-                 qk_norm: bool, y_dim: int) -> None:
+    def __init__(
+        self,
+        layer_id: int,
+        dim: int,
+        n_heads: int,
+        n_kv_heads: int,
+        multiple_of: int,
+        ffn_dim_multiplier: float,
+        norm_eps: float,
+        qk_norm: bool,
+        y_dim: int,
+    ) -> None:
         """
         Initialize a TransformerBlock.
 
@@ -501,7 +581,9 @@ class TransformerBlock(nn.Module):
         self.head_dim = dim // n_heads
         self.attention = Attention(dim, n_heads, n_kv_heads, qk_norm, y_dim)
         self.feed_forward = FeedForward(
-            dim=dim, hidden_dim=4 * dim, multiple_of=multiple_of,
+            dim=dim,
+            hidden_dim=4 * dim,
+            multiple_of=multiple_of,
             ffn_dim_multiplier=ffn_dim_multiplier,
         )
         self.layer_id = layer_id
@@ -511,7 +593,10 @@ class TransformerBlock(nn.Module):
         self.adaLN_modulation = nn.Sequential(
             nn.SiLU(),
             ColumnParallelLinear(
-                min(dim, 1024), 6 * dim, bias=True, gather_output=True,
+                min(dim, 1024),
+                6 * dim,
+                bias=True,
+                gather_output=True,
                 init_method=nn.init.zeros_,
             ),
         )
@@ -542,14 +627,16 @@ class TransformerBlock(nn.Module):
 
         """
         if adaln_input is not None:
-            shift_msa, scale_msa, gate_msa, shift_mlp, scale_mlp, gate_mlp = \
+            shift_msa, scale_msa, gate_msa, shift_mlp, scale_mlp, gate_mlp = (
                 self.adaLN_modulation(adaln_input).chunk(6, dim=1)
+            )
 
             x = x + gate_msa.unsqueeze(1) * self.attention(
                 modulate(self.attention_norm(x), shift_msa, scale_msa),
                 x_mask,
                 freqs_cis,
-                self.attention_y_norm(y), y_mask,
+                self.attention_y_norm(y),
+                y_mask,
             )
             x = x + gate_mlp.unsqueeze(1) * self.feed_forward(
                 modulate(self.ffn_norm(x), shift_mlp, scale_mlp),
@@ -557,30 +644,44 @@ class TransformerBlock(nn.Module):
 
         else:
             x = x + self.attention(
-                self.attention_norm(x), x_mask, freqs_cis, self.attention_y_norm(y), y_mask,
+                self.attention_norm(x),
+                x_mask,
+                freqs_cis,
+                self.attention_y_norm(y),
+                y_mask,
             )
             x = x + self.feed_forward(self.ffn_norm(x))
 
         return x
 
+
 class ParallelFinalLayer(nn.Module):
     """
     The final layer of DiT.
     """
+
     def __init__(self, hidden_size, patch_size, out_channels):
         super().__init__()
         self.norm_final = nn.LayerNorm(
-            hidden_size, elementwise_affine=False, eps=1e-6,
+            hidden_size,
+            elementwise_affine=False,
+            eps=1e-6,
         )
         self.linear = ColumnParallelLinear(
-            hidden_size, patch_size * patch_size * out_channels, bias=True,
-            init_method=nn.init.zeros_, gather_output=True,
+            hidden_size,
+            patch_size * patch_size * out_channels,
+            bias=True,
+            init_method=nn.init.zeros_,
+            gather_output=True,
         )
         self.adaLN_modulation = nn.Sequential(
             nn.SiLU(),
             ColumnParallelLinear(
-                min(hidden_size, 1024), 2 * hidden_size, bias=True,
-                init_method=nn.init.zeros_, gather_output=True,
+                min(hidden_size, 1024),
+                2 * hidden_size,
+                bias=True,
+                init_method=nn.init.zeros_,
+                gather_output=True,
             ),
         )
 
@@ -595,6 +696,7 @@ class DiT_Llama(nn.Module):
     """
     Diffusion model with a Transformer backbone.
     """
+
     def __init__(
         self,
         patch_size: int = 2,
@@ -609,8 +711,8 @@ class DiT_Llama(nn.Module):
         learn_sigma: bool = True,
         qk_norm: bool = False,
         cap_feat_dim: int = 5120,
-        rope_scaling_factor: float = 1.,
-        ntk_factor: float=1.
+        rope_scaling_factor: float = 1.0,
+        ntk_factor: float = 1.0,
     ) -> None:
         super().__init__()
         self.learn_sigma = learn_sigma
@@ -625,26 +727,43 @@ class DiT_Llama(nn.Module):
             gather_output=True,
             init_method=nn.init.xavier_uniform_,
         )
-        nn.init.constant_(self.x_embedder.bias, 0.)
+        nn.init.constant_(self.x_embedder.bias, 0.0)
 
         self.t_embedder = ParallelTimestepEmbedder(min(dim, 1024))
         self.cap_embedder = nn.Sequential(
             nn.LayerNorm(cap_feat_dim),
             ColumnParallelLinear(
-                cap_feat_dim, min(dim, 1024), bias=True, gather_output=True,
-                init_method=nn.init.zeros_
-                ),
+                cap_feat_dim,
+                min(dim, 1024),
+                bias=True,
+                gather_output=True,
+                init_method=nn.init.zeros_,
+            ),
         )
 
-        self.layers = nn.ModuleList([
-            TransformerBlock(layer_id, dim, n_heads, n_kv_heads, multiple_of,
-                             ffn_dim_multiplier, norm_eps, qk_norm, cap_feat_dim)
-            for layer_id in range(n_layers)
-        ])
+        self.layers = nn.ModuleList(
+            [
+                TransformerBlock(
+                    layer_id,
+                    dim,
+                    n_heads,
+                    n_kv_heads,
+                    multiple_of,
+                    ffn_dim_multiplier,
+                    norm_eps,
+                    qk_norm,
+                    cap_feat_dim,
+                )
+                for layer_id in range(n_layers)
+            ]
+        )
         self.final_layer = ParallelFinalLayer(dim, patch_size, self.out_channels)
 
         self.freqs_cis = DiT_Llama.precompute_freqs_cis(
-            dim // n_heads, 40000, rope_scaling_factor=rope_scaling_factor, ntk_factor=ntk_factor
+            dim // n_heads,
+            40000,
+            rope_scaling_factor=rope_scaling_factor,
+            ntk_factor=ntk_factor,
         )
         self.dim = dim
         self.n_heads = n_heads
@@ -655,7 +774,9 @@ class DiT_Llama(nn.Module):
         nn.init.normal_(self.eol_token, std=0.02)
         nn.init.normal_(self.pad_token, std=0.02)
 
-    def unpatchify(self, x: torch.Tensor, img_size: List[Tuple[int, int]], return_tensor=False) -> List[torch.Tensor]:
+    def unpatchify(
+        self, x: torch.Tensor, img_size: List[Tuple[int, int]], return_tensor=False
+    ) -> List[torch.Tensor]:
         """
         x: (N, T, patch_size**2 * C)
         imgs: (N, H, W, C)
@@ -674,27 +795,41 @@ class DiT_Llama(nn.Module):
             for i in range(x.size(0)):
                 H, W = img_size[i]
                 L = (H // pH) * (W // pW + 1)
-                imgs.append(x[i][:L].view(
-                    H // pH, W // pW + 1, pH, pW, self.out_channels
-                )[:, :-1, :, :, :].permute(4, 0, 2, 1, 3).flatten(3, 4).flatten(1, 2))
+                imgs.append(
+                    x[i][:L]
+                    .view(H // pH, W // pW + 1, pH, pW, self.out_channels)[
+                        :, :-1, :, :, :
+                    ]
+                    .permute(4, 0, 2, 1, 3)
+                    .flatten(3, 4)
+                    .flatten(1, 2)
+                )
         return imgs
 
     def patchify_and_embed(
-        self,
-        x: List[torch.Tensor] | torch.Tensor
+        self, x: List[torch.Tensor] | torch.Tensor
     ) -> Tuple[torch.Tensor, torch.Tensor, List[Tuple[int, int]]]:
         if isinstance(x, torch.Tensor):
             pH = pW = self.patch_size
             B, C, H, W = x.size()
-            x = x.view(B, C, H // pH, pH, W // pW, pW).permute(0, 2, 4, 1, 3, 5).flatten(3)
+            x = (
+                x.view(B, C, H // pH, pH, W // pW, pW)
+                .permute(0, 2, 4, 1, 3, 5)
+                .flatten(3)
+            )
             x = self.x_embedder(x)
-            x = torch.cat([
-                x,
-                self.eol_token.view(1, 1, 1, -1).expand(B, H // pH, 1, -1),
-            ], dim=2)
+            x = torch.cat(
+                [
+                    x,
+                    self.eol_token.view(1, 1, 1, -1).expand(B, H // pH, 1, -1),
+                ],
+                dim=2,
+            )
             x = x.flatten(1, 2)
 
-            mask = torch.ones(x.shape[0], x.shape[1], dtype=torch.int32, device=x.device)
+            mask = torch.ones(
+                x.shape[0], x.shape[1], dtype=torch.int32, device=x.device
+            )
             return x, mask, [(H, W)] * B
         else:
             pH = pW = self.patch_size
@@ -705,24 +840,40 @@ class DiT_Llama(nn.Module):
             for img in x:
                 C, H, W = img.size()
                 img_size.append((H, W))
-                img = img.view(C, H // pH, pH, W // pW, pW).permute(1, 3, 0, 2, 4).flatten(2)
+                img = (
+                    img.view(C, H // pH, pH, W // pW, pW)
+                    .permute(1, 3, 0, 2, 4)
+                    .flatten(2)
+                )
                 img = self.x_embedder(img)
-                img = torch.cat([
-                    img,
-                    self.eol_token.view(1, 1, -1).expand(H // pH, 1, -1),
-                ], dim=1)
+                img = torch.cat(
+                    [
+                        img,
+                        self.eol_token.view(1, 1, -1).expand(H // pH, 1, -1),
+                    ],
+                    dim=1,
+                )
                 img = img.flatten(0, 1)
                 l_effective_seq_len.append(len(img))
                 x_embed.append(img)
 
             max_seq_len = max(l_effective_seq_len)
-            mask = torch.zeros(len(x), max_seq_len, dtype=torch.int32, device=x[0].device)
+            mask = torch.zeros(
+                len(x), max_seq_len, dtype=torch.int32, device=x[0].device
+            )
             padded_x_embed = []
-            for i, (item_embed, item_seq_len) in enumerate(zip(x_embed, l_effective_seq_len)):
-                item_embed = torch.cat([
+            for i, (item_embed, item_seq_len) in enumerate(
+                zip(x_embed, l_effective_seq_len)
+            ):
+                item_embed = torch.cat(
+                    [
                         item_embed,
-                        self.pad_token.view(1, -1).expand(max_seq_len - item_seq_len, -1),
-                ], dim=0)
+                        self.pad_token.view(1, -1).expand(
+                            max_seq_len - item_seq_len, -1
+                        ),
+                    ],
+                    dim=0,
+                )
                 padded_x_embed.append(item_embed)
                 mask[i][:item_seq_len] = 1
 
@@ -739,9 +890,11 @@ class DiT_Llama(nn.Module):
         x, mask, img_size = self.patchify_and_embed(x)
         self.freqs_cis = self.freqs_cis.to(x.device)
 
-        t = self.t_embedder(t)                   # (N, D)
+        t = self.t_embedder(t)  # (N, D)
         cap_mask_float = cap_mask.float().unsqueeze(-1)
-        cap_feats_pool = (cap_feats * cap_mask_float).sum(dim=1) / cap_mask_float.sum(dim=1)
+        cap_feats_pool = (cap_feats * cap_mask_float).sum(dim=1) / cap_mask_float.sum(
+            dim=1
+        )
         cap_feats_pool = cap_feats_pool.to(cap_feats)
         cap_emb = self.cap_embedder(cap_feats_pool)
         adaln_input = t + cap_emb
@@ -749,8 +902,12 @@ class DiT_Llama(nn.Module):
         cap_mask = cap_mask.bool()
         for layer in self.layers:
             x = layer(
-                x, mask, cap_feats, cap_mask, self.freqs_cis[:x.size(1)],
-                adaln_input=adaln_input
+                x,
+                mask,
+                cap_feats,
+                cap_mask,
+                self.freqs_cis[: x.size(1)],
+                adaln_input=adaln_input,
             )
 
         x = self.final_layer(x, adaln_input)
@@ -772,7 +929,7 @@ class DiT_Llama(nn.Module):
         rope_scaling_factor=None,
         ntk_factor=None,
         base_seqlen: Optional[int] = None,
-        proportional_attn: bool = False
+        proportional_attn: bool = False,
     ):
         """
         Forward pass of DiT, but also batches the unconditional forward pass
@@ -781,13 +938,25 @@ class DiT_Llama(nn.Module):
         # https://github.com/openai/glide-text2im/blob/main/notebooks/text2im.ipynb
 
         if rope_scaling_factor is not None or ntk_factor is not None:
-            rope_scaling_factor = rope_scaling_factor if rope_scaling_factor is not None else self.rope_scaling_factor
+            rope_scaling_factor = (
+                rope_scaling_factor
+                if rope_scaling_factor is not None
+                else self.rope_scaling_factor
+            )
             ntk_factor = ntk_factor if ntk_factor is not None else self.ntk_factor
-            if rope_scaling_factor != self.rope_scaling_factor or ntk_factor != self.ntk_factor:
-                print(f"override freqs_cis, rope_scaling {rope_scaling_factor}, ntk {ntk_factor}", flush=True)
+            if (
+                rope_scaling_factor != self.rope_scaling_factor
+                or ntk_factor != self.ntk_factor
+            ):
+                print(
+                    f"override freqs_cis, rope_scaling {rope_scaling_factor}, ntk {ntk_factor}",
+                    flush=True,
+                )
                 self.freqs_cis = DiT_Llama.precompute_freqs_cis(
-                    self.dim // self.n_heads, 40000,
-                    rope_scaling_factor=rope_scaling_factor, ntk_factor=ntk_factor
+                    self.dim // self.n_heads,
+                    40000,
+                    rope_scaling_factor=rope_scaling_factor,
+                    ntk_factor=ntk_factor,
                 )
                 self.rope_scaling_factor = rope_scaling_factor
                 self.ntk_factor = ntk_factor
@@ -821,7 +990,7 @@ class DiT_Llama(nn.Module):
         end: int,
         theta: float = 10000.0,
         rope_scaling_factor: float = 1.0,
-        ntk_factor: float = 1.0
+        ntk_factor: float = 1.0,
     ):
         """
         Precompute the frequency tensor for complex exponentials (cis) with
@@ -846,9 +1015,9 @@ class DiT_Llama(nn.Module):
         theta = theta * ntk_factor
 
         print(f"theta {theta} rope scaling {rope_scaling_factor} ntk {ntk_factor}")
-        freqs = 1.0 / (theta ** (
-            torch.arange(0, dim, 2)[: (dim // 2)].float().cuda() / dim
-        ))
+        freqs = 1.0 / (
+            theta ** (torch.arange(0, dim, 2)[: (dim // 2)].float().cuda() / dim)
+        )
         t = torch.arange(end, device=freqs.device, dtype=torch.float)  # type: ignore
         t = t / rope_scaling_factor
         freqs = torch.outer(t, freqs).float()  # type: ignore
@@ -857,7 +1026,9 @@ class DiT_Llama(nn.Module):
 
     def parameter_count(self) -> int:
         tensor_parallel_module_list = (
-            ColumnParallelLinear, RowParallelLinear, ParallelEmbedding,
+            ColumnParallelLinear,
+            RowParallelLinear,
+            ParallelEmbedding,
         )
         total_params = 0
 
@@ -866,8 +1037,7 @@ class DiT_Llama(nn.Module):
             is_tp_module = isinstance(module, tensor_parallel_module_list)
             for param in module.parameters(recurse=False):
                 total_params += param.numel() * (
-                    fs_init.get_model_parallel_world_size()
-                    if is_tp_module else 1
+                    fs_init.get_model_parallel_world_size() if is_tp_module else 1
                 )
             for submodule in module.children():
                 _recursive_count_params(submodule)
@@ -885,6 +1055,4 @@ class DiT_Llama(nn.Module):
 
 
 def DiT_Llama_5B_patch2(**kwargs):
-    return DiT_Llama(
-        patch_size=2, dim=3072, n_layers=32, n_heads=32, **kwargs
-    )
+    return DiT_Llama(patch_size=2, dim=3072, n_layers=32, n_heads=32, **kwargs)

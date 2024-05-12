@@ -30,4 +30,3 @@ from .entry_point import *
 #     # though for single-GPU inference fairscale actually has no effect
 #     fs_init.initialize_model_parallel(args.num_gpus)
 #     torch.cuda.set_device(rank)
-

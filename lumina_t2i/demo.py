@@ -16,7 +16,9 @@ import models
 from transport import create_transport, Sampler
 
 
-class ModelFailure: pass
+class ModelFailure:
+    pass
+
 
 
 @torch.no_grad()
@@ -30,7 +32,7 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
 
     # Redefine the print function with flush=True by default
     def print(*args, **kwargs):
-        kwargs.setdefault('flush', True)
+        kwargs.setdefault("flush", True)
         original_print(*args, **kwargs)
 
     # Override the built-in print with the new version
@@ -49,19 +51,14 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
 
     train_args = torch.load(os.path.join(args.ckpt, "model_args.pth"))
     if dist.get_rank() == 0:
-        print(
-            "Loaded model arguments:",
-            json.dumps(train_args.__dict__, indent=2)
-        )
+        print("Loaded model arguments:", json.dumps(train_args.__dict__, indent=2))
 
     if dist.get_rank() == 0:
         print(f"Creating lm: {train_args.lm}")
 
-    dtype = {
-        "bf16": torch.bfloat16,
-        "fp16": torch.float16,
-        "fp32": torch.float32
-    }[args.precision]
+    dtype = {"bf16": torch.bfloat16, "fp16": torch.float16, "fp32": torch.float32}[
+        args.precision
+    ]
 
     model_lm = AutoModelForCausalLM.from_pretrained(train_args.lm, torch_dtype=dtype, device_map="cuda")
     cap_feat_dim = model_lm.config.hidden_size
@@ -100,7 +97,15 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
     with torch.autocast("cuda", dtype):
         while True:
             (
-                cap, resolution, num_sampling_steps, cfg_scale, solver, t_shift, seed, ntk_scaling, proportional_attn
+                cap,
+                resolution,
+                num_sampling_steps,
+                cfg_scale,
+                solver,
+                t_shift,
+                seed,
+                ntk_scaling,
+                proportional_attn,
             ) = request_queue.get()
 
             try:
@@ -110,8 +115,7 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                     args.prediction,
                     args.loss_weight,
                     args.train_eps,
-                    args.sample_eps
-
+                    args.sample_eps,
                 )
                 sampler = Sampler(transport)
                 sample_fn = sampler.sample_ode(
@@ -148,10 +152,14 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                     cap_feats=cap_feats, cap_mask=tok_mask, cfg_scale=cfg_scale,
                 )
                 if proportional_attn:
-                    model_kwargs['proportional_attn'] = True
-                    model_kwargs['base_seqlen'] = (train_args.image_size // 16) ** 2 + (train_args.image_size // 16) * 2
+                    model_kwargs["proportional_attn"] = True
+                    model_kwargs["base_seqlen"] = (train_args.image_size // 16) ** 2 + (
+                        train_args.image_size // 16
+                    ) * 2
                 if ntk_scaling:
-                    model_kwargs['ntk_factor'] = ((w // 16) * (h // 16)) / ((train_args.image_size // 16) ** 2)
+                    model_kwargs["ntk_factor"] = ((w // 16) * (h // 16)) / (
+                        (train_args.image_size // 16) ** 2
+                    )
 
                 if dist.get_rank() == 0:
                     print(f"caption: {cap}")
@@ -161,12 +169,12 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                 samples = sample_fn(z, model.forward_with_cfg, **model_kwargs)[-1]
                 samples = samples[:1]
 
-                factor = 0.18215 if train_args.vae != 'sdxl' else 0.13025
+                factor = 0.18215 if train_args.vae != "sdxl" else 0.13025
                 print(f"vae factor: {factor}")
                 samples = vae.decode(samples / factor).sample
-                samples = (samples + 1.) / 2.
-                samples.clamp_(0., 1.)
-                img = to_pil_image(samples[0])
+                samples = (samples + 1.0) / 2.0
+                samples.clamp_(0.0, 1.0)
+                img = to_pil_image(samples[0].float())
 
                 if response_queue is not None:
                     response_queue.put(img)
@@ -177,42 +185,105 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
 
 
 def none_or_str(value):
-    if value == 'None':
+    if value == "None":
         return None
     return value
 
+
 def parse_transport_args(parser):
     group = parser.add_argument_group("Transport arguments")
-    group.add_argument("--path-type", type=str, default="Linear", choices=["Linear", "GVP", "VP"], help="the type of path for transport: 'Linear', 'GVP' (Geodesic Vector Pursuit), or 'VP' (Vector Pursuit).")
-    group.add_argument("--prediction", type=str, default="velocity", choices=["velocity", "score", "noise"], help="the prediction model for the transport dynamics.")
-    group.add_argument("--loss-weight", type=none_or_str, default=None,
-                       choices=[None, "velocity", "likelihood"], help="the weighting of different components in the loss function, can be 'velocity' for dynamic modeling, 'likelihood' for statistical consistency, or None for no weighting.")
-    group.add_argument("--sample-eps", type=float, help="sampling in the transport model.")
-    group.add_argument("--train-eps", type=float, help="training to stabilize the learning process.")
+    group.add_argument(
+        "--path-type",
+        type=str,
+        default="Linear",
+        choices=["Linear", "GVP", "VP"],
+        help="the type of path for transport: 'Linear', 'GVP' (Geodesic Vector Pursuit), or 'VP' (Vector Pursuit).",
+    )
+    group.add_argument(
+        "--prediction",
+        type=str,
+        default="velocity",
+        choices=["velocity", "score", "noise"],
+        help="the prediction model for the transport dynamics.",
+    )
+    group.add_argument(
+        "--loss-weight",
+        type=none_or_str,
+        default=None,
+        choices=[None, "velocity", "likelihood"],
+        help="the weighting of different components in the loss function, can be 'velocity' for dynamic modeling, 'likelihood' for statistical consistency, or None for no weighting.",
+    )
+    group.add_argument(
+        "--sample-eps", type=float, help="sampling in the transport model."
+    )
+    group.add_argument(
+        "--train-eps", type=float, help="training to stabilize the learning process."
+    )
 
 
 def parse_ode_args(parser):
     group = parser.add_argument_group("ODE arguments")
-    group.add_argument("--atol", type=float, default=1e-6, help="Absolute tolerance for the ODE solver.")
-    group.add_argument("--rtol", type=float, default=1e-3, help="Relative tolerance for the ODE solver.")
-    group.add_argument("--reverse", action="store_true", help="run the ODE solver in reverse.")
-    group.add_argument("--likelihood", action="store_true", help="Enable calculation of likelihood during the ODE solving process.")
+    group.add_argument(
+        "--atol",
+        type=float,
+        default=1e-6,
+        help="Absolute tolerance for the ODE solver.",
+    )
+    group.add_argument(
+        "--rtol",
+        type=float,
+        default=1e-3,
+        help="Relative tolerance for the ODE solver.",
+    )
+    group.add_argument(
+        "--reverse", action="store_true", help="run the ODE solver in reverse."
+    )
+    group.add_argument(
+        "--likelihood",
+        action="store_true",
+        help="Enable calculation of likelihood during the ODE solving process.",
+    )
 
 
 def parse_sde_args(parser):
     group = parser.add_argument_group("SDE arguments")
-    group.add_argument("--sampling-method", type=str, default="Euler", choices=["Euler", "Heun"], help="the numerical method used for sampling the stochastic differential equation: 'Euler' for simplicity or 'Heun' for improved accuracy.")
-    group.add_argument("--diffusion-form", type=str, default="sigma",
-                       choices=["constant", "SBDM", "sigma", "linear", "decreasing",
-                                "increasing-decreasing"],
-                       help="form of diffusion coefficient in the SDE")
-    group.add_argument("--diffusion-norm", type=float, default=1.0, help="Normalizes the diffusion coefficient, affecting the scale of the stochastic component.")
-    group.add_argument("--last-step", type=none_or_str, default="Mean",
-                       choices=[None, "Mean", "Tweedie", "Euler"],
-                       help="form of last step taken in the SDE")
-    group.add_argument("--last-step-size", type=float, default=0.04,
-                       help="size of the last step taken")
-
+    group.add_argument(
+        "--sampling-method",
+        type=str,
+        default="Euler",
+        choices=["Euler", "Heun"],
+        help="the numerical method used for sampling the stochastic differential equation: 'Euler' for simplicity or 'Heun' for improved accuracy.",
+    )
+    group.add_argument(
+        "--diffusion-form",
+        type=str,
+        default="sigma",
+        choices=[
+            "constant",
+            "SBDM",
+            "sigma",
+            "linear",
+            "decreasing",
+            "increasing-decreasing",
+        ],
+        help="form of diffusion coefficient in the SDE",
+    )
+    group.add_argument(
+        "--diffusion-norm",
+        type=float,
+        default=1.0,
+        help="Normalizes the diffusion coefficient, affecting the scale of the stochastic component.",
+    )
+    group.add_argument(
+        "--last-step",
+        type=none_or_str,
+        default="Mean",
+        choices=[None, "Mean", "Tweedie", "Euler"],
+        help="form of last step taken in the SDE",
+    )
+    group.add_argument(
+        "--last-step-size", type=float, default=0.04, help="size of the last step taken"
+    )
 
 
 def find_free_port() -> int:
@@ -247,8 +318,17 @@ def main():
     mp_barrier = mp.Barrier(args.num_gpus + 1)
     for i in range(args.num_gpus):
         request_queues.append(mp.Queue())
-        p = mp.Process(target=model_main,
-                       args=(args, master_port, i, request_queues[i], response_queue if i == 0 else None, mp_barrier))
+        p = mp.Process(
+            target=model_main,
+            args=(
+                args,
+                master_port,
+                i,
+                request_queues[i],
+                response_queue if i == 0 else None,
+                mp_barrier,
+            ),
+        )
         p.start()
         processes.append(p)
 
@@ -276,14 +356,15 @@ def main():
                         ["(Extrapolation) 1664x1664", "(Extrapolation) 1024x2048", "(Extrapolation) 2048x1024"]
                     )
                     resolution = gr.Dropdown(
-                        value=res_choices[0],
-                        choices=res_choices,
-                        label="Resolution"
+                        value=res_choices[0], choices=res_choices, label="Resolution"
                     )
                 with gr.Row():
                     num_sampling_steps = gr.Slider(
-                        minimum=1, maximum=1000, value=60, interactive=True,
-                        label="Sampling steps"
+                        minimum=1,
+                        maximum=70,
+                        value=30,
+                        interactive=True,
+                        label="Sampling steps",
                     )
                     cfg_scale = gr.Slider(
                         minimum=1., maximum=20., value=4., interactive=True,
@@ -300,8 +381,12 @@ def main():
                         label="Time shift"
                     )
                     seed = gr.Slider(
-                        minimum=0, maximum=int(1e5), value=1, step=1, interactive=True,
-                        label="Seed (0 for random)"
+                        minimum=0,
+                        maximum=int(1e5),
+                        value=1,
+                        step=1,
+                        interactive=True,
+                        label="Seed (0 for random)",
                     )
                 with gr.Accordion("Advanced Settings for Resolution Extrapolation", open=False):
                     with gr.Row():
@@ -337,7 +422,7 @@ def main():
                     ["An old man, portrayed as a retro superhero, stands in the streets of New York City at night"],  # noqa
                 ],
                 [cap],
-                label="Examples"
+                label="Examples",
             )
 
         def on_submit(*args):
@@ -350,8 +435,18 @@ def main():
 
         submit_btn.click(
             on_submit,
-            [cap, resolution, num_sampling_steps, cfg_scale, solver, t_shift, seed, ntk_scaling, proportional_attn],
-            [output_img]
+            [
+                cap,
+                resolution,
+                num_sampling_steps,
+                cfg_scale,
+                solver,
+                t_shift,
+                seed,
+                ntk_scaling,
+                proportional_attn,
+            ],
+            [output_img],
         )
 
     mp_barrier.wait()

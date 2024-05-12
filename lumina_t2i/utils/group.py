@@ -1,10 +1,11 @@
 import click
 import warnings
 
+
 class DefaultCommandFormatter(object):
     """Wraps a formatter to mark a default command."""
 
-    def __init__(self, group, formatter, mark='*'):
+    def __init__(self, group, formatter, mark="*"):
         self.group = group
         self.formatter = formatter
         self.mark = mark
@@ -31,13 +32,15 @@ class DefaultGroup(click.Group):
 
     def __init__(self, *args, **kwargs):
         # To resolve as the default command.
-        if not kwargs.get('ignore_unknown_options', True):
-            raise ValueError('Default group accepts unknown options')
+        if not kwargs.get("ignore_unknown_options", True):
+            raise ValueError("Default group accepts unknown options")
         self.ignore_unknown_options = True
-        self.default_cmd_name = kwargs.pop('default', None)
+        self.default_cmd_name = kwargs.pop("default", None)
         if self.default_cmd_name is None:
-            raise ValueError("You don't have set @entry_point.command(default=True) on any entry points.")
-        self.default_if_no_args = kwargs.pop('default_if_no_args', False)
+            raise ValueError(
+                "You don't have set @entry_point.command(default=True) on any entry points."
+            )
+        self.default_if_no_args = kwargs.pop("default_if_no_args", False)
         super(DefaultGroup, self).__init__(*args, **kwargs)
 
     def set_default_command(self, command):
@@ -61,22 +64,24 @@ class DefaultGroup(click.Group):
     def resolve_command(self, ctx, args):
         base = super(DefaultGroup, self)
         cmd_name, cmd, args = base.resolve_command(ctx, args)
-        if hasattr(ctx, 'arg0'):
+        if hasattr(ctx, "arg0"):
             args.insert(0, ctx.arg0)
             cmd_name = cmd.name
         return cmd_name, cmd, args
 
     def format_commands(self, ctx, formatter):
-        formatter = DefaultCommandFormatter(self, formatter, mark='*')
+        formatter = DefaultCommandFormatter(self, formatter, mark="*")
         return super(DefaultGroup, self).format_commands(ctx, formatter)
 
     def command(self, *args, **kwargs):
-        default = kwargs.pop('default', False)
+        default = kwargs.pop("default", False)
         decorator = super(DefaultGroup, self).command(*args, **kwargs)
         if not default:
             return decorator
-        warnings.warn('Use default param of DefaultGroup or '
-                      'set_default_command() instead', DeprecationWarning)
+        warnings.warn(
+            "Use default param of DefaultGroup or " "set_default_command() instead",
+            DeprecationWarning,
+        )
 
         def _decorator(f):
             cmd = decorator(f)

@@ -5,8 +5,10 @@ from torchdiffeq import odeint
 from functools import partial
 from tqdm import tqdm
 
+
 class sde:
     """SDE solver class"""
+
     def __init__(
         self,
         drift,
@@ -45,7 +47,10 @@ class sde:
         K1 = self.drift(xhat, t_cur, model, **model_kwargs)
         xp = xhat + self.dt * K1
         K2 = self.drift(xp, t_cur + self.dt, model, **model_kwargs)
-        return xhat + 0.5 * self.dt * (K1 + K2), xhat # at last time point we do not perform the heun step
+        return (
+            xhat + 0.5 * self.dt * (K1 + K2),
+            xhat,
+        )  # at last time point we do not perform the heun step
 
     def __forward_fn(self):
         """TODO: generalize here by adding all private functions ending with steps to it"""
@@ -74,8 +79,10 @@ class sde:
 
         return samples
 
+
 class ode:
     """ODE solver class"""
+
     def __init__(
         self,
         drift,
@@ -93,7 +100,9 @@ class ode:
         self.drift = drift
         self.t = th.linspace(t0, t1, num_steps)
         if time_shifting_factor:
-            self.t = self.t / (self.t + time_shifting_factor - time_shifting_factor * self.t)
+            self.t = self.t / (
+                self.t + time_shifting_factor - time_shifting_factor * self.t
+            )
         self.atol = atol
         self.rtol = rtol
         self.sampler_type = sampler_type
@@ -101,20 +110,18 @@ class ode:
     def sample(self, x, model, **model_kwargs):
 
         device = x[0].device if isinstance(x, tuple) else x.device
+
         def _fn(t, x):
-            t = th.ones(x[0].size(0)).to(device) * t if isinstance(x, tuple) else th.ones(x.size(0)).to(device) * t
+            t = (
+                th.ones(x[0].size(0)).to(device) * t
+                if isinstance(x, tuple)
+                else th.ones(x.size(0)).to(device) * t
+            )
             model_output = self.drift(x, t, model, **model_kwargs)
             return model_output
 
         t = self.t.to(device)
         atol = [self.atol] * len(x) if isinstance(x, tuple) else [self.atol]
         rtol = [self.rtol] * len(x) if isinstance(x, tuple) else [self.rtol]
-        samples = odeint(
-            _fn,
-            x,
-            t,
-            method=self.sampler_type,
-            atol=atol,
-            rtol=rtol
-        )
+        samples = odeint(_fn, x, t, method=self.sampler_type, atol=atol, rtol=rtol)
         return samples
