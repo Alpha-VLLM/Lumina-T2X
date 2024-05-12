@@ -75,7 +75,7 @@ For more details about training and inference, please refer to [Lumina-T2I](./lu
 ## 📑 Open-source Plan
 
 - [X] Lumina-T2I (Demos✅, Training✅, Inference✅, Checkpoints✅)
-- [ ] Lumina-T2V
+- [ ] Lumina-T2V (Demos✅)
 - [ ] Lumina-T2A (Demos✅)
 - [X] Web Demo
 - [X] Cli Demo
