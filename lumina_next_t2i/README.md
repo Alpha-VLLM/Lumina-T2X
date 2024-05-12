@@ -122,13 +122,13 @@ pip install -e .
 ⭐⭐ (Recommanded) you can use huggingface_cli downloading our model:
 
 ```bash
-huggingface-cli download --resume-download Alpha-VLLM/Lumina-T2I --local-dir /path/to/ckpt
+huggingface-cli download --resume-download Alpha-VLLM/Lumina-Next-T2I --local-dir /path/to/ckpt
 ```
 
 or using git for cloning the model you want to use:
 
 ```bash
-git clone https://huggingface.co/Alpha-VLLM/Lumina-T2I
+git clone https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I
 ``` 
 
 1. Setting your personal inference configuration
