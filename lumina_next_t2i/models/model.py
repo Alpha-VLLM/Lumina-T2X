@@ -132,7 +132,7 @@ class ParallelLabelEmbedder(nn.Module):
 
 
 #############################################################################
-#                               Core DiT Model                              #
+#                               Core NextDiT Model                              #
 #############################################################################
 
 
@@ -566,7 +566,7 @@ class TransformerBlock(nn.Module):
 
 class ParallelFinalLayer(nn.Module):
     """
-    The final layer of DiT.
+    The final layer of NextDiT.
     """
     def __init__(self, hidden_size, patch_size, out_channels):
         super().__init__()
@@ -592,7 +592,7 @@ class ParallelFinalLayer(nn.Module):
         return x
 
 
-class DiT_Llama(nn.Module):
+class NextDiT(nn.Module):
     """
     Diffusion model with a Transformer backbone.
     """
@@ -645,7 +645,7 @@ class DiT_Llama(nn.Module):
         assert (dim // n_heads) % 4 == 0, "2d rope needs head dim to be divisible by 4"
         self.dim = dim
         self.n_heads = n_heads
-        self.freqs_cis = DiT_Llama.precompute_freqs_cis(
+        self.freqs_cis = NextDiT.precompute_freqs_cis(
             dim // n_heads, 384, rope_scaling_factor=rope_scaling_factor, ntk_factor=ntk_factor
         )
         self.rope_scaling_factor = rope_scaling_factor
@@ -736,7 +736,7 @@ class DiT_Llama(nn.Module):
 
     def forward(self, x, t, cap_feats, cap_mask):
         """
-        Forward pass of DiT.
+        Forward pass of NextDiT.
         t: (N,) tensor of diffusion timesteps
         y: (N,) tensor of class labels
         """
@@ -771,7 +771,7 @@ class DiT_Llama(nn.Module):
 
     def forward_with_cfg(self, x, t, cap_feats, cap_mask, cfg_scale, rope_scaling_factor=None, ntk_factor=None, base_seqlen: Optional[int] = None, proportional_attn: bool = False):
         # """
-        # Forward pass of DiT, but also batches the unconditional forward pass
+        # Forward pass of NextDiT, but also batches the unconNextditional forward pass
         # for classifier-free guidance.
         # """
         # # https://github.com/openai/glide-text2im/blob/main/notebooks/text2im.ipynb
@@ -781,7 +781,7 @@ class DiT_Llama(nn.Module):
             ntk_factor = ntk_factor if ntk_factor is not None else self.ntk_factor
             if rope_scaling_factor != self.rope_scaling_factor or ntk_factor != self.ntk_factor:
                 print(f"override freqs_cis, rope_scaling {rope_scaling_factor}, ntk {ntk_factor}", flush=True)
-                self.freqs_cis = DiT_Llama.precompute_freqs_cis(
+                self.freqs_cis = NextDiT.precompute_freqs_cis(
                     self.dim // self.n_heads, 384,
                     rope_scaling_factor=rope_scaling_factor, ntk_factor=ntk_factor
                 )
@@ -880,29 +880,9 @@ class DiT_Llama(nn.Module):
 
 
 #############################################################################
-#                                 DiT Configs                               #
+#                                 NextDiT Configs                               #
 #############################################################################
-
-
-def DiT_Llama_600M_patch2(**kwargs):
-    return DiT_Llama(
-        patch_size=2, dim=1536, n_layers=16, n_heads=32, **kwargs
-    )
-
-
-def DiT_Llama_2B_patch2(**kwargs):
-    return DiT_Llama(
+def NextDiT_2B_patch2(**kwargs):
+    return NextDiT(
         patch_size=2, dim=2304, n_layers=24, n_heads=32, **kwargs
-    )
-
-
-def DiT_Llama_3B_patch2(**kwargs):
-    return DiT_Llama(
-        patch_size=2, dim=3072, n_layers=32, n_heads=32, **kwargs
-    )
-
-
-def DiT_Llama_7B_patch2(**kwargs):
-    return DiT_Llama(
-        patch_size=2, dim=4096, n_layers=32, n_heads=32, **kwargs
     )
