@@ -64,7 +64,7 @@ In order to quickly get you guys using our model, we built different versions of
 [[node1](http://106.14.2.150:10021/)] [[node2](http://106.14.2.150:10022/)]
 
 
-For more details about training and inference, please refer to [Lumina-T2I README.md](./lumina_t2i/README.md#Installation)
+For more details about training and inference, please refer to [Lumina-T2I](./lumina_t2i/README.md#Installation) and [Lumina-Next-T2I](./lumina_nextr_t2i/README.md#Installation)
 
 ## 📑 Open-source Plan
 
