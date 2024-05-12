@@ -44,7 +44,7 @@
 
 ## 📰 News
 
-- **[2024-05-12]** 🤩🤩🤩 **We excitedly released our `Lumina-Next-T2I` model ([checkpoint](https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I)) which is Next-DiT 2B model and Gemma 2B as text encoder. Try it out at [demo1](http://106.14.2.150:10021/) [demo2](http://106.14.2.150:10022/).**
+- **[2024-05-12]** 🤩🤩🤩 **We excitedly released our `Lumina-Next-T2I` model ([checkpoint](https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I)) which uses a 2B Next-DiT model as the backbone and Gemma-2B as the text encoder. Try it out at [demo1](http://106.14.2.150:10021/) & [demo2](http://106.14.2.150:10022/).**
 - **[2024-05-10]** 🔥🔥🔥 **We released the technical report on [arXiv](https://arxiv.org/abs/2405.05945).**
 - **[2024-05-09]** 🚀🚀🚀 **We released `Lumina-T2A` (Text-to-Audio) Demos. [Examples](#text-to-audio-generation)**
 - **[2024-04-29]** 🔥🔥🔥 **We released the 5B model [checkpoint](https://huggingface.co/Alpha-VLLM/Lumina-T2I) and [demo](http://106.14.2.150:10020/) built upon it for text-to-image generation.**
