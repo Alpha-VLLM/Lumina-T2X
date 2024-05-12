@@ -2,6 +2,7 @@ import torch as th
 import numpy as np
 from functools import partial
 
+
 def expand_t_like_x(t, x):
     """Function to reshape time t to broadcastable dimension of x
     Args:
@@ -15,8 +16,10 @@ def expand_t_like_x(t, x):
 
 #################### Coupling Plans ####################
 
+
 class ICPlan:
     """Linear Coupling Plan"""
+
     def __init__(self, sigma=0.0):
         self.sigma = sigma
 
@@ -33,12 +36,12 @@ class ICPlan:
         return 1 / t
 
     def compute_drift(self, x, t):
-        """We always output sde according to score parametrization; """
+        """We always output sde according to score parametrization;"""
         t = expand_t_like_x(t, x)
         alpha_ratio = self.compute_d_alpha_alpha_ratio_t(t)
         sigma_t, d_sigma_t = self.compute_sigma_t(t)
         drift = alpha_ratio * x
-        diffusion = alpha_ratio * (sigma_t ** 2) - sigma_t * d_sigma_t
+        diffusion = alpha_ratio * (sigma_t**2) - sigma_t * d_sigma_t
 
         return -drift, diffusion
 
@@ -117,10 +120,7 @@ class ICPlan:
         alpha_t, _ = self.compute_alpha_t(t)
         sigma_t, _ = self.compute_sigma_t(t)
         if isinstance(x1, (list, tuple)):
-            return [
-                alpha_t[i] * x1[i] + sigma_t[i] * x0[i]
-                for i in range(len(x1))
-            ]
+            return [alpha_t[i] * x1[i] + sigma_t[i] * x0[i] for i in range(len(x1))]
         else:
             return alpha_t * x1 + sigma_t * x0
 
@@ -135,10 +135,7 @@ class ICPlan:
         _, d_alpha_t = self.compute_alpha_t(t)
         _, d_sigma_t = self.compute_sigma_t(t)
         if isinstance(x1, (list, tuple)):
-            return [
-                d_alpha_t * x1[i] + d_sigma_t * x0[i]
-                for i in range(len(x1))
-            ]
+            return [d_alpha_t * x1[i] + d_sigma_t * x0[i] for i in range(len(x1))]
         else:
             return d_alpha_t * x1 + d_sigma_t * x0
 
@@ -154,9 +151,14 @@ class VPCPlan(ICPlan):
     def __init__(self, sigma_min=0.1, sigma_max=20.0):
         self.sigma_min = sigma_min
         self.sigma_max = sigma_max
-        self.log_mean_coeff = lambda t: -0.25 * ((1 - t) ** 2) * (self.sigma_max - self.sigma_min) - 0.5 * (1 - t) * self.sigma_min
-        self.d_log_mean_coeff = lambda t: 0.5 * (1 - t) * (self.sigma_max - self.sigma_min) + 0.5 * self.sigma_min
-
+        self.log_mean_coeff = (
+            lambda t: -0.25 * ((1 - t) ** 2) * (self.sigma_max - self.sigma_min)
+            - 0.5 * (1 - t) * self.sigma_min
+        )
+        self.d_log_mean_coeff = (
+            lambda t: 0.5 * (1 - t) * (self.sigma_max - self.sigma_min)
+            + 0.5 * self.sigma_min
+        )
 
     def compute_alpha_t(self, t):
         """Compute coefficient of x1"""
