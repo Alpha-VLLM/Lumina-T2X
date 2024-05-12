@@ -218,7 +218,7 @@ e.g. Demo command:
 
 ```bash
 cd lumina_next_t2i
-lumina_next infer -c "config/infer/settings.yaml" "a snow man of ..." "./outputs"
+lumina_next infer -c "configs/infer/settings.yaml" "a snow man of ..." "./outputs"
 ```
 
 ### Web Demo
