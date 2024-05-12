@@ -5,11 +5,11 @@
 
 # Lumina-Next-T2I
 
-The `Lumina-Next-T2I` model that uses Large-DiT with a 2B parameters model as well as using [Gemma-2B](https://huggingface.co/google/gemma-2b) as a text encoder. Compared with `Lumina-T2I`, it has faster inference speed, richer generation style, and more multilingual support, etc.
+The `Lumina-Next-T2I` model that uses Next-DiT with a 2B parameters model as well as using [Gemma-2B](https://huggingface.co/google/gemma-2b) as a text encoder. Compared with `Lumina-T2I`, it has faster inference speed, richer generation style, and more multilingual support, etc.
 
-Our generative model has `Large-DiT` as the backbone, the text encoder is the `Gemma` 2B model, and the VAE uses a version of `sdxl` fine-tuned by stabilityai.
+Our generative model has `Next-DiT` as the backbone, the text encoder is the `Gemma` 2B model, and the VAE uses a version of `sdxl` fine-tuned by stabilityai.
 
-- Generation Model: Large-DiT
+- Generation Model: Next-DiT
 - Text Encoder: Gemma 2B
 - VAE: stabilityai/sd-vae-ft-sdxl
 
@@ -21,7 +21,7 @@ Our generative model has `Large-DiT` as the backbone, the text encoder is the `G
 
 More checkpoints of our model will be released soon~
 
-| Resolution | Flag-DiT Parameter| Text Encoder | Prediction | Download URL  |
+| Resolution | Next-DiT Parameter| Text Encoder | Prediction | Download URL  |
 | ---------- | ----------------------- | ------------ | -----------|-------------- |
 | 1024       | 2B             |    Gemma-2B  |   Rectified Flow | [hugging face](https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I) |
 
