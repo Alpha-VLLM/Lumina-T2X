@@ -35,6 +35,10 @@
 
 [[🔮 GUI Demo for Lumina-Next-T2I 2B model (node2)](http://106.14.2.150:10021/)]
 [[🔮 GUI Demo for Lumina-Next-T2I 2B model (node3)](http://106.14.2.150:10022/)]
+[👋 join our <a href="http://imagebind-llm.opengvlab.com/qrcode/" target="_blank">WeChat</a>]
+
+
+
 
 <!-- [[📺 Website](https://lumina-t2-x-web.vercel.app/)] -->
 
