@@ -79,6 +79,9 @@ In order to quickly get you guys using our model, we built different versions of
 
 For more details about training and inference, please refer to [Lumina-T2I](./lumina_t2i/README.md#Installation) and [Lumina-Next-T2I](./lumina_nextr_t2i/README.md#Installation)
 
+> [!Warning]
+> **Lumina-T2X employs FSDP for training large diffusion models. FSDP shards parameters, optimizer states, and gradients across GPUs. Thus, at least 8 GPUs are required for full fine-tuning of the Lumina-T2X 5B model. Parameter-efficient Finetuning of Lumina-T2X shall be released soon.**
+
 ## 📑 Open-source Plan
 
 - [X] Lumina-T2I (Demos✅, Training✅, Inference✅, Checkpoints✅)
