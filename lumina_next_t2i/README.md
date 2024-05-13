@@ -10,7 +10,7 @@ The `Lumina-Next-T2I` model that uses Next-DiT with a 2B parameters model as wel
 Our generative model has `Next-DiT` as the backbone, the text encoder is the `Gemma` 2B model, and the VAE uses a version of `sdxl` fine-tuned by stabilityai.
 
 - Generation Model: Next-DiT
-- Text Encoder: Gemma 2B
+- Text Encoder: [Gemma-2B](https://huggingface.co/google/gemma-2b)
 - VAE: stabilityai/sd-vae-ft-sdxl
 
 ## 📰 News
@@ -23,7 +23,7 @@ More checkpoints of our model will be released soon~
 
 | Resolution | Next-DiT Parameter| Text Encoder | Prediction | Download URL  |
 | ---------- | ----------------------- | ------------ | -----------|-------------- |
-| 1024       | 2B             |    Gemma-2B  |   Rectified Flow | [hugging face](https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I) |
+| 1024       | 2B             |    [Gemma-2B](https://huggingface.co/google/gemma-2b)  |   Rectified Flow | [hugging face](https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I) |
 
 ## Installation
 
