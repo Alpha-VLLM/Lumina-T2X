@@ -113,6 +113,7 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
     tokenizer = AutoTokenizer.from_pretrained(
         "/data/xjl/checkpoints/llama2", add_bos_token=True, add_eos_token=True
     )
+    tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = "right"
 
     if dist.get_rank() == 0:
