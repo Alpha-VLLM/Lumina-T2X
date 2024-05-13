@@ -213,6 +213,7 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/fef8f6b9-1e77-457e-bf4b
 **Prompt:** A high-energy synth rock/pop song with fast-paced acoustic drums, a triumphant brass/string section, and a thrilling synth lead sound that creates an adventurous atmosphere.
 
 **Generated Music:**
+
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/1f796046-64ab-44ed-a4d8-0ebc0cfc484f
 
 **Prompt:** An uptempo electronic pop song that incorporates digital drums, digital bass and synthpad sounds.
