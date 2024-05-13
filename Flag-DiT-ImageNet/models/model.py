@@ -13,7 +13,7 @@ import functools
 import math
 from typing import Optional, Tuple, List
 
-from apex.normalization import FusedRMSNorm as RMSNorm
+from .components import RMSNorm
 import fairscale.nn.model_parallel.initialize as fs_init
 from fairscale.nn.model_parallel.layers import (
     ColumnParallelLinear, RowParallelLinear, ParallelEmbedding,
