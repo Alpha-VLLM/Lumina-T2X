@@ -10,8 +10,8 @@ Lumina-T2I is a model that generates images base on text condition, supporting v
 Our generative model has `LargeDiT` as the backbone, the text encoder is the `LLaMa` 7B model, and the VAE uses a version of `sdxl` fine-tuned by stabilityai.
 
 - Generation Model: Large-DiT
-- Text Encoder: LLaMa-7B
-- VAE: [sdxl-vae](https://huggingface.co/stabilityai/sdxl-vae)
+- Text Encoder: [LLaMA2-7B](https://huggingface.co/meta-llama/Llama-2-7b-hf)
+- VAE: [stabilityai/sdxl-vae](https://huggingface.co/stabilityai/sdxl-vae)
 
 ## 📰 News
 
