@@ -23,7 +23,7 @@ More checkpoints of our model will be released soon~
 
 | Resolution | Flag-DiT Parameter| Text Encoder | Prediction | Download URL  |
 | ---------- | ----------------------- | ------------ | -----------|-------------- |
-| 1024       | 5B             |    LLaMa-7B  |   Rectified Flow | [hugging face](https://huggingface.co/Alpha-VLLM/Lumina-T2X/tree/main/Lumina-T2I/5B/1024px) |
+| 1024       | 5B             |    [LLaMA2-7B](https://huggingface.co/meta-llama/Llama-2-7b-hf)  |   Rectified Flow | [hugging face](https://huggingface.co/Alpha-VLLM/Lumina-T2I) |
 
 ## Installation
 
