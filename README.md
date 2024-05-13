@@ -24,7 +24,7 @@
 
 <!-- [![GitHub closed issues](https://img.shields.io/github/issues-closed/Alpha-VLLM/Lumina-T2X?color=success&label=Issues)]() <br> -->
 
-<!-- [![GitHub repo forks](https://img.shields.io/github/forks/Alpha-VLLM/Lumina-T2X?style=flat&logo=github&logoColor=whitesmoke&label=Forks)](https://github.com/Alpha-VLLM/Lumina-T2X/network)  -->
+<!-- [![GitHub repo forks](https://img.shields.io/github/forks/Alpha-VLLM/Lumina-T2X?style=flat&logo=github&logoColor=whitesmoke&label=Forks)](https://github.com/Alpha-VLLM/Lumina-T2X/network)  -->
 
 [[📄 Lumina-T2X arXiv](https://arxiv.org/abs/2405.05945)]
 [[📽️ Video Introduction of Lumina-T2X](https://www.youtube.com/watch?v=KFtHmS5eUCM)]
@@ -51,14 +51,15 @@
 
 ## 📰 News
 
+- [2024-05-13] 🔥🔥🔥 We give [examples](#multilingual-generation) demonstrating Lumina-T2X's capability to support **multilingual prompts**, and even support prompts containing **emojis**.
 - **[2024-05-12]** 🤩🤩🤩 **We excitedly released our `Lumina-Next-T2I` model ([checkpoint](https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I)) which uses a 2B Next-DiT model as the backbone and Gemma-2B as the text encoder. Try it out at [demo1](http://106.14.2.150:10021/) & [demo2](http://106.14.2.150:10022/).**
 - **[2024-05-10]** 🔥🔥🔥 **We released the technical report on [arXiv](https://arxiv.org/abs/2405.05945).**
 - **[2024-05-09]** 🚀🚀🚀 **We released `Lumina-T2A` (Text-to-Audio) Demos. [Examples](#text-to-audio-generation)**
-- **[2024-04-29]** 🔥🔥🔥 **We released the 5B model [checkpoint](https://huggingface.co/Alpha-VLLM/Lumina-T2I) and [demo](http://106.14.2.150:10020/) built upon it for text-to-image generation.**
-- **[2024-04-25]** 🔥🔥🔥 **Support 720P video generation with arbitrary aspect ratio. [Examples](#text-to-video-generation)** 🚀🚀🚀
-- [2024-04-19] 🔥🔥🔥 Demo examples released.
-- [2024-04-05] 😆😆😆 Code released for `Lumina-T2I`.
-- [2024-04-01] 🚀🚀🚀 We release the initial version of `Lumina-T2I` for text-to-image generation.
+- [2024-04-29] 🔥 We released the 5B model [checkpoint](https://huggingface.co/Alpha-VLLM/Lumina-T2I) and [demo](http://106.14.2.150:10020/) built upon it for text-to-image generation.
+- [2024-04-25] 🔥 Support 720P video generation with arbitrary aspect ratio. [Examples](#text-to-video-generation) 🚀🚀🚀
+- [2024-04-19]  Demo examples released.
+- [2024-04-05] Code released for `Lumina-T2I`.
+- [2024-04-01] We release the initial version of `Lumina-T2I` for text-to-image generation.
 
 ## 🚀 Quick Start
 
@@ -102,7 +103,7 @@ For more details about training and inference, please refer to [Lumina-T2I](./lu
     - [Text-to-Image Generation](#text-to-image-generation)
     - [Text-to-Video Generation](#text-to-video-generation)
     - [Text-to-3D Generation](#text-to-3d-generation)
-    - [More examples](#more-examples)
+    - [Multilingual Examples](#multilingual-generation)
   - [⚙️ Diverse Configurations](#️-diverse-configurations)
 
 ## Introduction
@@ -199,6 +200,37 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/b776aacb-783b-4f47-bf74
 
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/a11333e4-695e-4a8c-8ea1-ee5b83e34682
 
+
+### Multilingual Generation
+
+We present three multilingual capabilities of Lumina-Next-2B.
+
+**Generating Images conditioned on Chinese poems:**
+
+<p align="center">
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/f7e105ca-64d8-4372-9786-ea151662e49e" width="90%"/> 
+ <br>
+</p>
+
+**Generating Images with multilignual prompts:**
+
+<p align="center">
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/ed812870-9600-4587-b3c9-a2502220709d" width="90%"/> 
+ <br>
+</p>
+
+<p align="center">
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/b9008807-1aab-4d44-841f-8439e5ec25de" width="90%"/> 
+ <br>
+</p>
+
+**Generating Images with emojis:**
+
+<p align="center">
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/36ce5e58-351e-4cfd-9ec3-c66093d24572" width="90%"/> 
+ <br>
+</p>
+
 <!--
 **Prompt:** Water trickling rapidly and draining
 
@@ -244,7 +276,7 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/da93e13d-6462-48d2-b6dc
 
 <!-- For more audio demos visit [lumina website - audio demos](https://lumina-t2-x-web.vercel.app/docs/demos/demo-of-audio) -->
 
-### More examples
+<!-- ### More examples -->
 
 <!-- For more demos visit [this website](https://lumina-t2-x-web.vercel.app/docs/demos) -->
 
