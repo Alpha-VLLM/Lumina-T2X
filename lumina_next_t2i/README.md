@@ -11,7 +11,7 @@ Our generative model has `Next-DiT` as the backbone, the text encoder is the `Ge
 
 - Generation Model: Next-DiT
 - Text Encoder: [Gemma-2B](https://huggingface.co/google/gemma-2b)
-- VAE: stabilityai/sd-vae-ft-sdxl
+- VAE: [sdxl-vae](https://huggingface.co/stabilityai/sdxl-vae)
 
 ## 📰 News
 
