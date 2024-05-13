@@ -11,7 +11,7 @@ Our generative model has `LargeDiT` as the backbone, the text encoder is the `LL
 
 - Generation Model: Large-DiT
 - Text Encoder: LLaMa-7B
-- VAE: stabilityai/sd-vae-ft-sdxl
+- VAE: [sdxl-vae](https://huggingface.co/stabilityai/sdxl-vae)
 
 ## 📰 News
 
