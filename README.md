@@ -18,15 +18,17 @@
 
 [![Static Badge](https://img.shields.io/badge/Demo-6B88E3?logo=youtubegaming&logoColor=DAE4EE)](http://106.14.2.150:10022/)&#160;
 [![Static Badge](https://img.shields.io/badge/Video%20Introduction%20of%20Lumina--T2X-test?logo=youtube&color=red&link=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DKFtHmS5eUCM)](https://www.youtube.com/watch?v=KFtHmS5eUCM)
+[![Badge](https://img.shields.io/badge/-WeChat@Group-000000?logo=wechat&logoColor=07C160)](http://imagebind-llm.opengvlab.com/qrcode/)
 
-<!-- [![GitHub issues](https://img.shields.io/github/issues/Alpha-VLLM/Lumina-T2X?color=critical&label=Issues)](https://github.com/PKU-YuanGroup/Video-LLaVA/issues?q=is%3Aopen+is%3Aissue) -->
+<!-- [![GitHub issues](https://img.shields.io/github/issues/Alpha-VLLM/Lumina-T2X?color=critical&label=Issues)]() -->
 
-<!-- [![GitHub closed issues](https://img.shields.io/github/issues-closed/Alpha-VLLM/Lumina-T2X?color=success&label=Issues)](https://github.com/PKU-YuanGroup/Video-LLaVA/issues?q=is%3Aissue+is%3Aclosed) <br> -->
+<!-- [![GitHub closed issues](https://img.shields.io/github/issues-closed/Alpha-VLLM/Lumina-T2X?color=success&label=Issues)]() <br> -->
 
 <!-- [![GitHub repo forks](https://img.shields.io/github/forks/Alpha-VLLM/Lumina-T2X?style=flat&logo=github&logoColor=whitesmoke&label=Forks)](https://github.com/Alpha-VLLM/Lumina-T2X/network)  -->
 
 [[📄 Lumina-T2X arXiv](https://arxiv.org/abs/2405.05945)]
 [[📽️ Video Introduction of Lumina-T2X](https://www.youtube.com/watch?v=KFtHmS5eUCM)]
+[👋 join our <a href="http://imagebind-llm.opengvlab.com/qrcode/" target="_blank">WeChat</a>]
 
 [[🤖️ Lumina-T2I 5B Checkpoints](https://huggingface.co/Alpha-VLLM/Lumina-T2I)]
 [[🤖️ Lumina-Next-T2I 2B Checkpoints (recommend)](https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I)]
@@ -35,7 +37,6 @@
 
 [[🔮 GUI Demo for Lumina-Next-T2I 2B model (node2)](http://106.14.2.150:10021/)]
 [[🔮 GUI Demo for Lumina-Next-T2I 2B model (node3)](http://106.14.2.150:10022/)]
-[👋 join our <a href="http://imagebind-llm.opengvlab.com/qrcode/" target="_blank">WeChat</a>]
 
 
 
