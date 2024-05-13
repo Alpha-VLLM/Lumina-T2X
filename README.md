@@ -208,26 +208,27 @@ We present three multilingual capabilities of Lumina-Next-2B.
 **Generating Images conditioned on Chinese poems:**
 
 <p align="center">
- <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/f7e105ca-64d8-4372-9786-ea151662e49e" width="90%"/> 
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/08460829-1ed4-4489-ac01-1904ef196db2" width="90%"/> 
  <br>
 </p>
+
 
 **Generating Images with multilignual prompts:**
 
 <p align="center">
- <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/ed812870-9600-4587-b3c9-a2502220709d" width="90%"/> 
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/7c62bb94-42e4-4525-a298-9e25475b511d" width="90%"/> 
  <br>
 </p>
 
 <p align="center">
- <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/b9008807-1aab-4d44-841f-8439e5ec25de" width="90%"/> 
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/07fc8138-e67c-4c9f-bc01-e749a6507ada" width="90%"/> 
  <br>
 </p>
 
 **Generating Images with emojis:**
 
 <p align="center">
- <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/36ce5e58-351e-4cfd-9ec3-c66093d24572" width="90%"/> 
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/980b4999-9d1c-4fbd-a695-88b6b675f34b" width="90%"/> 
  <br>
 </p>
 
