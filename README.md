@@ -50,7 +50,7 @@
 <!-- [[中文版本]](./README_cn.md) -->
 
 ## 📰 News
-
+- [2024-05-13] 🔥🔥🔥 Lumina-Next now supports simple **text-to-music** generation! See some [examples](#text-to-music-generation).
 - [2024-05-13] 🔥🔥🔥 We give [examples](#multilingual-generation) demonstrating Lumina-T2X's capability to support **multilingual prompts**, and even support prompts containing **emojis**.
 - **[2024-05-12]** 🤩🤩🤩 **We excitedly released our `Lumina-Next-T2I` model ([checkpoint](https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I)) which uses a 2B Next-DiT model as the backbone and Gemma-2B as the text encoder. Try it out at [demo1](http://106.14.2.150:10021/) & [demo2](http://106.14.2.150:10022/).**
 - **[2024-05-10]** 🔥🔥🔥 **We released the technical report on [arXiv](https://arxiv.org/abs/2405.05945).**
@@ -103,6 +103,8 @@ For more details about training and inference, please refer to [Lumina-T2I](./lu
     - [Text-to-Image Generation](#text-to-image-generation)
     - [Text-to-Video Generation](#text-to-video-generation)
     - [Text-to-3D Generation](#text-to-3d-generation)
+    - [Text-to-Audio Generation](#text-to-audio-generation)
+    - [Text-to-music Generation](#text-to-music-generation)
     - [Multilingual Examples](#multilingual-generation)
   - [⚙️ Diverse Configurations](#️-diverse-configurations)
 
@@ -199,6 +201,42 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/b776aacb-783b-4f47-bf74
 **Groundtruth:**
 
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/a11333e4-695e-4a8c-8ea1-ee5b83e34682
+
+### Text-to-music Generation
+
+**Prompt:** An electrifying ska tune with prominent saxophone riffs, energetic e-guitar and acoustic drums, lively percussion, soulful keys, groovy e-bass, and a fast tempo that exudes uplifting energy.
+
+**Generated Music:**
+
+https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/fef8f6b9-1e77-457e-bf4b-fb0cccefa0ec
+
+**Prompt:** A high-energy synth rock/pop song with fast-paced acoustic drums, a triumphant brass/string section, and a thrilling synth lead sound that creates an adventurous atmosphere.
+
+**Generated Music:**
+https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/1f796046-64ab-44ed-a4d8-0ebc0cfc484f
+
+**Prompt:** An uptempo electronic pop song that incorporates digital drums, digital bass and synthpad sounds.
+
+**Generated Music:**
+
+https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/4768415e-436a-4d0e-af53-bf7882cb94cd
+
+**Prompt:** A medium-tempo digital keyboard song with a jazzy backing track featuring digital drums, piano, e-bass, trumpet, and acoustic guitar.
+
+**Generated Music:**
+
+https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/8994a573-e776-488b-a86c-4398a4362398
+
+**Prompt:** This low-quality folk song features groovy wooden percussion, bass, piano, and flute melodies, as well as sustained strings and shimmering shakers that create a passionate, happy, and joyful atmosphere.
+
+**Generated Music:**
+
+https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/e0b5d197-589c-47d6-954b-b9c1d54feebb
+
+
+
+
+
 
 
 ### Multilingual Generation
