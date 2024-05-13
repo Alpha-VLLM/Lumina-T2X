@@ -7,7 +7,7 @@
 
 Lumina-T2I is a model that generates images base on text condition, supporting various text encoders and models of different parameter sizes. With minimal training costs, it achieves high-quality image generation by training from scratch. Additionally, it offers usage through CLI console programs and Web Demo displays.
 
-Our generative model has `LargeDiT` as the backbone, the text encoder is the `LLaMa` 7B model, and the VAE uses a version of `sdxl` fine-tuned by stabilityai.
+Our generative model has `Large-DiT` as the backbone, the text encoder is the `LLaMA2` 7B model, and the VAE uses a version of `sdxl` fine-tuned by stabilityai.
 
 - Generation Model: Large-DiT
 - Text Encoder: [LLaMA2-7B](https://huggingface.co/meta-llama/Llama-2-7b-hf)
@@ -104,6 +104,13 @@ pip install -v --disable-pip-version-check --no-cache-dir --no-build-isolation -
 # otherwise
 pip install -v --disable-pip-version-check --no-cache-dir --no-build-isolation --global-option="--cpp_ext" --global-option="--cuda_ext" ./
 ```
+
+## Training
+
+> [!Warning]
+> **Lumina-T2I employs FSDP for training large diffusion models. FSDP shards parameters, optimizer states, and gradients across GPUs.
+> Thus, at least 8 GPUs are required for full fine-tuning of the Lumina-T2X 5B model.
+> Parameter-efficient Finetuning of Lumina-T2X shall be released soon.**
 
 ## Inference
 
