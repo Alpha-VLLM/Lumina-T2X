@@ -33,9 +33,10 @@
 [[🤖️ Lumina-T2I 5B Checkpoints](https://huggingface.co/Alpha-VLLM/Lumina-T2I)]
 [[🤖️ Lumina-Next-T2I 2B Checkpoints (recommend)](https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I)]
 
-[[🕹️ GUI Demo for Lumina-T2I 5B model (node1)](http://106.14.2.150:10020/)]
+[[🔮 GUI Demo for Lumina-Next-T2I 2B model (node1)](http://106.14.2.150:10020/)]
 
 [[🔮 GUI Demo for Lumina-Next-T2I 2B model (node2)](http://106.14.2.150:10021/)]
+
 [[🔮 GUI Demo for Lumina-Next-T2I 2B model (node3)](http://106.14.2.150:10022/)]
 
 
