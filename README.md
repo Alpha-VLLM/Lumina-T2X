@@ -51,7 +51,7 @@
 <!-- [[中文版本]](./README_cn.md) -->
 
 ## 📰 News
-- [2024-05-13] 🔥🔥🔥 Lumina-Next now supports simple **text-to-music** generation! See some [examples](#text-to-music-generation).
+- [2024-05-14] 🔥🔥🔥 Lumina-Next now supports simple **text-to-music** generation ([examples](#text-to-music-generation)), **high-resolution (1024*4096) Panorama** generation ([examples](#panorama-generation)), and **3D point cloud** generation conditioned on text ([examples](#point-cloud-generation)).
 - [2024-05-13] 🔥🔥🔥 We give [examples](#multilingual-generation) demonstrating Lumina-T2X's capability to support **multilingual prompts**, and even support prompts containing **emojis**.
 - **[2024-05-12]** 🤩🤩🤩 **We excitedly released our `Lumina-Next-T2I` model ([checkpoint](https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I)) which uses a 2B Next-DiT model as the backbone and Gemma-2B as the text encoder. Try it out at [demo1](http://106.14.2.150:10020/) & [demo2](http://106.14.2.150:10021/) & [demo3](http://106.14.2.150:10022/).**
 - **[2024-05-10]** 🔥🔥🔥 **We released the technical report on [arXiv](https://arxiv.org/abs/2405.05945).**
@@ -137,6 +137,13 @@ We introduce the $\textbf{Lumina-T2X}$ family, a series of text-conditioned Diff
  <br>
 </p>
 
+#### Panorama Generation
+
+<p align="center">
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/4db16496-42c6-4f67-a8e0-b877f6bf4ed7" width="90%"/> 
+ <br>
+</p>
+
 ### Text-to-Video Generation
 
 **720P Videos:**
@@ -158,6 +165,13 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/d7fec32c-3655-4fd1-aa14
 ### Text-to-3D Generation
 
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/cd061b8d-c47b-4c0c-b775-2cbaf8014be9
+
+#### Point Cloud Generation
+
+<p align="center">
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/742237ad-be47-4a7d-aa11-b3aaba07a75a" width="90%"/> 
+ <br>
+</p>
 
 ### Text-to-Audio Generation
 
