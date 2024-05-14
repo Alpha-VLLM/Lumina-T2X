@@ -53,10 +53,10 @@
 ## 📰 News
 - [2024-05-13] 🔥🔥🔥 Lumina-Next now supports simple **text-to-music** generation! See some [examples](#text-to-music-generation).
 - [2024-05-13] 🔥🔥🔥 We give [examples](#multilingual-generation) demonstrating Lumina-T2X's capability to support **multilingual prompts**, and even support prompts containing **emojis**.
-- **[2024-05-12]** 🤩🤩🤩 **We excitedly released our `Lumina-Next-T2I` model ([checkpoint](https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I)) which uses a 2B Next-DiT model as the backbone and Gemma-2B as the text encoder. Try it out at [demo1](http://106.14.2.150:10021/) & [demo2](http://106.14.2.150:10022/).**
+- **[2024-05-12]** 🤩🤩🤩 **We excitedly released our `Lumina-Next-T2I` model ([checkpoint](https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I)) which uses a 2B Next-DiT model as the backbone and Gemma-2B as the text encoder. Try it out at [demo1](http://106.14.2.150:10020/) & [demo2](http://106.14.2.150:10021/) & [demo3](http://106.14.2.150:10022/).**
 - **[2024-05-10]** 🔥🔥🔥 **We released the technical report on [arXiv](https://arxiv.org/abs/2405.05945).**
 - **[2024-05-09]** 🚀🚀🚀 **We released `Lumina-T2A` (Text-to-Audio) Demos. [Examples](#text-to-audio-generation)**
-- [2024-04-29] 🔥 We released the 5B model [checkpoint](https://huggingface.co/Alpha-VLLM/Lumina-T2I) and [demo](http://106.14.2.150:10020/) built upon it for text-to-image generation.
+- [2024-04-29] 🔥 We released the 5B model [checkpoint](https://huggingface.co/Alpha-VLLM/Lumina-T2I) and demo built upon it for text-to-image generation.
 - [2024-04-25] 🔥 Support 720P video generation with arbitrary aspect ratio. [Examples](#text-to-video-generation) 🚀🚀🚀
 - [2024-04-19]  Demo examples released.
 - [2024-04-05] Code released for `Lumina-T2I`.
@@ -72,11 +72,8 @@
 
 In order to quickly get you guys using our model, we built different versions of the GUI demo site.
 
-#### Lumina-T2I 5B model demo:
-[[node1](http://106.14.2.150:10020/)]
-
 #### Lumina-Next-T2I 2B model demo:
-[[node1](http://106.14.2.150:10021/)] [[node2](http://106.14.2.150:10022/)]
+[[node1](http://106.14.2.150:10020/)] [[node2](http://106.14.2.150:10021/)] [[node3](http://106.14.2.150:10022/)]
 
 
 For more details about training and inference, please refer to [Lumina-T2I](./lumina_t2i/README.md#Installation) and [Lumina-Next-T2I](./lumina_nextr_t2i/README.md#Installation)
@@ -240,12 +237,6 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/8994a573-e776-488b-a86c
 **Generated Music:**
 
 https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/e0b5d197-589c-47d6-954b-b9c1d54feebb
-
-
-
-
-
-
 
 ### Multilingual Generation
 
