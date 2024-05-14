@@ -259,12 +259,12 @@ We present three multilingual capabilities of Lumina-Next-2B.
 **Generating Images conditioned on Chinese poems:**
 
 <p align="center">
- <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/08460829-1ed4-4489-ac01-1904ef196db2" width="90%"/> 
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/9aa79d67-e304-4867-81f3-cfc934c625d9" width="90%"/> 
  <br>
 </p>
 
-
 **Generating Images with multilignual prompts:**
+
 
 <p align="center">
  <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/7c62bb94-42e4-4525-a298-9e25475b511d" width="90%"/> 
