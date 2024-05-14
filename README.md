@@ -140,7 +140,7 @@ We introduce the $\textbf{Lumina-T2X}$ family, a series of text-conditioned Diff
 #### Panorama Generation
 
 <p align="center">
- <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/4db16496-42c6-4f67-a8e0-b877f6bf4ed7" width="90%"/> 
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/88b75b4e-5e16-4ea3-aba8-134904dd3381" width="90%"/> 
  <br>
 </p>
 
