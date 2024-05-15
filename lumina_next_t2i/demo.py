@@ -15,7 +15,6 @@ import torch.distributed as dist
 from torchvision.transforms.functional import to_pil_image
 
 import models
-from PIL import Image
 from transport import create_transport, Sampler
 
 
@@ -384,33 +383,20 @@ def find_free_port() -> int:
 
 def main():
     parser = argparse.ArgumentParser()
-    if len(sys.argv) < 2:
-        print("Usage: program.py <mode> [options]")
-        sys.exit(1)
-    mode = sys.argv[1]
-
-    assert mode[:2] != "--", "Usage: program.py <mode> [options]"
-    assert mode in ["ODE", "SDE"], "Invalid mode. Please choose 'ODE' or 'SDE'"
-
     parser.add_argument("--num_gpus", type=int, default=1)
     parser.add_argument("--ckpt", type=str, required=True)
     parser.add_argument("--ema", action="store_true")
     parser.add_argument("--precision", default="bf16", choices=["bf16", "fp32"])
 
     parse_transport_args(parser)
-    if mode == "ODE":
-        parse_ode_args(parser)
-        # Further processing for ODE
-    elif mode == "SDE":
-        parse_sde_args(parser)
-        # Further processing for SDE
+    parse_ode_args(parser)
 
     args = parser.parse_known_args()[0]
 
     if args.num_gpus != 1:
         raise NotImplementedError("Multi-GPU Inference is not yet supported")
 
-    args.sampler_mode = mode
+    args.sampler_mode = "ODE"
 
     master_port = find_free_port()
 
@@ -523,12 +509,10 @@ def main():
                     #     ntk_scaling, proportional_attn
                     # ])
             with gr.Column():
-                default_img = Image.open("./image.png")
                 output_img = gr.Image(
                     label="Generated image",
                     interactive=False,
                     format="png",
-                    value=default_img,
                 )
 
         with gr.Row():

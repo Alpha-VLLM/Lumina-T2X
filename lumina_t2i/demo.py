@@ -20,7 +20,6 @@ class ModelFailure:
     pass
 
 
-
 @torch.no_grad()
 def model_main(args, master_port, rank, request_queue, response_queue, mp_barrier):
     # import here to avoid huggingface Tokenizer parallelism warnings
@@ -347,8 +346,8 @@ def main():
             with gr.Column():
                 cap = gr.Textbox(
                     lines=2, label="Caption", interactive=True,
-                    value="A fluffy mouse holding a watermelon, in a magical and colorful setting, "
-                          "illustrated in the style of Hayao Miyazaki anime by Studio Ghibli."
+                    value="Miss Mexico portrait of the most beautiful mexican woman, Exquisite detail, 30-megapixel, 4k, 85-mm-lens, sharp-focus, f:8, "
+                    "ISO 100, shutter-speed 1:125, diffuse-back-lighting, award-winning photograph, small-catchlight, High-sharpness, facial-symmetry, 8k --q 2 --ar 18:32 --v 5",
                 )
                 with gr.Row():
                     res_choices = (
@@ -409,7 +408,11 @@ def main():
                     #     ntk_scaling, proportional_attn
                     # ])
             with gr.Column():
-                output_img = gr.Image(label="Generated image", interactive=False)
+                output_img = gr.Image(
+                    label="Generated image",
+                    interactive=False,
+                    format="png",
+                )
 
         with gr.Row():
             gr.Examples(

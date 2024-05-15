@@ -68,7 +68,7 @@ Note: You may want to adjust the CUDA version [according to your driver version]
   or you can use
 
   ```bash
-  cd lumina-t2i
+  cd lumina_t2i
   pip install -r requirements.txt
   ```
 
@@ -116,8 +116,6 @@ pip install -v --disable-pip-version-check --no-cache-dir --no-build-isolation -
 
 To ensure that our generative model is ready to use right out of the box, we provide a user-friendly CLI program and a locally deployable Web Demo site.
 
-### CLI
-
 1. Install Lumina-T2I
 
 ```bash
@@ -137,6 +135,8 @@ or using git for cloning the model you want to use:
 ```bash
 git clone https://huggingface.co/Alpha-VLLM/Lumina-T2I
 ``` 
+
+### CLI
 
 1. Setting your personal inference configuration
 
@@ -214,7 +214,7 @@ Update your own personal inference settings to generate different styles of imag
   - `proportional_attn`: Whether to use proportional attention.
   - `seed`: random initialization seeds.
 
-1. Run with CLI
+2. Run with CLI
 
 inference command:
 ```bash
@@ -224,7 +224,7 @@ lumina infer -c <config_path> <caption_here> <output_dir>
 e.g. Demo command:
 
 ```bash
-cd lumina-t2i
+cd lumina_t2i
 lumina infer -c "config/infer/settings.yaml" "a snow man of ..." "./outputs"
 ```
 
@@ -236,11 +236,11 @@ To host a local gradio demo for interactive inference, run the following command
 # `/path/to/ckpt` should be a directory containing `consolidated*.pth` and `model_args.pth`
 
 # default
-python -u demo.py ODE --ckpt "/path/to/ckpt"
+python -u demo.py --ckpt "/path/to/ckpt"
 
 # the demo by default uses bf16 precision. to switch to fp32:
-python -u demo.py ODE --ckpt "/path/to/ckpt" --precision fp32 
+python -u demo.py --ckpt "/path/to/ckpt" --precision fp32 
 
 # use ema model
-python -u demo.py ODE --ckpt "/path/to/ckpt" --ema
+python -u demo.py --ckpt "/path/to/ckpt" --ema
 ```
