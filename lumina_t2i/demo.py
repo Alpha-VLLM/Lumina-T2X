@@ -332,6 +332,14 @@ def main():
         p.start()
         processes.append(p)
 
+    description = """
+            # Lumina-T2I Image Generation Demo
+
+            Lumina-T2I is a 5B Flag-DiT model with LLaMA2-7B text encoder.
+
+            Demo current model: `Lumina-T2I 5B`
+
+"""
     with gr.Blocks() as demo:
         with gr.Row():
             gr.Markdown(
