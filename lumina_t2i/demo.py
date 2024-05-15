@@ -342,15 +342,7 @@ def main():
 """
     with gr.Blocks() as demo:
         with gr.Row():
-            gr.Markdown(
-                f"""# Lumina-T2I Image Generation Demo
-
-**Model path:** {os.path.abspath(args.ckpt)}
- 
-**ema**: {args.ema}
-                
-**precision**: {args.precision}"""
-            )
+            gr.Markdown(description)
         with gr.Row():
             with gr.Column():
                 cap = gr.Textbox(
