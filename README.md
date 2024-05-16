@@ -19,11 +19,11 @@
 [![weixin](https://img.shields.io/badge/-WeChat@机器之心-000000?logo=wechat&logoColor=07C160)](https://mp.weixin.qq.com/s/NwwbaeRujh-02V6LRs5zMg)&#160;
 [![zhihu](https://img.shields.io/badge/-知乎-000000?logo=zhihu&logoColor=0084FF)](https://www.zhihu.com/org/opengvlab)&#160;
 [![zhihu](https://img.shields.io/badge/-Twitter@OpenGVLab-black?logo=twitter&logoColor=1D9BF0)](https://twitter.com/opengvlab/status/1788949243383910804)&#160;
-[![Static Badge](https://img.shields.io/badge/Video%20Introduction%20of%20Lumina--T2X-red?logo=youtube)](https://www.youtube.com/watch?v=KFtHmS5eUCM) <br>
+[![Static Badge](https://img.shields.io/badge/Video%20Introduction%20of%20Lumina--T2X-red?logo=youtube)](https://www.youtube.com/watch?v=KFtHmS5eUCM)
 [![Static Badge](https://img.shields.io/badge/Official(node1)-6B88E3?logo=youtubegaming&label=Demo%20Lumina-Next-T2I)](http://106.14.2.150:10020/)&#160;
 [![Static Badge](https://img.shields.io/badge/Official(node2)-6B88E3?logo=youtubegaming&label=Demo%20Lumina-Next-T2I)](http://106.14.2.150:10021/)&#160;
 [![Static Badge](https://img.shields.io/badge/Official(node3)-6B88E3?logo=youtubegaming&label=Demo%20Lumina-Next-T2I)](http://106.14.2.150:10022/)&#160;
-[![Static Badge](https://img.shields.io/badge/Lumina--Next--T2I-HF_Space-yellow?logoColor=violet&label=%F0%9F%A4%97%20Demo%20Lumina-Next-T2I)](https://huggingface.co/spaces/Alpha-VLLM/Lumina-Next-T2I) <br>
+[![Static Badge](https://img.shields.io/badge/Lumina--Next--T2I-HF_Space-yellow?logoColor=violet&label=%F0%9F%A4%97%20Demo%20Lumina-Next-T2I)](https://huggingface.co/spaces/Alpha-VLLM/Lumina-Next-T2I)
 [![Static Badge](https://img.shields.io/badge/Lumina--Next--T2I%20checkpoints-Model(2B)-yellow?logoColor=violet&label=%F0%9F%A4%97%20Lumina-Next-T2I%20checkpoints)](https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I)
 [![Static Badge](https://img.shields.io/badge/Lumina--T2I%20checkpoints-Model(5B)-yellow?logoColor=violet&label=%F0%9F%A4%97%20Lumina-T2I%20checkpoints)](https://huggingface.co/Alpha-VLLM/Lumina-T2I)
 
