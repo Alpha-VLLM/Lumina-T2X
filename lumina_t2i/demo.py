@@ -11,6 +11,7 @@ import gradio as gr
 import torch
 import torch.distributed as dist
 from torchvision.transforms.functional import to_pil_image
+from safetensors.torch import load_file
 
 import models
 from transport import create_transport, Sampler
@@ -59,21 +60,27 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
         args.precision
     ]
 
-    model_lm = AutoModelForCausalLM.from_pretrained(train_args.lm, torch_dtype=dtype, device_map="cuda")
+    model_lm = AutoModelForCausalLM.from_pretrained(
+        train_args.lm, torch_dtype=dtype, device_map="cuda"
+    )
     cap_feat_dim = model_lm.config.hidden_size
     if args.num_gpus > 1:
         raise NotImplementedError("Inference with >1 GPUs not yet supported")
 
-    tokenizer = AutoTokenizer.from_pretrained(train_args.tokenizer_path, add_bos_token=True, add_eos_token=True)
-    tokenizer.padding_side = 'right'
+    tokenizer = AutoTokenizer.from_pretrained(
+        train_args.tokenizer_path, add_bos_token=True, add_eos_token=True
+    )
+    tokenizer.padding_side = "right"
 
     if dist.get_rank() == 0:
         print(f"Creating vae: {train_args.vae}")
     vae = AutoencoderKL.from_pretrained(
-        f"stabilityai/sd-vae-ft-{train_args.vae}"
-        if train_args.vae != "sdxl"
-        else "stabilityai/sdxl-vae",
-        torch_dtype=torch.float32
+        (
+            f"stabilityai/sd-vae-ft-{train_args.vae}"
+            if train_args.vae != "sdxl"
+            else "stabilityai/sdxl-vae"
+        ),
+        torch_dtype=torch.float32,
     ).cuda()
 
     if dist.get_rank() == 0:
@@ -86,9 +93,12 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
     model.eval().to("cuda", dtype=dtype)
 
     assert train_args.model_parallel_size == args.num_gpus
-    ckpt = torch.load(os.path.join(
-        args.ckpt, f"consolidated{'_ema' if args.ema else ''}.{rank:02d}-of-{args.num_gpus:02d}.pth"
-    ), map_location="cpu")
+    ckpt = load_file(
+        os.path.join(
+            args.ckpt,
+            f"consolidated{'_ema' if args.ema else ''}.{rank:02d}-of-{args.num_gpus:02d}.safetensors",
+        )
+    )
     model.load_state_dict(ckpt, strict=True)
 
     mp_barrier.wait()
@@ -123,7 +133,7 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                     atol=args.atol,
                     rtol=args.rtol,
                     reverse=args.reverse,
-                    time_shifting_factor=t_shift
+                    time_shifting_factor=t_shift,
                 )
                 # end sampler
 
@@ -138,17 +148,23 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
 
                 cap_tok = tokenizer.encode(cap, truncation=False)
                 null_cap_tok = tokenizer.encode("", truncation=False)
-                tok = torch.zeros([2, max(len(cap_tok), len(null_cap_tok))], dtype=torch.long, device="cuda")
+                tok = torch.zeros(
+                    [2, max(len(cap_tok), len(null_cap_tok))],
+                    dtype=torch.long,
+                    device="cuda",
+                )
                 tok_mask = torch.zeros_like(tok, dtype=torch.bool)
-                tok[0, :len(cap_tok)] = torch.tensor(cap_tok)
-                tok[1, :len(null_cap_tok)] = torch.tensor(null_cap_tok)
-                tok_mask[0, :len(cap_tok)] = True
-                tok_mask[1, :len(null_cap_tok)] = True
+                tok[0, : len(cap_tok)] = torch.tensor(cap_tok)
+                tok[1, : len(null_cap_tok)] = torch.tensor(null_cap_tok)
+                tok_mask[0, : len(cap_tok)] = True
+                tok_mask[1, : len(null_cap_tok)] = True
 
                 cap_feats = model_lm.get_decoder()(input_ids=tok).last_hidden_state
 
                 model_kwargs = dict(
-                    cap_feats=cap_feats, cap_mask=tok_mask, cfg_scale=cfg_scale,
+                    cap_feats=cap_feats,
+                    cap_mask=tok_mask,
+                    cfg_scale=cfg_scale,
                 )
                 if proportional_attn:
                     model_kwargs["proportional_attn"] = True
@@ -345,15 +361,18 @@ def main():
         with gr.Row():
             with gr.Column():
                 cap = gr.Textbox(
-                    lines=2, label="Caption", interactive=True,
+                    lines=2,
+                    label="Caption",
+                    interactive=True,
                     value="Miss Mexico portrait of the most beautiful mexican woman, Exquisite detail, 30-megapixel, 4k, 85-mm-lens, sharp-focus, f:8, "
                     "ISO 100, shutter-speed 1:125, diffuse-back-lighting, award-winning photograph, small-catchlight, High-sharpness, facial-symmetry, 8k --q 2 --ar 18:32 --v 5",
                 )
                 with gr.Row():
-                    res_choices = (
-                        ["1024x1024", "512x2048", "2048x512"] +
-                        ["(Extrapolation) 1664x1664", "(Extrapolation) 1024x2048", "(Extrapolation) 2048x1024"]
-                    )
+                    res_choices = ["1024x1024", "512x2048", "2048x512"] + [
+                        "(Extrapolation) 1664x1664",
+                        "(Extrapolation) 1024x2048",
+                        "(Extrapolation) 2048x1024",
+                    ]
                     resolution = gr.Dropdown(
                         value=res_choices[0], choices=res_choices, label="Resolution"
                     )
@@ -366,18 +385,25 @@ def main():
                         label="Sampling steps",
                     )
                     cfg_scale = gr.Slider(
-                        minimum=1., maximum=20., value=4., interactive=True,
-                        label="CFG scale"
+                        minimum=1.0,
+                        maximum=20.0,
+                        value=4.0,
+                        interactive=True,
+                        label="CFG scale",
                     )
                     solver = gr.Dropdown(
                         value="euler",
                         choices=["euler", "dopri5", "dopri8"],
-                        label="solver"
+                        label="solver",
                     )
                 with gr.Row():
                     t_shift = gr.Slider(
-                        minimum=1, maximum=20, value=4, step=1, interactive=True,
-                        label="Time shift"
+                        minimum=1,
+                        maximum=20,
+                        value=4,
+                        step=1,
+                        interactive=True,
+                        label="Time shift",
                     )
                     seed = gr.Slider(
                         minimum=0,
@@ -387,7 +413,9 @@ def main():
                         interactive=True,
                         label="Seed (0 for random)",
                     )
-                with gr.Accordion("Advanced Settings for Resolution Extrapolation", open=False):
+                with gr.Accordion(
+                    "Advanced Settings for Resolution Extrapolation", open=False
+                ):
                     with gr.Row():
                         ntk_scaling = gr.Checkbox(
                             value=True,
@@ -417,12 +445,22 @@ def main():
         with gr.Row():
             gr.Examples(
                 [
-                    ["A fluffy mouse holding a watermelon, in a magical and colorful setting, illustrated in the style of Hayao Miyazaki anime by Studio Ghibli."],  # noqa
+                    [
+                        "A fluffy mouse holding a watermelon, in a magical and colorful setting, illustrated in the style of Hayao Miyazaki anime by Studio Ghibli."
+                    ],  # noqa
                     ["A humanoid eagle soldier of the First World War."],  # noqa
-                    ["A cute Christmas mockup on an old wooden industrial desk table with Christmas decorations and bokeh lights in the background."],  # noqa
-                    ["A scared cute rabbit in Happy Tree Friends style and punk vibe."],  # noqa
-                    ["A front view of a romantic flower shop in France filled with various blooming flowers including lavenders and roses."],  # noqa
-                    ["An old man, portrayed as a retro superhero, stands in the streets of New York City at night"],  # noqa
+                    [
+                        "A cute Christmas mockup on an old wooden industrial desk table with Christmas decorations and bokeh lights in the background."
+                    ],  # noqa
+                    [
+                        "A scared cute rabbit in Happy Tree Friends style and punk vibe."
+                    ],  # noqa
+                    [
+                        "A front view of a romantic flower shop in France filled with various blooming flowers including lavenders and roses."
+                    ],  # noqa
+                    [
+                        "An old man, portrayed as a retro superhero, stands in the streets of New York City at night"
+                    ],  # noqa
                 ],
                 [cap],
                 label="Examples",
@@ -454,7 +492,8 @@ def main():
 
     mp_barrier.wait()
     demo.queue().launch(
-        share=True, server_name="0.0.0.0",
+        share=True,
+        server_name="0.0.0.0",
     )
 
 

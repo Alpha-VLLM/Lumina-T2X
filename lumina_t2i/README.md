@@ -130,6 +130,8 @@ pip install -e .
 huggingface-cli download --resume-download Alpha-VLLM/Lumina-T2I --local-dir /path/to/ckpt
 ```
 
+> adding `--local-dir-use-symlinks False` can disable file symlinks.
+
 or using git for cloning the model you want to use:
 
 ```bash
