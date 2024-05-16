@@ -22,8 +22,8 @@
 ![Static Badge](https://img.shields.io/badge/-MIT-MIT?logoColor=%231082c3&label=Code%20License&link=https%3A%2F%2Fgithub.com%2FAlpha-VLLM%2FLumina-T2X%2Fblob%2Fmain%2FLICENSE) <br>
 [![Static Badge](https://img.shields.io/badge/Official(node1)-6B88E3?logo=youtubegaming&label=Demo%20Lumina-Next-T2I)](http://106.14.2.150:10020/)&#160;
 [![Static Badge](https://img.shields.io/badge/Official(node2)-6B88E3?logo=youtubegaming&label=Demo%20Lumina-Next-T2I)](http://106.14.2.150:10021/)&#160;
-[![Static Badge](https://img.shields.io/badge/Official(node3)-6B88E3?logo=youtubegaming&label=Demo%20Lumina-Next-T2I)](http://106.14.2.150:10022/)&#160;
-[![Static Badge](https://img.shields.io/badge/Lumina--Next--T2I-HF_Space-yellow?logoColor=violet&label=%F0%9F%A4%97%20Demo%20Lumina-Next-T2I)](https://huggingface.co/spaces/Alpha-VLLM/Lumina-Next-T2I) <br>
+[![Static Badge](https://img.shields.io/badge/Official(node3)-6B88E3?logo=youtubegaming&label=Demo%20Lumina-Next-T2I)](http://106.14.2.150:10022/)&#160; <br>
+[![Static Badge](https://img.shields.io/badge/Lumina--Next--T2I-HF_Space-yellow?logoColor=violet&label=%F0%9F%A4%97%20Demo%20Lumina-Next-T2I)](https://huggingface.co/spaces/Alpha-VLLM/Lumina-Next-T2I) 
 [![Static Badge](https://img.shields.io/badge/Lumina--Next--T2I%20checkpoints-Model(2B)-yellow?logoColor=violet&label=%F0%9F%A4%97%20Lumina-Next-T2I%20checkpoints)](https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I)
 [![Static Badge](https://img.shields.io/badge/Lumina--T2I%20checkpoints-Model(5B)-yellow?logoColor=violet&label=%F0%9F%A4%97%20Lumina-T2I%20checkpoints)](https://huggingface.co/Alpha-VLLM/Lumina-T2I)
 
