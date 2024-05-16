@@ -184,32 +184,22 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                     args.sample_eps,
                 )
                 sampler = Sampler(transport)
-                if args.sampler_mode == "ODE":
-                    if args.likelihood:
-                        # assert args.cfg_scale == 1, "Likelihood is incompatible with guidance"  # todo
-                        sample_fn = sampler.sample_ode_likelihood(
-                            sampling_method=solver,
-                            num_steps=num_sampling_steps,
-                            atol=args.atol,
-                            rtol=args.rtol,
-                        )
-                    else:
-                        sample_fn = sampler.sample_ode(
-                            sampling_method=solver,
-                            num_steps=num_sampling_steps,
-                            atol=args.atol,
-                            rtol=args.rtol,
-                            reverse=args.reverse,
-                            time_shifting_factor=t_shift,
-                        )
-                elif args.sampler_mode == "SDE":
-                    sample_fn = sampler.sample_sde(
+                if args.likelihood:
+                    # assert args.cfg_scale == 1, "Likelihood is incompatible with guidance"  # todo
+                    sample_fn = sampler.sample_ode_likelihood(
                         sampling_method=solver,
-                        diffusion_form=args.diffusion_form,
-                        diffusion_norm=args.diffusion_norm,
-                        last_step=args.last_step,
-                        last_step_size=args.last_step_size,
                         num_steps=num_sampling_steps,
+                        atol=args.atol,
+                        rtol=args.rtol,
+                    )
+                else:
+                    sample_fn = sampler.sample_ode(
+                        sampling_method=solver,
+                        num_steps=num_sampling_steps,
+                        atol=args.atol,
+                        rtol=args.rtol,
+                        reverse=args.reverse,
+                        time_shifting_factor=t_shift,
                     )
                 # end sampler
 
@@ -230,13 +220,13 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
 
                 train_res = 1024
                 res_cat = (w * h) ** 0.5
-                print(f"res_cat: {res_cat}")
+                print(f"> res_cat: {res_cat}")
                 max_seq_len = (res_cat // 16) ** 2 + (res_cat // 16) * 2
-                print(f"max_seq_len: {max_seq_len}")
+                print(f"> max_seq_len: {max_seq_len}")
 
                 rope_scaling_factor = 1.0
                 ntk_factor = max_seq_len / (train_res // 16) ** 2
-                print(f"ntk_factor: {ntk_factor}")
+                print(f"> ntk_factor: {ntk_factor}")
 
                 model_kwargs = dict(
                     cap_feats=cap_feats,
@@ -247,21 +237,21 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                 )
 
                 if dist.get_rank() == 0:
-                    print(f"caption: {cap}")
-                    print(f"num_sampling_steps: {num_sampling_steps}")
-                    print(f"cfg_scale: {cfg_scale}")
+                    print(f"> caption: {cap}")
+                    print(f"> num_sampling_steps: {num_sampling_steps}")
+                    print(f"> cfg_scale: {cfg_scale}")
 
-                with torch.cuda.amp.autocast(dtype=torch.bfloat16):
-                    print("> [debug] start sample")
-                    samples = sample_fn(z, model.forward_with_cfg, **model_kwargs)[-1]
+                print("> start sample")
+                samples = sample_fn(z, model.forward_with_cfg, **model_kwargs)[-1]
                 samples = samples[:1]
 
                 factor = 0.18215 if train_args.vae != "sdxl" else 0.13025
-                print(f"vae factor: {factor}")
+                print(f"> vae factor: {factor}")
                 samples = vae.decode(samples / factor).sample
                 samples = (samples + 1.0) / 2.0
                 samples.clamp_(0.0, 1.0)
                 img = to_pil_image(samples[0].float())
+                print("> generated image")
 
                 if response_queue is not None:
                     response_queue.put(img)
@@ -607,7 +597,7 @@ def main():
         )
 
     mp_barrier.wait()
-    demo.queue().launch(share=True, server_name="0.0.0.0", server_port=7863)
+    demo.queue().launch(server_name="0.0.0.0", server_port=7863)
 
 
 if __name__ == "__main__":
