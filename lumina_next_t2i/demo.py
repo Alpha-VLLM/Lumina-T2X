@@ -64,7 +64,7 @@ def encode_prompt(
 def model_main(args, master_port, rank, request_queue, response_queue, mp_barrier):
     # import here to avoid huggingface Tokenizer parallelism warnings
     from diffusers.models import AutoencoderKL
-    from transformers import AutoModelForCausalLM, AutoTokenizer
+    from transformers import AutoModel, AutoTokenizer
 
     # override the default print function since the delay can be large for child process
     original_print = builtins.print
@@ -99,19 +99,15 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
         args.precision
     ]
 
-    text_encoder = (
-        AutoModelForCausalLM.from_pretrained(
-            "google/gemma-2b", torch_dtype=dtype, device_map="cuda"
-        )
-        .get_decoder()
-        .eval()
-    )
+    text_encoder = AutoModel.from_pretrained(
+        "google/gemma-2b", torch_dtype=dtype, device_map="cuda", token=args.hf_token
+    ).eval()
     cap_feat_dim = text_encoder.config.hidden_size
     if args.num_gpus > 1:
         raise NotImplementedError("Inference with >1 GPUs not yet supported")
 
     tokenizer = AutoTokenizer.from_pretrained(
-        "google/gemma-2b", add_bos_token=True, add_eos_token=True
+        "google/gemma-2b", add_bos_token=True, add_eos_token=True, token=args.hf_token
     )
     tokenizer.padding_side = "right"
 
@@ -162,18 +158,19 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                 proportional_attn,
             ) = request_queue.get()
 
-            print(
-                "> params:",
-                cap,
-                resolution,
-                num_sampling_steps,
-                cfg_scale,
-                solver,
-                t_shift,
-                seed,
-                ntk_scaling,
-                proportional_attn,
+            metadata = dict(
+                cap=cap,
+                resolution=resolution,
+                num_sampling_steps=num_sampling_steps,
+                cfg_scale=cfg_scale,
+                solver=solver,
+                t_shift=t_shift,
+                seed=seed,
+                ntk_scaling=ntk_scaling,
+                proportional_attn=proportional_attn,
             )
+            print("> params:", json.dumps(metadata, indent=2))
+
             try:
                 # begin sampler
                 transport = create_transport(
@@ -251,10 +248,10 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                 samples = (samples + 1.0) / 2.0
                 samples.clamp_(0.0, 1.0)
                 img = to_pil_image(samples[0].float())
-                print("> generated image")
+                print("> generated image, done.")
 
                 if response_queue is not None:
-                    response_queue.put(img)
+                    response_queue.put((img, metadata))
 
             except Exception:
                 print(traceback.format_exc())
@@ -377,6 +374,7 @@ def main():
     parser.add_argument("--ckpt", type=str, required=True)
     parser.add_argument("--ema", action="store_true")
     parser.add_argument("--precision", default="bf16", choices=["bf16", "fp32"])
+    parser.add_argument("--hf_token", type=str, default=None, help="huggingface read token for accessing gated repo.")
 
     parse_transport_args(parser)
     parse_ode_args(parser)
@@ -504,6 +502,8 @@ def main():
                     interactive=False,
                     format="png",
                 )
+                with gr.Accordion(label="Generation Parameters", open=True):
+                    gr_metadata = gr.JSON(label="metadata", show_label=False)
 
         with gr.Row():
             gr.Examples(
@@ -576,9 +576,11 @@ def main():
             for q in request_queues:
                 q.put(args)
             result = response_queue.get()
+            img, metadata = result
+
             if isinstance(result, ModelFailure):
                 raise RuntimeError
-            return result
+            return img, metadata
 
         submit_btn.click(
             on_submit,
@@ -593,11 +595,11 @@ def main():
                 ntk_scaling,
                 proportional_attn,
             ],
-            [output_img],
+            [output_img, gr_metadata],
         )
 
     mp_barrier.wait()
-    demo.queue().launch(server_name="0.0.0.0", server_port=7863)
+    demo.queue().launch(server_name="0.0.0.0")
 
 
 if __name__ == "__main__":
