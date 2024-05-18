@@ -1,3 +1,4 @@
+import os
 import click
 import warnings
 import builtins
@@ -147,31 +148,28 @@ def infer(num_gpus, ckpt, ckpt_lm, ema, precision, config, token, text, output_p
     main(num_gpus, ckpt, ckpt_lm, ema, precision, config, token, text, output_path)
 
 
-@add_options(global_options)
-@click.argument("text", type=str, required=False, nargs=1)
+@click.argument("output_dir", type=str, required=True, nargs=1)
+@click.argument("torch_weight_path", type=str, required=True, nargs=1)
 @entry_point.command()
-def infer_sde(
-    sampling_method, diffusion_form, diffusion_norm, last_step, last_step_size, text
-):
-    click.echo(text)
+def convert(torch_weight_path, output_dir):
+    import torch
+    from safetensors.torch import save_file
 
-    pass
+    file_path, ext = os.path.splitext(torch_weight_path)
+    if ext != ".pth":
+        raise ValueError("Only `.pth` models are supported for conversion.")
+    file_name = file_path.split("/")[-1]
+    output_path = os.path.join(output_dir, file_name + ".safetensors")
 
+    print(f"Loading your current `.pth` model {torch_weight_path}")
+    if os.path.exists(output_path):
+        raise ValueError(
+            f"The output directory contains a model file with the same name `{file_name}`. "
+            f"Please check if the `output_dir` {output_dir} is correct."
+        )
+    torch_weight_dict = torch.load(torch_weight_path, map_location="cpu")
 
-@add_options(global_options)
-@click.option(
-    "--path-type", type=click.Choice(["Linear", "GVP", "VP"]), default="Linear"
-)
-@click.option(
-    "--prediction",
-    type=click.Choice(["velocity", "score", "noise"]),
-    default="velocity",
-)
-@click.option(
-    "--loss-weight", type=click.Choice([None, "velocity", "likelihood"]), default=None
-)
-@click.option("--sample-eps", type=float)
-@click.option("--train-eps", type=float)
-@entry_point.command()
-def transport(path_type, prediction, loss_weight, sample_eps, train_eps):
-    pass
+    print(f"Saving model with `safetensors` format at {output_dir}")
+    os.makedirs(output_dir, exist_ok=True)
+    save_file(torch_weight_dict, output_path)
+    print("Done.")

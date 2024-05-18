@@ -169,6 +169,19 @@ or using git for cloning the model you want to use:
 git clone https://huggingface.co/Alpha-VLLM/Lumina-T2I
 ``` 
 
+3. Load your own trained model
+
+If you are loading your own trained model, please convert it to `safetensors` first for security reasons before loading. Assuming the your trained model path is `/path/to/your/own/model.pth` and your save directory is `/path/to/new/model`. We provide a feature to convert to `safetensors` in the `lumina` command.
+
+```bash
+# <torch_weight_path> means your trained model path.
+# <output_directory> means the directory where you want to save the model with `.safetensors` format.
+lumina convert <torch_weight_path> <output_dir>
+
+# example:
+lumina convert "/path/to/your/own/model.pth" "/path/to/new/directory/"
+```
+
 ### CLI
 
 1. Setting your personal inference configuration
