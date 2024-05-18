@@ -64,6 +64,7 @@
 
 ## 📰 News
 
+- [2024-05-18] 🤩🤩🤩 **We released training code for Lumina-T2I 5B. [README](https://github.com/Alpha-VLLM/Lumina-T2X/tree/main/lumina_t2i#training)**
 - [2024-05-16] ❗❗❗ **We have converted the `.pth` weights to `.safetensors` weights. Please pull the latest code to use `demo.py` for inference.**
 - [2024-05-14] 🔥🔥🔥 Lumina-Next now supports simple **text-to-music** generation ([examples](#text-to-music-generation)), **high-resolution (1024*4096) Panorama** generation conditioned on text ([examples](#panorama-generation)), and **3D point cloud** generation conditioned on labels ([examples](#point-cloud-generation)).
 - [2024-05-13] 🔥🔥🔥 We give [examples](#multilingual-generation) demonstrating Lumina-T2X's capability to support **multilingual prompts**, and even support prompts containing **emojis**.
