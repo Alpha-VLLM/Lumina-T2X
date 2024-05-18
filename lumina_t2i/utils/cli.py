@@ -12,6 +12,7 @@ import torch
 import torch.distributed as dist
 import yaml
 from torchvision.transforms.functional import to_pil_image
+from safetensors.torch import load_file
 
 from .. import models
 from ..transport import Sampler, create_transport
@@ -110,12 +111,11 @@ def load_model(
     model_dit.eval().to("cuda", dtype=dtype)
 
     assert train_args.model_parallel_size == num_gpus
-    ckpt = torch.load(
+    ckpt = load_file(
         os.path.join(
             ckpt,
             f"consolidated{'_ema' if is_ema else ''}.{rank:02d}-of-{num_gpus:02d}.pth",
         ),
-        map_location="cpu",
     )
     model_dit.load_state_dict(ckpt, strict=True)
 

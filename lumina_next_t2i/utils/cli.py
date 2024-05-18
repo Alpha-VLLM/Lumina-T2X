@@ -14,6 +14,7 @@ import torch.distributed as dist
 import yaml
 import numpy as np
 from torchvision.transforms.functional import to_pil_image
+from safetensors.torch import load_file
 
 from .. import models
 from ..transport import Sampler, create_transport
@@ -42,11 +43,7 @@ def dtype_select(precision):
 
 
 def encode_prompt(
-    prompt_batch,
-    text_encoder,
-    tokenizer,
-    proportion_empty_prompts,
-    is_train=True
+    prompt_batch, text_encoder, tokenizer, proportion_empty_prompts, is_train=True
 ):
 
     captions = []
@@ -58,7 +55,6 @@ def encode_prompt(
         elif isinstance(caption, (list, np.ndarray)):
             # take a random caption if there are multiple
             captions.append(random.choice(caption) if is_train else caption[0])
-
 
     with torch.no_grad():
         text_inputs = tokenizer(
@@ -76,11 +72,10 @@ def encode_prompt(
         prompt_embeds = text_encoder(
             input_ids=text_input_ids.cuda(),
             attention_mask=prompt_masks.cuda(),
-            output_hidden_states=True
+            output_hidden_states=True,
         ).hidden_states[-2]
 
     return prompt_embeds, prompt_masks
-
 
 
 def load_model(
@@ -156,12 +151,11 @@ def load_model(
     assert train_args.model_parallel_size == num_gpus
     if is_ema:
         print("Loading ema model.")
-    ckpt = torch.load(
+    ckpt = load_file(
         os.path.join(
             ckpt,
             f"consolidated{'_ema' if is_ema else ''}.{rank:02d}-of-{num_gpus:02d}.pth",
         ),
-        map_location="cpu",
     )
     model_dit.load_state_dict(ckpt, strict=True)
 
@@ -177,7 +171,9 @@ def find_free_port() -> int:
 
 
 @torch.no_grad()
-def inference(cap, dtype, config, vae, model_dit, text_encoder, tokenizer, *args, **kwargs):
+def inference(
+    cap, dtype, config, vae, model_dit, text_encoder, tokenizer, *args, **kwargs
+):
     # transport
     transport_config = config["transport"]
     path_type = transport_config["path_type"]
@@ -245,28 +241,28 @@ def inference(cap, dtype, config, vae, model_dit, text_encoder, tokenizer, *args
 
                 with torch.no_grad():
                     cap_feats, cap_mask = encode_prompt(
-                        [cap] + [''],
-                        text_encoder,
-                        tokenizer,
-                        0.0
+                        [cap] + [""], text_encoder, tokenizer, 0.0
                     )
                 # get caption text embedding
                 cap_mask = cap_mask.to(cap_feats.device)
 
                 train_res = 1024
                 res_cat = (w * h) ** 0.5
-                print(f'res_cat: {res_cat}')
+                print(f"res_cat: {res_cat}")
                 max_seq_len = (res_cat // 16) ** 2 + (res_cat // 16) * 2
-                print(f'max_seq_len: {max_seq_len}')
+                print(f"max_seq_len: {max_seq_len}")
 
                 rope_scaling_factor = 1.0
                 ntk_factor = max_seq_len / (train_res // 16) ** 2
-                print(f'ntk_factor: {ntk_factor}')
+                print(f"ntk_factor: {ntk_factor}")
 
-                model_kwargs = dict(cap_feats=cap_feats, cap_mask=cap_mask, cfg_scale=cfg_scale,
-                                        rope_scaling_factor=rope_scaling_factor,
-                                        ntk_factor=ntk_factor
-                                        )
+                model_kwargs = dict(
+                    cap_feats=cap_feats,
+                    cap_mask=cap_mask,
+                    cfg_scale=cfg_scale,
+                    rope_scaling_factor=rope_scaling_factor,
+                    ntk_factor=ntk_factor,
+                )
 
                 rank0_print(f"> Caption: {cap}")
                 rank0_print(f"> Num_sampling_steps: {num_sampling_steps}")
