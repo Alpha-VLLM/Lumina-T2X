@@ -112,6 +112,37 @@ pip install -v --disable-pip-version-check --no-cache-dir --no-build-isolation -
 > Thus, at least 8 GPUs are required for full fine-tuning of the Lumina-T2X 5B model.
 > Parameter-efficient Finetuning of Lumina-T2X shall be released soon.**
 
+This section shows how to train Lumina-T2I on a SLURM cluster. Changes may be needed to run the experiments on different platforms.
+1. **Stage 1 @ 256px**
+
+``` bash
+# 8 GPUs were used by us for this experiment
+srun -n8 --ntasks-per-node=8 --gres=gpu:8 bash exps/5B_bs512_lr1e-4_bf16_256px_sdxlvae.sh
+```
+
+2. **Stage2 @ 512px**
+
+``` bash
+# 16 GPUs were used by us for this experiment
+
+# initialize from the result of stage1
+# Note that the iteration 0030000 is just for illustration and does not mean we trained for 30k iters
+export STAGE_1_PATH=results/DiT_Llama_5B_patch2_bs512_lr1e-4_bf16_256px_vaesdxl/checkpoints/0030000
+
+srun -n16 --ntasks-per-node=8 --gres=gpu:8 bash exps/5B_bs512_lr1e-4_bf16_512px_sdxlvae.sh $STAGE_1_PATH stage1
+```
+
+3. **Stage3 @ 1024px**
+``` bash
+# 32 GPUs were used by us for this experiment
+
+# initialize from the result of stage2
+# Note that the iteration 0030000 is just for illustration and does not mean we trained for 30k iters
+export STAGE_2_PATH=results/DiT_Llama_5B_patch2_bs512_lr1e-4_bf16_512px_vaesdxl_initstage1/checkpoints/0030000
+
+srun -n32 --ntasks-per-node=8 --gres=gpu:8 bash exps/5B_bs512_lr1e-4_bf16_1024px_sdxlvae.sh $STAGE_2_PATH stage2
+```
+
 ## Inference
 
 To ensure that our generative model is ready to use right out of the box, we provide a user-friendly CLI program and a locally deployable Web Demo site.
