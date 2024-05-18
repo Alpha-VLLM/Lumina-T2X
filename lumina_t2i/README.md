@@ -173,6 +173,8 @@ git clone https://huggingface.co/Alpha-VLLM/Lumina-T2I
 
 If you are loading your own trained model, please convert it to `safetensors` first for security reasons before loading. Assuming the your trained model path is `/path/to/your/own/model.pth` and your save directory is `/path/to/new/model`. We provide a feature to convert to `safetensors` in the `lumina` command.
 
+> The `output_dir` supports saving files with different names in the same directory.
+
 ```bash
 # <torch_weight_path> means your trained model path.
 # <output_directory> means the directory where you want to save the model with `.safetensors` format.

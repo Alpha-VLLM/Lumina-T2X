@@ -152,6 +152,14 @@ def infer(num_gpus, ckpt, ckpt_lm, ema, precision, config, token, text, output_p
 @click.argument("torch_weight_path", type=str, required=True, nargs=1)
 @entry_point.command()
 def convert(torch_weight_path, output_dir):
+    """
+    convert torch model weight `.pth` into `.safetensors`
+
+    Args:
+        torch_weight_path (str): pytorch model path
+        output_dir (str): saved directory, supports saving files with different names in the same directory.
+
+    """
     import torch
     from safetensors.torch import save_file
 
