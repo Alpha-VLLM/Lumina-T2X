@@ -154,7 +154,7 @@ def load_model(
     ckpt = load_file(
         os.path.join(
             ckpt,
-            f"consolidated{'_ema' if is_ema else ''}.{rank:02d}-of-{num_gpus:02d}.pth",
+            f"consolidated{'_ema' if is_ema else ''}.{rank:02d}-of-{num_gpus:02d}.safetensors",
         ),
     )
     model_dit.load_state_dict(ckpt, strict=True)
