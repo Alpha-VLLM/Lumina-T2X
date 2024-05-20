@@ -346,7 +346,7 @@ def main(
     os.makedirs(output_path, exist_ok=True)
     if os.path.isdir(output_path):
         rank0_print(f"> Image saved in {output_path}.")
-    img_name = "_".join(cap.split(" "))
+    img_name = "_".join(cap.split(" ")).split(".")[0]
     current_time = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
 
     img.save(os.path.join(output_path, f"{img_name}_{current_time}_lumina.png"))
