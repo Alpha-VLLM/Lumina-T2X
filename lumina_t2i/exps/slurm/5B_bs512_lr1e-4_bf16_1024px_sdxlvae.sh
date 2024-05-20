@@ -14,7 +14,7 @@ load_str=$2
 exp_name=${model}_bs${batch_size}_lr${lr}_${precision}_${image_size}px_vae${vae}_init${load_str}
 mkdir -p results/"$exp_name"
 
-torchrun -—nproc-per-node=8 train.py \
+python -u train.py \
     --master_port 18181 \
     --model ${model} \
     --data_path ${train_data_root} \
