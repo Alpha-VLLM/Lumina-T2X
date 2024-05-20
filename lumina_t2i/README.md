@@ -171,17 +171,30 @@ git clone https://huggingface.co/Alpha-VLLM/Lumina-T2I
 
 3. Load your own trained model
 
-If you are loading your own trained model, please convert it to `safetensors` first for security reasons before loading. Assuming the your trained model path is `/path/to/your/own/model.pth` and your save directory is `/path/to/new/model`. We provide a feature to convert to `safetensors` in the `lumina` command.
+Before finetuning, please convert the [pretrained model](https://huggingface.co/Alpha-VLLM/Lumina-T2I) to `.pth` first for loading model. We provide `lumina` command to convert `.safetensors` to `.pth` format for loading your own trained models during inference.
+
+```bash
+lumina convert "/path/to/your/own/model.safetensors" "/path/to/new/directory/" # convert to `.pth`
+```
+
+If you are loading your own trained model, please convert it to `.pth` first for security reasons before loading. Assuming your trained model path is `/path/to/your/own/model.pth` and your save directory is `/path/to/new/model`. After training, convert the `.pth` model to `.safetensors` for inference. 
+
+```bash
+lumina convert "/path/to/your/own/model.pth" "/path/to/new/directory/" # convert to `.safetensors`
+```
 
 > The `output_dir` supports saving files with different names in the same directory.
 
 ```bash
-# <torch_weight_path> means your trained model path.
-# <output_directory> means the directory where you want to save the model with `.safetensors` format.
-lumina convert <torch_weight_path> <output_dir>
+# <weight_path> means your trained model path.
+# <output_dir> means the directory where you want to save the model.
+lumina convert <weight_path> <output_dir>
 
-# example:
-lumina convert "/path/to/your/own/model.pth" "/path/to/new/directory/"
+# example 1:
+lumina convert "/path/to/your/own/model.pth" "/path/to/new/directory/" # convert to `.safetensors`
+
+# example 2:
+lumina convert "/path/to/your/own/model.safetensors" "/path/to/new/directory/" # convert to `.pth`
 ```
 
 ### CLI

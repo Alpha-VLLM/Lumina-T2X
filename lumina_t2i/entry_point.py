@@ -149,35 +149,44 @@ def infer(num_gpus, ckpt, ckpt_lm, ema, precision, config, token, text, output_p
 
 
 @click.argument("output_dir", type=str, required=True, nargs=1)
-@click.argument("torch_weight_path", type=str, required=True, nargs=1)
+@click.argument("weight_path", type=str, required=True, nargs=1)
 @entry_point.command()
-def convert(torch_weight_path, output_dir):
+def convert(weight_path, output_dir):
     """
     convert torch model weight `.pth` into `.safetensors`
 
     Args:
-        torch_weight_path (str): pytorch model path
+        weight_path (str): pytorch model path
         output_dir (str): saved directory, supports saving files with different names in the same directory.
 
     """
     import torch
-    from safetensors.torch import save_file
+    from safetensors.torch import save_file, load_file
+    
+    supported_model_type = (".pth", ".safetensors")
 
-    file_path, ext = os.path.splitext(torch_weight_path)
-    if ext != ".pth":
-        raise ValueError("Only `.pth` models are supported for conversion.")
+    file_path, ext = os.path.splitext(weight_path)
+    if ext != ".pth" and ext != ".safetensors":
+        raise ValueError(f"Only {supported_model_type} models are supported for conversion.")
+
     file_name = file_path.split("/")[-1]
-    output_path = os.path.join(output_dir, file_name + ".safetensors")
-
-    print(f"Loading your current `.pth` model {torch_weight_path}")
-    if os.path.exists(output_path):
-        raise ValueError(
-            f"The output directory contains a model file with the same name `{file_name}`. "
-            f"Please check if the `output_dir` {output_dir} is correct."
-        )
-    torch_weight_dict = torch.load(torch_weight_path, map_location="cpu")
-
-    print(f"Saving model with `safetensors` format at {output_dir}")
+    print(f"Loading your current `{ext}` model {weight_path}")
     os.makedirs(output_dir, exist_ok=True)
-    save_file(torch_weight_dict, output_path)
+    
+    if ext == supported_model_type[0]:
+        target_ext = supported_model_type[1]
+        output_path = os.path.join(output_dir, file_name + target_ext)
+        
+        torch_weight_dict = torch.load(weight_path, map_location="cpu")
+        save_file(torch_weight_dict, output_path)
+        print(f"Saving model with `{supported_model_type[1]}` format at {output_dir}")
+
+    elif ext == supported_model_type[1]:
+        target_ext = supported_model_type[0]
+        output_path = os.path.join(output_dir, file_name + target_ext)
+        
+        safetensors_weight_dict = load_file(weight_path, device="cpu")
+        torch.save(safetensors_weight_dict, output_path)
+        print(f"Saving model with `{ext}` format at {output_dir}")
+
     print("Done.")

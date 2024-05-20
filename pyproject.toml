@@ -10,7 +10,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lumina-t2x"  # REQUIRED, is the only field that cannot be marked as dynamic.
-version = "1.2.2"  # REQUIRED, although can be dynamic
+version = "1.2.3"  # REQUIRED, although can be dynamic
 description = "Lumina-T2X is a model for Text to Any Modality Generation"
 readme = "README.md"
 
@@ -18,7 +18,7 @@ requires-python = ">=3.10"
 
 license = {file = "LICENSE.txt"}
 
-keywords = ["generation", "multi-modal", "transformer"]
+keywords = ["generation", "multi-modal", "transformer", "aigc", "diffusion"]
 
 authors = [
   {name = "Alpha-VLLM", email = "author@example.com" }
