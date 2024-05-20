@@ -113,10 +113,19 @@ pip install -v --disable-pip-version-check --no-cache-dir --no-build-isolation -
 > Parameter-efficient Finetuning of Lumina-T2X shall be released soon.**
 
 This section shows how to train Lumina-T2I on a SLURM cluster. Changes may be needed to run the experiments on different platforms.
+
+Before training, please convert the [pretrained model](https://huggingface.co/Alpha-VLLM/Lumina-T2I) to `.pth` first for loading model. We provide `lumina` command to convert `.safetensors` to `.pth` format for loading [pretrained model](https://huggingface.co/Alpha-VLLM/Lumina-T2I).
+
+```bash
+lumina convert "/path/to/your/own/model.safetensors" "/path/to/new/directory/" # convert to `.pth`
+```
+
 1. **Stage 1 @ 256px**
 
 ``` bash
-# 8 GPUs were used by us for this experiment
+# 8 GPUs were used by us for this experiment without slurm clust
+bash exps/5B_bs512_lr1e-4_bf16_256px_sdxlvae.sh
+# 8 GPUs were used by us for this experiment with slurm clust
 srun -n8 --ntasks-per-node=8 --gres=gpu:8 bash exps/5B_bs512_lr1e-4_bf16_256px_sdxlvae.sh
 ```
 
@@ -129,6 +138,9 @@ srun -n8 --ntasks-per-node=8 --gres=gpu:8 bash exps/5B_bs512_lr1e-4_bf16_256px_s
 # Note that the iteration 0030000 is just for illustration and does not mean we trained for 30k iters
 export STAGE_1_PATH=results/DiT_Llama_5B_patch2_bs512_lr1e-4_bf16_256px_vaesdxl/checkpoints/0030000
 
+# 8 GPUs were used by us for this experiment without slurm clust
+bash exps/5B_bs512_lr1e-4_bf16_512px_sdxlvae.sh $STAGE_1_PATH stage1
+# 8 GPUs were used by us for this experiment with slurm clust
 srun -n16 --ntasks-per-node=8 --gres=gpu:8 bash exps/5B_bs512_lr1e-4_bf16_512px_sdxlvae.sh $STAGE_1_PATH stage1
 ```
 
@@ -140,6 +152,9 @@ srun -n16 --ntasks-per-node=8 --gres=gpu:8 bash exps/5B_bs512_lr1e-4_bf16_512px_
 # Note that the iteration 0030000 is just for illustration and does not mean we trained for 30k iters
 export STAGE_2_PATH=results/DiT_Llama_5B_patch2_bs512_lr1e-4_bf16_512px_vaesdxl_initstage1/checkpoints/0030000
 
+# 8 GPUs were used by us for this experiment without slurm clust
+bash exps/5B_bs512_lr1e-4_bf16_1024px_sdxlvae.sh $STAGE_2_PATH stage2
+# 8 GPUs were used by us for this experiment with slurm clust
 srun -n32 --ntasks-per-node=8 --gres=gpu:8 bash exps/5B_bs512_lr1e-4_bf16_1024px_sdxlvae.sh $STAGE_2_PATH stage2
 ```
 
@@ -171,13 +186,7 @@ git clone https://huggingface.co/Alpha-VLLM/Lumina-T2I
 
 3. Load your own trained model
 
-Before finetuning, please convert the [pretrained model](https://huggingface.co/Alpha-VLLM/Lumina-T2I) to `.pth` first for loading model. We provide `lumina` command to convert `.safetensors` to `.pth` format for loading your own trained models during inference.
-
-```bash
-lumina convert "/path/to/your/own/model.safetensors" "/path/to/new/directory/" # convert to `.pth`
-```
-
-If you are loading your own trained model, please convert it to `.pth` first for security reasons before loading. Assuming your trained model path is `/path/to/your/own/model.pth` and your save directory is `/path/to/new/model`. After training, convert the `.pth` model to `.safetensors` for inference. 
+If you are loading your own trained model, please convert it to `.pth` first for security reasons before loading. Assuming your trained model path is `/path/to/your/own/model.pth` and your save directory is `/path/to/new/model`.
 
 ```bash
 lumina convert "/path/to/your/own/model.pth" "/path/to/new/directory/" # convert to `.safetensors`

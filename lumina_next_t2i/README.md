@@ -133,12 +133,6 @@ git clone https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I
 
 3. Load your own trained model
 
-Before finetuning, please convert the [pretrained model](https://huggingface.co/Alpha-VLLM/Lumina-T2I) to `.pth` first for loading model. We provide `lumina` command to convert `.safetensors` to `.pth` format for loading your own trained models during inference.
-
-```bash
-lumina_next convert "/path/to/your/own/model.safetensors" "/path/to/new/directory/" # convert to `.pth`
-```
-
 If you are loading your own trained model, please convert it to `.pth` first for security reasons before loading. Assuming your trained model path is `/path/to/your/own/model.pth` and your save directory is `/path/to/new/model`. After training, convert the `.pth` model to `.safetensors` for inference. 
 
 ```bash
