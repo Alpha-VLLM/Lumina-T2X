@@ -397,29 +397,9 @@ def main():
                         minimum=1,
                         maximum=70,
                         value=30,
-                        interactive=True,
-                        label="Sampling steps",
-                    )
-                    cfg_scale = gr.Slider(
-                        minimum=1.0,
-                        maximum=20.0,
-                        value=4.0,
-                        interactive=True,
-                        label="CFG scale",
-                    )
-                    solver = gr.Dropdown(
-                        value="euler",
-                        choices=["euler", "dopri5", "dopri8"],
-                        label="solver",
-                    )
-                with gr.Row():
-                    t_shift = gr.Slider(
-                        minimum=1,
-                        maximum=20,
-                        value=4,
                         step=1,
                         interactive=True,
-                        label="Time shift",
+                        label="Sampling steps",
                     )
                     seed = gr.Slider(
                         minimum=0,
@@ -428,6 +408,27 @@ def main():
                         step=1,
                         interactive=True,
                         label="Seed (0 for random)",
+                    )
+                with gr.Row():
+                    solver = gr.Dropdown(
+                        value="euler",
+                        choices=["euler", "dopri5", "dopri8"],
+                        label="solver",
+                    )
+                    t_shift = gr.Slider(
+                        minimum=1,
+                        maximum=20,
+                        value=4,
+                        step=1,
+                        interactive=True,
+                        label="Time shift",
+                    )
+                    cfg_scale = gr.Slider(
+                        minimum=1.0,
+                        maximum=20.0,
+                        value=4.0,
+                        interactive=True,
+                        label="CFG scale",
                     )
                 with gr.Accordion(
                     "Advanced Settings for Resolution Extrapolation", open=False
