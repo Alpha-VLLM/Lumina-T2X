@@ -770,6 +770,11 @@ if __name__ == "__main__":
         default=1.0,
     )
     parser.add_argument(
+        "--ntk_factor",
+        type=float,
+        default=1.0,
+    )
+    parser.add_argument(
         "--snr_type", type=str, default="uniform", choices=["uniform", "lognorm"]
     )
     args = parser.parse_args()
