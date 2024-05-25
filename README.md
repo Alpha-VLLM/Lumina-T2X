@@ -64,6 +64,7 @@
 
 ## 📰 News
 
+- **[2024-05-21] 🤩🤩🤩 We released training scripts for Flag-DiT and Next-DiT.**
 - **[2024-05-21] 🚀🚀🚀 Lumina-Next-T2I supports a higher-order solver. It can generate images in just 10 steps without any distillation. Try our demos [DEMO](http://106.14.2.150:10021/). The inference code will be released soon.**
 - [2024-05-18] 🤩🤩🤩 **We released training scripts for Lumina-T2I 5B. [README](https://github.com/Alpha-VLLM/Lumina-T2X/tree/main/lumina_t2i#training)**
 - [2024-05-16] ❗❗❗ **We have converted the `.pth` weights to `.safetensors` weights. Please pull the latest code and use `demo.py` for inference.**

@@ -7,7 +7,7 @@ batch_size=256
 lr=5e-4
 precision=bf16
 
-exp_name=${model}_bs${batch_size}_lr${lr}_${precision}_qknorm_sandwichnorm2
+exp_name=${model}_bs${batch_size}_lr${lr}_${precision}_qknorm
 mkdir -p results/"$exp_name"
 
 python -u train.py \

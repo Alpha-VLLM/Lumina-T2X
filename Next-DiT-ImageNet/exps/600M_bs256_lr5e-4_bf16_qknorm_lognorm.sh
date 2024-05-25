@@ -1,8 +1,8 @@
 #!/usr/bin/env sh
 
-train_data_root='/mnt/petrelfs/share/images/train'
+train_data_root='/path/to/imagenet/images/train'
 
-model=DiT_Llama_7B_patch2
+model=DiT_Llama_600M_patch2
 batch_size=256
 lr=5e-4
 precision=bf16
@@ -10,7 +10,7 @@ precision=bf16
 exp_name=${model}_bs${batch_size}_lr${lr}_${precision}_qknorm
 mkdir -p results/"$exp_name"
 
-python -u train.py \
+torchrun --nproc-per-node=8 train.py \
     --model ${model} \
     --data_path ${train_data_root} \
     --results_dir results/"$exp_name" \
