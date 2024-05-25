@@ -153,3 +153,8 @@ srun -N4 --ntasks-per-node=8 --gres=gpu:8 bash scripts/slurm/run_32gpus.sh
 |  :---:   | :---:  | :---: | :---:  | :---:  |   :---:   | :---:  |
 | Flag-DiT |  600M  | 2.40  |  4.63  | 243.44 |   0.81    |  0.58  |
 | Next-DiT |  600M  | 2.36  |  4.85  | 250.69 |   0.82    |  0.59  |
+
+<p align="center">
+ <img src="fid_is.png" width="60%"/> 
+ <br>
+</p>
