@@ -7,6 +7,21 @@
 
 The `Next-DiT` is the backbone of `Lumina-Next-T2I`.
 
+## Results
+
+As shown in the figure, `Next-DiT` outperforms `Flag-DiT` and SiT in both FID and IS, indicating that our model performs better.
+
+<p align="left">
+ <img src="fid_is.png" width="60%"/> 
+ <br>
+</p>
+
+|  Model   | Params | Training Iters |  FID ↓  |  sFID ↓ |   IS ↑  | Precision | Recall |
+|  :---:   | :---:  |     :---:      | :---: | :---:  | :---:  |   :---:   | :---:  |
+| Flag-DiT |  600M  |     900K       | 2.40  |  **4.63**  | 243.44 |   0.81    |  0.58  |
+| Next-DiT |  600M  |     900K       | **2.36**  |  4.85  | **250.69** |   **0.82**    |  **0.59**  |
+
+
 ## Installation
 
 Before installation, ensure that you have a working ``nvcc``
@@ -146,18 +161,4 @@ srun -n8 --ntasks-per-node=8 --gres=gpu:8 bash scripts/slurm/run_8gpus.sh
 # 32 GPUs were used by us for this experiment with slurm cluster
 srun -N4 --ntasks-per-node=8 --gres=gpu:8 bash scripts/slurm/run_32gpus.sh
 ```
-
-## Results
-
-As shown in the figure, `Next-DiT` outperforms `Flag-DiT` and SiT in both FID and IS, indicating that our model performs better.
-
-<p align="left">
- <img src="fid_is.png" width="60%"/> 
- <br>
-</p>
-
-|  Model   | Params | Training Iters |  FID ↓  |  sFID ↓ |   IS ↑  | Precision | Recall |
-|  :---:   | :---:  |     :---:      | :---: | :---:  | :---:  |   :---:   | :---:  |
-| Flag-DiT |  600M  |     900K       | 2.40  |  **4.63**  | 243.44 |   0.81    |  0.58  |
-| Next-DiT |  600M  |     900K       | **2.36**  |  4.85  | **250.69** |   **0.82**    |  **0.59**  |
 
