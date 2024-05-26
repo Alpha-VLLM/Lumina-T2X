@@ -388,6 +388,12 @@ We support diverse configurations, including text encoders, DiTs of different pa
  <br>
 </p>
 
+## Contributors
+
+<a href="https://github.com/Alpha-VLLM/Lumina-T2X/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Alpha-VLLM/Lumina-T2X" />
+</a>
+
 ## 📄 Citation
 
 ```
