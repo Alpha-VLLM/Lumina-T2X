@@ -10,7 +10,6 @@
 # --------------------------------------------------------
 
 import functools
-import logging
 import math
 from typing import Optional, Tuple, List
 
@@ -27,8 +26,6 @@ import torch
 import torch.distributed as dist
 import torch.nn as nn
 import torch.nn.functional as F
-
-logger = logging.getLogger(__name__)
 
 
 def modulate(x, shift, scale):
@@ -376,6 +373,11 @@ class Attention(nn.Module):
 
         xq, xk = xq.to(dtype), xk.to(dtype)
 
+        if self.proportional_attn:
+            softmax_scale = math.sqrt(math.log(seqlen, self.base_seqlen) / self.head_dim)
+        else:
+            softmax_scale = math.sqrt(1 / self.head_dim)
+
         if dtype in [torch.float16, torch.bfloat16]:
             # begin var_len flash attn
             (
@@ -389,11 +391,6 @@ class Attention(nn.Module):
 
             cu_seqlens_q, cu_seqlens_k = cu_seq_lens
             max_seqlen_in_batch_q, max_seqlen_in_batch_k = max_seq_lens
-
-            if self.proportional_attn:
-                softmax_scale = math.sqrt(math.log(seqlen, self.base_seqlen) / self.head_dim)
-            else:
-                softmax_scale = math.sqrt(1 / self.head_dim)
 
             attn_output_unpad = flash_attn_varlen_func(
                 query_states,
@@ -417,13 +414,13 @@ class Attention(nn.Module):
                     xk.permute(0, 2, 1, 3),
                     xv.permute(0, 2, 1, 3),
                     attn_mask=x_mask.bool().view(bsz, 1, 1, seqlen).expand(-1, self.n_local_heads, seqlen, -1),
+                    scale=softmax_scale
                 )
                 .permute(0, 2, 1, 3)
                 .to(dtype)
             )
 
         if hasattr(self, "wk_y"):
-            # todo better flash_attn support
             yk = self.ky_norm(self.wk_y(y)).view(bsz, -1, self.n_local_kv_heads, self.head_dim)
             yv = self.wv_y(y).view(bsz, -1, self.n_local_kv_heads, self.head_dim)
             n_rep = self.n_local_heads // self.n_local_kv_heads
@@ -611,12 +608,11 @@ class TransformerBlock(nn.Module):
                     y_mask,
                 )
             )
-            d = x.shape[-1]
             x = x + self.ffn_norm1(
                 gate_mlp.unsqueeze(1)
                 * self.feed_forward(
-                    modulate(self.ffn_norm(x), shift_mlp, scale_mlp).view(-1, d),
-                ).view(*x.shape)
+                    modulate(self.ffn_norm(x), shift_mlp, scale_mlp),
+                )
             )
 
         else:
@@ -629,11 +625,7 @@ class TransformerBlock(nn.Module):
                     y_mask,
                 )
             )
-            # for compatibility with torch.compile because the sequence length changes
-            B, L, D = x.shape
-            x = x.view(B * L, D)
             x = x + self.ffn_norm1(self.feed_forward(self.ffn_norm(x)))
-            x = x.view(B, L, D)
 
         return x
 
@@ -743,19 +735,17 @@ class NextDiT(nn.Module):
         self.final_layer = ParallelFinalLayer(dim, patch_size, self.out_channels)
 
         assert (dim // n_heads) % 4 == 0, "2d rope needs head dim to be divisible by 4"
-        self.dim = dim
-        self.n_heads = n_heads
         self.freqs_cis = NextDiT.precompute_freqs_cis(
             dim // n_heads,
             384,
             rope_scaling_factor=rope_scaling_factor,
             ntk_factor=ntk_factor,
         )
+        self.dim = dim
+        self.n_heads = n_heads
         self.rope_scaling_factor = rope_scaling_factor
         self.ntk_factor = ntk_factor
-        # self.eol_token = nn.Parameter(torch.empty(dim))
         self.pad_token = nn.Parameter(torch.empty(dim))
-        # nn.init.normal_(self.eol_token, std=0.02)
         nn.init.normal_(self.pad_token, std=0.02)
 
     def unpatchify(self, x: torch.Tensor, img_size: List[Tuple[int, int]], return_tensor=False) -> List[torch.Tensor]:
@@ -797,7 +787,7 @@ class NextDiT(nn.Module):
             x = x.flatten(1, 2)
 
             mask = torch.ones(x.shape[0], x.shape[1], dtype=torch.int32, device=x.device)
-            # leave the first line for text
+
             return (
                 x,
                 mask,
@@ -861,8 +851,6 @@ class NextDiT(nn.Module):
         x, mask, img_size, freqs_cis = self.patchify_and_embed(x)
         freqs_cis = freqs_cis.to(x.device)
 
-        # cap_freqs_cis = self.freqs_cis[:1, :cap_feats.shape[1]].to(x.device)
-
         t = self.t_embedder(t)  # (N, D)
         cap_mask_float = cap_mask.float().unsqueeze(-1)
         cap_feats_pool = (cap_feats * cap_mask_float).sum(dim=1) / cap_mask_float.sum(dim=1)
@@ -895,12 +883,12 @@ class NextDiT(nn.Module):
         base_seqlen: Optional[int] = None,
         proportional_attn: bool = False,
     ):
-        # """
-        # Forward pass of NextDiT, but also batches the unconNextditional forward pass
-        # for classifier-free guidance.
-        # """
-        # # https://github.com/openai/glide-text2im/blob/main/notebooks/text2im.ipynb
-        # print(ntk_factor, rope_scaling_factor, self.ntk_factor, self.rope_scaling_factor)
+        """
+        Forward pass of DiT, but also batches the unconditional forward pass
+        for classifier-free guidance.
+        """
+        # https://github.com/openai/glide-text2im/blob/main/notebooks/text2im.ipynb
+
         if rope_scaling_factor is not None or ntk_factor is not None:
             rope_scaling_factor = rope_scaling_factor if rope_scaling_factor is not None else self.rope_scaling_factor
             ntk_factor = ntk_factor if ntk_factor is not None else self.ntk_factor
@@ -930,7 +918,7 @@ class NextDiT(nn.Module):
 
         half = x[: len(x) // 2]
         combined = torch.cat([half, half], dim=0)
-        model_out = self.forward(combined, t, cap_feats, cap_mask)
+        model_out = self(combined, t, cap_feats, cap_mask)
         # For exact reproducibility reasons, we apply classifier-free guidance on only
         # three channels by default. The standard approach to cfg applies it to all channels.
         # This can be done by uncommenting the following line and commenting-out the line following that.
@@ -971,7 +959,7 @@ class NextDiT(nn.Module):
 
         theta = theta * ntk_factor
 
-        logger.info(f"theta {theta} rope scaling {rope_scaling_factor} ntk {ntk_factor}")
+        print(f"theta {theta} rope scaling {rope_scaling_factor} ntk {ntk_factor}")
         freqs = 1.0 / (theta ** (torch.arange(0, dim, 4)[: (dim // 4)].float().cuda() / dim))
         t = torch.arange(end, device=freqs.device, dtype=torch.float)  # type: ignore
         t = t / rope_scaling_factor

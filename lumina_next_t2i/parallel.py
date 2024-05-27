@@ -21,7 +21,7 @@ def _setup_dist_env_from_slurm(args):
             .strip()
         )
         sleep(1)
-    os.environ["MASTER_PORT"] = str(int(args.master_port) + 1)
+    os.environ["MASTER_PORT"] = str(args.master_port)
     os.environ["RANK"] = os.environ["SLURM_PROCID"]
     os.environ["WORLD_SIZE"] = os.environ["SLURM_NPROCS"]
     os.environ["LOCAL_RANK"] = os.environ["SLURM_LOCALID"]

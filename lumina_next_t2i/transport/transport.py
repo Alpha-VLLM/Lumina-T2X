@@ -150,21 +150,6 @@ class Transport:
                 terms["task_loss"] = mean_flat(((model_output - ut) ** 2))
         else:
             raise NotImplementedError
-            # _, drift_var = self.path_sampler.compute_drift(xt, t)
-            # sigma_t, _ = self.path_sampler.compute_sigma_t(path.expand_t_like_x(t, xt))
-            # if self.loss_type in [WeightType.VELOCITY]:
-            #     weight = (drift_var / sigma_t) ** 2
-            # elif self.loss_type in [WeightType.LIKELIHOOD]:
-            #     weight = drift_var / (sigma_t ** 2)
-            # elif self.loss_type in [WeightType.NONE]:
-            #     weight = 1
-            # else:
-            #     raise NotImplementedError()
-            #
-            # if self.model_type == ModelType.NOISE:
-            #     terms['task_loss'] = mean_flat(weight * ((model_output - x0) ** 2))
-            # else:
-            #     terms['task_loss'] = mean_flat(weight * ((model_output * sigma_t + x0) ** 2))
 
         terms["loss"] = terms["task_loss"]
         terms["task_loss"] = terms["task_loss"].clone().detach()

@@ -18,14 +18,6 @@ import yaml
 logger = logging.getLogger(__name__)
 
 
-class LabelAllZeroError(Exception):
-    def __init__(self, message=None):
-        self.message = message
-
-    def __str__(self):
-        return f"LabelAllZeroError: {self.message}"
-
-
 class DataBriefReportException(Exception):
     def __init__(self, message=None):
         self.message = message
@@ -72,7 +64,7 @@ class MyDataset(Dataset):
     def _collect_annotations(self):
         group_ann = {}
         for meta in self.config["META"]:
-            meta_path, meta_type = meta["path"], meta["type"]
+            meta_path, meta_type = meta["path"], meta.get("type", "default")
             meta_ext = os.path.splitext(meta_path)[-1]
             if meta_ext == ".json":
                 with open(meta_path) as f:
@@ -195,11 +187,3 @@ class MyDataset(Dataset):
 
     def groups(self):
         return list(self.group_indices.values())
-
-
-def find_sublist(a: list, b: list):
-    len_a, len_b = len(a), len(b)
-    for i in range(len_a - len_b + 1):
-        if a[i : i + len_b] == b:
-            return i
-    return -1
