@@ -1,8 +1,9 @@
 import argparse
 import builtins
 import json
+import math
 import multiprocessing as mp
-import os, sys
+import os
 import random
 import socket
 import traceback
@@ -10,13 +11,13 @@ import traceback
 import fairscale.nn.model_parallel.initialize as fs_init
 import gradio as gr
 import numpy as np
+from safetensors.torch import load_file
 import torch
 import torch.distributed as dist
 from torchvision.transforms.functional import to_pil_image
-from safetensors.torch import load_file
 
 import models
-from transport import create_transport, Sampler
+from transport import Sampler, create_transport
 
 
 class ModelFailure:
@@ -172,23 +173,14 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                     args.sample_eps,
                 )
                 sampler = Sampler(transport)
-                if args.likelihood:
-                    # assert args.cfg_scale == 1, "Likelihood is incompatible with guidance"  # todo
-                    sample_fn = sampler.sample_ode_likelihood(
-                        sampling_method=solver,
-                        num_steps=num_sampling_steps,
-                        atol=args.atol,
-                        rtol=args.rtol,
-                    )
-                else:
-                    sample_fn = sampler.sample_ode(
-                        sampling_method=solver,
-                        num_steps=num_sampling_steps,
-                        atol=args.atol,
-                        rtol=args.rtol,
-                        reverse=args.reverse,
-                        time_shifting_factor=t_shift,
-                    )
+                sample_fn = sampler.sample_ode(
+                    sampling_method=solver,
+                    num_steps=num_sampling_steps,
+                    atol=args.atol,
+                    rtol=args.rtol,
+                    reverse=args.reverse,
+                    time_shifting_factor=t_shift,
+                )
                 # end sampler
 
                 resolution = resolution.split(" ")[-1]
@@ -204,23 +196,16 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                     cap_feats, cap_mask = encode_prompt([cap] + [""], text_encoder, tokenizer, 0.0)
                 cap_mask = cap_mask.to(cap_feats.device)
 
-                train_res = 1024
-                res_cat = (w * h) ** 0.5
-                print(f"> res_cat: {res_cat}")
-                max_seq_len = (res_cat // 16) ** 2 + (res_cat // 16) * 2
-                print(f"> max_seq_len: {max_seq_len}")
-
-                rope_scaling_factor = 1.0
-                ntk_factor = max_seq_len / (train_res // 16) ** 2
-                print(f"> ntk_factor: {ntk_factor}")
-
                 model_kwargs = dict(
                     cap_feats=cap_feats,
                     cap_mask=cap_mask,
                     cfg_scale=cfg_scale,
-                    rope_scaling_factor=rope_scaling_factor,
-                    ntk_factor=ntk_factor,
                 )
+                if proportional_attn:
+                    model_kwargs["proportional_attn"] = True
+                    model_kwargs["base_seqlen"] = (train_args.image_size // 16) ** 2
+                if ntk_scaling:
+                    model_kwargs["ntk_factor"] = math.sqrt(w * h / train_args.image_size ** 2)
 
                 if dist.get_rank() == 0:
                     print(f"> caption: {cap}")
@@ -302,45 +287,6 @@ def parse_ode_args(parser):
     )
 
 
-def parse_sde_args(parser):
-    group = parser.add_argument_group("SDE arguments")
-    group.add_argument(
-        "--sampling-method",
-        type=str,
-        default="Euler",
-        choices=["Euler", "Heun"],
-        help="the numerical method used for sampling the stochastic differential equation: 'Euler' for simplicity or 'Heun' for improved accuracy.",
-    )
-    group.add_argument(
-        "--diffusion-form",
-        type=str,
-        default="sigma",
-        choices=[
-            "constant",
-            "SBDM",
-            "sigma",
-            "linear",
-            "decreasing",
-            "increasing-decreasing",
-        ],
-        help="form of diffusion coefficient in the SDE",
-    )
-    group.add_argument(
-        "--diffusion-norm",
-        type=float,
-        default=1.0,
-        help="Normalizes the diffusion coefficient, affecting the scale of the stochastic component.",
-    )
-    group.add_argument(
-        "--last-step",
-        type=none_or_str,
-        default="Mean",
-        choices=[None, "Mean", "Tweedie", "Euler"],
-        help="form of last step taken in the SDE",
-    )
-    group.add_argument("--last-step-size", type=float, default=0.04, help="size of the last step taken")
-
-
 def find_free_port() -> int:
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.bind(("", 0))
@@ -351,16 +297,12 @@ def find_free_port() -> int:
 
 def main():
     parser = argparse.ArgumentParser()
+
     parser.add_argument("--num_gpus", type=int, default=1)
     parser.add_argument("--ckpt", type=str, required=True)
     parser.add_argument("--ema", action="store_true")
     parser.add_argument("--precision", default="bf16", choices=["bf16", "fp32"])
-    parser.add_argument(
-        "--hf_token",
-        type=str,
-        default=None,
-        help="huggingface read token for accessing gated repo.",
-    )
+    parser.add_argument("--hf_token", type=str, default=None, help="huggingface read token for accessing gated repo.")
 
     parse_transport_args(parser)
     parse_ode_args(parser)
@@ -369,8 +311,6 @@ def main():
 
     if args.num_gpus != 1:
         raise NotImplementedError("Multi-GPU Inference is not yet supported")
-
-    args.sampler_mode = "ODE"
 
     master_port = find_free_port()
 
@@ -438,28 +378,28 @@ def main():
                         interactive=True,
                         label="Seed (0 for random)",
                     )
+                with gr.Row():
+                    solver = gr.Dropdown(
+                        value="euler",
+                        choices=["euler", "dopri5", "dopri8"],
+                        label="solver",
+                    )
+                    t_shift = gr.Slider(
+                        minimum=1,
+                        maximum=20,
+                        value=4,
+                        step=1,
+                        interactive=True,
+                        label="Time shift",
+                    )
+                    cfg_scale = gr.Slider(
+                        minimum=1.0,
+                        maximum=20.0,
+                        value=4.0,
+                        interactive=True,
+                        label="CFG scale",
+                    )
                 with gr.Accordion("Advanced Settings for Resolution Extrapolation", open=False):
-                    with gr.Row():
-                        solver = gr.Dropdown(
-                            value="euler",
-                            choices=["euler", "dopri5", "dopri8"],
-                            label="solver",
-                        )
-                        t_shift = gr.Slider(
-                            minimum=1,
-                            maximum=20,
-                            value=6,
-                            step=1,
-                            interactive=True,
-                            label="Time shift",
-                        )
-                        cfg_scale = gr.Slider(
-                            minimum=1.0,
-                            maximum=20.0,
-                            value=4.0,
-                            interactive=True,
-                            label="CFG scale",
-                        )
                     with gr.Row():
                         ntk_scaling = gr.Checkbox(
                             value=True,
@@ -572,7 +512,10 @@ def main():
         )
 
     mp_barrier.wait()
-    demo.queue().launch(server_name="0.0.0.0")
+    demo.queue().launch(
+        share=True,
+        server_name="0.0.0.0",
+    )
 
 
 if __name__ == "__main__":

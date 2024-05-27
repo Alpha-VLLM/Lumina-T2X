@@ -5,11 +5,8 @@
 # LICENSE file in the root directory of this source tree.
 
 """
-A minimal training script for DiT using PyTorch DDP.
+A minimal training script for Lumina-T2I using PyTorch FSDP.
 """
-
-from diffusers.models import AutoencoderKL
-
 import argparse
 from collections import OrderedDict
 import contextlib
@@ -22,10 +19,9 @@ import os
 import random
 import socket
 from time import time
-from typing import List
-import warnings
 
 from PIL import Image
+from diffusers.models import AutoencoderKL
 import fairscale.nn.model_parallel.initialize as fs_init
 import numpy as np
 import torch
@@ -48,16 +44,10 @@ from grad_norm import (
     get_model_parallel_dim_dict,
     calculate_l2_grad_norm,
     scale_grad,
-    # get_param_norm_dict,
 )
 from imgproc import var_center_crop, generate_crop_size_list
 import models
-from parallel import (
-    distributed_init,
-    get_inter_node_process_group,
-    get_local_world_size,
-    get_intra_node_process_group,
-)
+from parallel import distributed_init, get_intra_node_process_group
 from transport import create_transport
 
 
@@ -66,25 +56,19 @@ from transport import create_transport
 #############################################################################
 
 
-class SecretItemProcessor(ItemProcessor):
+class T2IItemProcessor(ItemProcessor):
     def __init__(self, transform):
         self.image_transform = transform
 
     def process_item(self, data_item, training_mode=False):
         if "conversations" in data_item:
-            assert "image" in data_item and "conversations" in data_item and len(data_item["conversations"]) == 2
+            assert "image" in data_item and len(data_item["conversations"]) == 2
             image = Image.open(read_general(data_item["image"])).convert("RGB")
             text = data_item["conversations"][1]["value"]
         else:
-            image_path = data_item["path"].replace("https://storage.googleapis.com/dream-machines-output/", "")
-            if "cluster_p_hdd:s3://linziyi_data/dream-machines-output" not in image_path:
-                image_path = "cluster_p_hdd:s3://linziyi_data/dream-machines-output/" + image_path
+            image_path = data_item["path"]
             image = Image.open(read_general(image_path)).convert("RGB")
-
-            if random.uniform(0.0, 1.0) < 0.2:
-                text = data_item["prompt"]
-            else:
-                text = data_item["sharegpt4v"]
+            text = data_item["prompt"]
 
         image = self.image_transform(image)
 
@@ -183,50 +167,17 @@ def setup_lm_fsdp_sync(model: nn.Module) -> FSDP:
 
 
 def setup_fsdp_sync(model: nn.Module, args: argparse.Namespace) -> FSDP:
-    # TODO: change intra node group impl
-    mp_world_size = fs_init.get_model_parallel_world_size()
-    pp_world_size = dist.get_world_size(fs_init.get_pipeline_parallel_group())
-    dp_world_size = fs_init.get_data_parallel_world_size()
-    mp_pp_world_size = mp_world_size * pp_world_size
-
-    hsdp_hard_condition = get_inter_node_process_group() is not None and get_local_world_size() % mp_pp_world_size == 0
-    hsdp_soft_condition = hsdp_hard_condition and mp_pp_world_size <= get_local_world_size() // 4
-
-    if args.data_parallel is not None:
-        if args.data_parallel == "hsdp" and not hsdp_hard_condition:
-            raise NotImplementedError("Hard conditions for HSDP are not met.")
-        fsdp_strategy = args.data_parallel
-    else:
-        fsdp_strategy = "hsdp" if hsdp_soft_condition else "sdp"
-        args.data_parallel = fsdp_strategy
-        logging.getLogger(__name__).info("Using automatically decided data parallel strategy: " f"{fsdp_strategy}.")
-
-    if fsdp_strategy == "hsdp":
-        intra_node_dp_pg = None
-        for i in range(dist.get_world_size() // get_local_world_size()):
-            for j in range(mp_world_size * pp_world_size):
-                ranks = list(range(j, get_local_world_size(), mp_world_size * pp_world_size))
-                ranks = [x + i * get_local_world_size() for x in ranks]
-                group = dist.new_group(ranks)
-                if dist.get_rank() in ranks:
-                    intra_node_dp_pg = group
-        assert intra_node_dp_pg is not None
-        process_group = (intra_node_dp_pg, get_inter_node_process_group())
-    else:
-        process_group = fs_init.get_data_parallel_group()
-
     model = FSDP(
         model,
         auto_wrap_policy=functools.partial(
             lambda_auto_wrap_policy,
             lambda_fn=lambda m: m in model.get_fsdp_wrap_module_list(),
         ),
-        process_group=process_group,
+        process_group=fs_init.get_data_parallel_group(),
         sharding_strategy={
             "fsdp": ShardingStrategy.FULL_SHARD,
-            "hsdp": ShardingStrategy.HYBRID_SHARD,
             "sdp": ShardingStrategy.SHARD_GRAD_OP,
-        }[fsdp_strategy],
+        }[args.data_parallel],
         mixed_precision=MixedPrecision(
             param_dtype={
                 "fp32": torch.float,
@@ -344,7 +295,7 @@ def main(args):
 
     logger.info("Training arguments: " + json.dumps(args.__dict__, indent=2))
 
-    logger.info(f"Setting-up language model: clip")
+    logger.info(f"Setting-up language model: google/gemma-2b")
 
     # create tokenizers
     # Load the tokenizers
@@ -370,7 +321,6 @@ def main(args):
 
     # Create model:
     assert args.image_size % 8 == 0, "Image size must be divisible by 8 (for the VAE encoder)."
-
     model = models.__dict__[args.model](
         qk_norm=args.qk_norm,
         cap_feat_dim=cap_feat_dim,
@@ -505,7 +455,7 @@ def main(args):
     )
     dataset = MyDataset(
         args.data_path,
-        item_processor=SecretItemProcessor(image_transform),
+        item_processor=T2IItemProcessor(image_transform),
         cache_on_disk=False,
     )
     num_samples = args.global_batch_size * args.max_steps
@@ -536,7 +486,6 @@ def main(args):
     # Variables for monitoring/logging purposes:
     log_steps = 0
     running_loss = 0
-    running_task_loss = 0
     start_time = time()
 
     logger.info(f"Training for {args.max_steps:,} steps...")
@@ -577,7 +526,6 @@ def main(args):
             cap_feats = cap_feats.flatten(0, 1)
 
         loss_item = 0.0
-        task_loss_item = 0.0
         opt.zero_grad()
         for mb_idx in range((local_batch_size - 1) // args.micro_batch_size + 1):
             mb_st = mb_idx * args.micro_batch_size
@@ -596,13 +544,8 @@ def main(args):
                 "tf32": contextlib.nullcontext(),
             }[args.precision]:
                 loss_dict = transport.training_losses(model, x_mb, model_kwargs)
-
-                # loss_dict = diffusion.training_losses(
-                #    model, x_mb, t_mb, model_kwargs
-                # )
             loss = loss_dict["loss"].sum() / local_batch_size
             loss_item += loss.item()
-            task_loss_item += (loss_dict["task_loss"].sum() / local_batch_size).item()
             with model.no_sync() if args.data_parallel in ["sdp", "hsdp"] and not last_mb else contextlib.nullcontext():
                 loss.backward()
 
@@ -610,28 +553,16 @@ def main(args):
         if grad_norm > args.grad_clip:
             scale_grad(model, args.grad_clip / grad_norm)
 
-        # if step % 10 == 0:
-        #     param_norm_dict = get_param_norm_dict(model, model_parallel_dim_dict)
-        # else:
-        #     param_norm_dict = {}
-
         if tb_logger is not None:
             tb_logger.add_scalar("train/loss", loss_item, step)
-            tb_logger.add_scalar("train/task_loss", task_loss_item, step)
             tb_logger.add_scalar("train/grad_norm", grad_norm, step)
             tb_logger.add_scalar("train/lr", opt.param_groups[0]["lr"], step)
-            for key, value in loss_dict.items():
-                if key != "loss" and value is not None:
-                    tb_logger.add_scalar(f"sub_loss/{key}", value.mean(), step)
-            # for key, value in param_norm_dict.items():
-            #     tb_logger.add_scalar(f"param_norm/{key}", value, step)
 
         opt.step()
         update_ema(model_ema, model)
 
         # Log loss values:
         running_loss += loss_item
-        running_task_loss += task_loss_item
         log_steps += 1
         if (step + 1) % args.log_every == 0:
             # Measure training speed:
@@ -643,21 +574,14 @@ def main(args):
             avg_loss = torch.tensor(running_loss / log_steps, device=device)
             dist.all_reduce(avg_loss, op=dist.ReduceOp.SUM)
             avg_loss = avg_loss.item() / dist.get_world_size()
-
-            avg_task_loss = torch.tensor(running_task_loss / log_steps, device=device)
-            dist.all_reduce(avg_task_loss, op=dist.ReduceOp.SUM)
-            avg_task_loss = avg_task_loss.item() / dist.get_world_size()
-
             logger.info(
                 f"(step={step + 1:07d}) "
                 f"Train Loss: {avg_loss:.4f}, "
-                f"Train Task Loss: {avg_task_loss:.4f}, "
                 f"Train Secs/Step: {secs_per_step:.2f}, "
                 f"Train Imgs/Sec: {imgs_per_sec:.2f}"
             )
             # Reset monitoring variables:
             running_loss = 0
-            running_task_loss = 0
             log_steps = 0
             start_time = time()
 
