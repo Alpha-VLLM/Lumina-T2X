@@ -199,20 +199,20 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                 # rope_scaling_factor = 1.0
                 # scale_factor = seq_len / (train_res // 16) ** 2
                 # print(f"> scale_factor: {scale_factor}")
-                
+
                 resolution = resolution.split(" ")[-1]
                 w, h = resolution.split("x")
                 w, h = int(w), int(h)
                 res_cat = (w * h) ** 0.5
                 seq_len = res_cat // 16
-                
+
                 train_seq_len = 64
                 if scaling_method == "ntk":
                     scale_factor = seq_len / train_seq_len
                     rope_scaling_factor = 1.0
                 else:
                     raise NotImplementedError
-                
+
                 latent_w, latent_h = w // 8, h // 8
                 if int(seed) != 0:
                     torch.random.manual_seed(int(seed))
@@ -434,11 +434,16 @@ def main():
                 )
                 with gr.Row():
                     res_choices = ["1024x1024", "512x2048", "2048x512"] + [
-                        "(Extrapolation) 1664x1664", "(Extrapolation) 2048x2048",
-                        "(Extrapolation) 2048x1024", "(Extrapolation) 1024x2048", 
-                        "(Extrapolation) 3072x1280", "(Extrapolation) 1280x3072", 
-                        "(Extrapolation) 2560x1536", "(Extrapolation) 1536x2560",
-                        "(Extrapolation) 2048x1920", "(Extrapolation) 1920x2048",
+                        "(Extrapolation) 1664x1664",
+                        "(Extrapolation) 2048x2048",
+                        "(Extrapolation) 2048x1024",
+                        "(Extrapolation) 1024x2048",
+                        "(Extrapolation) 3072x1280",
+                        "(Extrapolation) 1280x3072",
+                        "(Extrapolation) 2560x1536",
+                        "(Extrapolation) 1536x2560",
+                        "(Extrapolation) 2048x1920",
+                        "(Extrapolation) 1920x2048",
                     ]
                     resolution = gr.Dropdown(value=res_choices[0], choices=res_choices, label="Resolution")
                 with gr.Row():
