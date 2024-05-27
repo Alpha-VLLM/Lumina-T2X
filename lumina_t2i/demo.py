@@ -178,19 +178,21 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                     model_kwargs["ntk_factor"] = ((w // 16) * (h // 16)) / ((train_args.image_size // 16) ** 2)
 
                 if dist.get_rank() == 0:
-                    print(f"caption: {cap}")
-                    print(f"num_sampling_steps: {num_sampling_steps}")
-                    print(f"cfg_scale: {cfg_scale}")
+                    print(f"> caption: {cap}")
+                    print(f"> num_sampling_steps: {num_sampling_steps}")
+                    print(f"> cfg_scale: {cfg_scale}")
 
+                print("> start sample")
                 samples = sample_fn(z, model.forward_with_cfg, **model_kwargs)[-1]
                 samples = samples[:1]
 
                 factor = 0.18215 if train_args.vae != "sdxl" else 0.13025
-                print(f"vae factor: {factor}")
+                print(f"> vae factor: {factor}")
                 samples = vae.decode(samples / factor).sample
                 samples = (samples + 1.0) / 2.0
                 samples.clamp_(0.0, 1.0)
                 img = to_pil_image(samples[0].float())
+                print("> generated image, done.")
 
                 if response_queue is not None:
                     response_queue.put((img, metadata))

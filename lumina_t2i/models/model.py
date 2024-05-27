@@ -156,19 +156,6 @@ class Attention(nn.Module):
             n_heads (int): Number of heads.
             n_kv_heads (Optional[int]): Number of kv heads, if using GQA.
 
-        Attributes:
-            n_kv_heads (int): Number of key and value heads.
-            n_local_heads (int): Number of local query heads.
-            n_local_kv_heads (int): Number of local key and value heads.
-            n_rep (int): Number of repetitions for local heads.
-            head_dim (int): Dimension size of each attention head.
-            wq (ColumnParallelLinear): Linear transformation for queries.
-            wk (ColumnParallelLinear): Linear transformation for keys.
-            wv (ColumnParallelLinear): Linear transformation for values.
-            wo (RowParallelLinear): Linear transformation for output.
-            cache_k (torch.Tensor): Cached keys for attention.
-            cache_v (torch.Tensor): Cached values for attention.
-
         """
         super().__init__()
         self.n_kv_heads = n_heads if n_kv_heads is None else n_kv_heads
@@ -363,14 +350,15 @@ class Attention(nn.Module):
         y_mask: torch.Tensor,
     ) -> torch.Tensor:
         """
-        Forward pass of the attention module.
 
         Args:
-            x (torch.Tensor): Input tensor.
-            freqs_cis (torch.Tensor): Precomputed frequency tensor.
+            x:
+            x_mask:
+            freqs_cis:
+            y:
+            y_mask:
 
         Returns:
-            torch.Tensor: Output tensor after attention.
 
         """
         bsz, seqlen, _ = x.shape
@@ -387,6 +375,11 @@ class Attention(nn.Module):
         xq, xk = Attention.apply_rotary_emb(xq, xk, freqs_cis=freqs_cis)
         xq, xk = xq.to(dtype), xk.to(dtype)
 
+        if self.proportional_attn:
+            softmax_scale = math.sqrt(math.log(seqlen, self.base_seqlen) / self.head_dim)
+        else:
+            softmax_scale = math.sqrt(1 / self.head_dim)
+
         if dtype in [torch.float16, torch.bfloat16]:
             # begin var_len flash attn
             (
@@ -401,10 +394,6 @@ class Attention(nn.Module):
             cu_seqlens_q, cu_seqlens_k = cu_seq_lens
             max_seqlen_in_batch_q, max_seqlen_in_batch_k = max_seq_lens
 
-            if self.proportional_attn:
-                softmax_scale = math.sqrt(math.log(seqlen, self.base_seqlen) / self.head_dim)
-            else:
-                softmax_scale = math.sqrt(1 / self.head_dim)
             attn_output_unpad = flash_attn_varlen_func(
                 query_states,
                 key_states,
@@ -427,6 +416,7 @@ class Attention(nn.Module):
                     xk.permute(0, 2, 1, 3),
                     xv.permute(0, 2, 1, 3),
                     attn_mask=x_mask.bool().view(bsz, 1, 1, seqlen).expand(-1, self.n_local_heads, seqlen, -1),
+                    scale=softmax_scale
                 )
                 .permute(0, 2, 1, 3)
                 .to(dtype)
