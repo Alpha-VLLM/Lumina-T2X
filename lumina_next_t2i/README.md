@@ -119,7 +119,7 @@ pip install -e .
 
 2. Prepare the pretrained model
 
-⭐⭐ (Recommanded) you can use huggingface_cli downloading our model:
+⭐⭐ (Recommended) you can use huggingface_cli downloading our model:
 
 ```bash
 huggingface-cli download --resume-download Alpha-VLLM/Lumina-Next-T2I --local-dir /path/to/ckpt
