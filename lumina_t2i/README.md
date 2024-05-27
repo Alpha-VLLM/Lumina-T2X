@@ -114,7 +114,7 @@ pip install -v --disable-pip-version-check --no-cache-dir --no-build-isolation -
 
 This section shows how to train Lumina-T2I on a SLURM cluster. Changes may be needed to run the experiments on different platforms.
 
-Before training, please convert the [pretrained model](https://huggingface.co/Alpha-VLLM/Lumina-T2I) to `.pth` first for loading model. We provide `lumina` command to convert `.safetensors` to `.pth` format for loading [pretrained model](https://huggingface.co/Alpha-VLLM/Lumina-T2I).
+`*If you want to finetune on [pretrained checkpoints](https://huggingface.co/Alpha-VLLM/Lumina-T2I) of `.safetensors` format, please convert them to `.pth` first. We provide `lumina` command for this conversion.*
 
 ```bash
 lumina convert "/path/to/your/own/model.safetensors" "/path/to/new/directory/" # convert to `.pth`
@@ -123,38 +123,30 @@ lumina convert "/path/to/your/own/model.safetensors" "/path/to/new/directory/" #
 1. **Stage 1 @ 256px**
 
 ``` bash
-# 8 GPUs were used by us for this experiment without slurm clust
-bash exps/5B_bs512_lr1e-4_bf16_256px_sdxlvae.sh
-# 8 GPUs were used by us for this experiment with slurm clust
-srun -n8 --ntasks-per-node=8 --gres=gpu:8 bash exps/5B_bs512_lr1e-4_bf16_256px_sdxlvae.sh
+# 8 GPUs were used by us for this experiment on a slurm cluster
+srun -n8 --ntasks-per-node=8 --gres=gpu:8 bash exps/slurm/5B_bs512_lr1e-4_bf16_256px_sdxlvae.sh
+# If on a single machine with 8 GPUs, you may alternatively use the native `torchrun` command
+bash exps/5B_bs512_lr1e-4_bf16_512px_sdxlvae.sh  # the script contains an inner `torchrun` call
 ```
 
 2. **Stage2 @ 512px**
 
 ``` bash
-# 16 GPUs were used by us for this experiment
-
-# initialize from the result of stage1
-# Note that the iteration 0030000 is just for illustration and does not mean we trained for 30k iters
+# Initialize from the result of stage1
+# Suppose the checkpoint saved at iteration 0030000 is used:
 export STAGE_1_PATH=results/DiT_Llama_5B_patch2_bs512_lr1e-4_bf16_256px_vaesdxl/checkpoints/0030000
 
-# 8 GPUs were used by us for this experiment without slurm clust
-bash exps/5B_bs512_lr1e-4_bf16_512px_sdxlvae.sh $STAGE_1_PATH stage1
-# 8 GPUs were used by us for this experiment with slurm clust
+# 16 GPUs were used by us for this experiment on a slurm cluster
 srun -n16 --ntasks-per-node=8 --gres=gpu:8 bash exps/5B_bs512_lr1e-4_bf16_512px_sdxlvae.sh $STAGE_1_PATH stage1
 ```
 
 3. **Stage3 @ 1024px**
 ``` bash
-# 32 GPUs were used by us for this experiment
-
 # initialize from the result of stage2
-# Note that the iteration 0030000 is just for illustration and does not mean we trained for 30k iters
+# Suppose the checkpoint saved at iteration 0030000 is used
 export STAGE_2_PATH=results/DiT_Llama_5B_patch2_bs512_lr1e-4_bf16_512px_vaesdxl_initstage1/checkpoints/0030000
 
-# 8 GPUs were used by us for this experiment without slurm clust
-bash exps/5B_bs512_lr1e-4_bf16_1024px_sdxlvae.sh $STAGE_2_PATH stage2
-# 8 GPUs were used by us for this experiment with slurm clust
+# 32 GPUs were used by us for this experiment on a slurm cluster
 srun -n32 --ntasks-per-node=8 --gres=gpu:8 bash exps/5B_bs512_lr1e-4_bf16_1024px_sdxlvae.sh $STAGE_2_PATH stage2
 ```
 
@@ -186,14 +178,13 @@ git clone https://huggingface.co/Alpha-VLLM/Lumina-T2I
 
 3. Load your own trained model
 
-If you are loading your own trained model, please convert it to `.pth` first for security reasons before loading. Assuming your trained model path is `/path/to/your/own/model.pth` and your save directory is `/path/to/new/model`.
+If you are loading your own trained model, please convert it to `.safetensors` first for security reasons before loading. Assuming your trained model path is `/path/to/your/own/model.pth` and your save directory is `/path/to/new/model`.
 
 ```bash
 lumina convert "/path/to/your/own/model.pth" "/path/to/new/directory/" # convert to `.safetensors`
 ```
 
-> The `output_dir` supports saving files with different names in the same directory.
-
+Explanation of the `lumina convert` command:
 ```bash
 # <weight_path> means your trained model path.
 # <output_dir> means the directory where you want to save the model.
@@ -235,13 +226,6 @@ Update your own personal inference settings to generate different styles of imag
     reverse: false                  # option: true or false
     likelihood: false               # option: true or false
 
-  sde:
-    sampling_method: "Euler"        # option: ["Euler", "Heun"]
-    diffusion_form: "sigma"         # option: ["constant", "SBDM", "sigma", "linear", "decreasing", "increasing-decreasing"]
-    diffusion_norm: 1.0             # range: 0-1
-    last_step: Mean                 # option: [None, "Mean", "Tweedie", "Euler"]
-    last_step_size: 0.04
-
   infer:
       resolution: "1024x1024"     # option: ["1024x1024", "512x2048", "2048x512", "(Extrapolation) 1664x1664", "(Extrapolation) 1024x2048", "(Extrapolation) 2048x1024"]
       num_sampling_steps: 60      # range: 1-1000
@@ -268,13 +252,7 @@ Update your own personal inference settings to generate different styles of imag
   - `rtol`: Relative tolerance for the ODE solver. (option: ["velocity", "score", "noise"])
   - `reverse`: run the ODE solver in reverse. (option: [None, "velocity", "likelihood"])
   - `likelihood`: Enable calculation of likelihood during the ODE solving process.
-- sde
-  - `sampling-method`: the numerical method used for sampling the stochastic differential equation: 'Euler' for simplicity or 'Heun' for improved accuracy.
-  - `diffusion-form`: form of diffusion coefficient in the SDE
-  - `diffusion-norm`: Normalizes the diffusion coefficient, affecting the scale of the stochastic component.
-  - `last-step`: form of last step taken in the SDE
-  - `last-step-size`: size of the last step taken
-- infer
+- infer:
   - `resolution`: generated image resolution.
   - `num_sampling_steps`: sampling step for generating image.
   - `cfg_scale`: classifier-free guide scaling factor
