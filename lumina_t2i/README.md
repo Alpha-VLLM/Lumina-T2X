@@ -1,5 +1,5 @@
 <p align="center">
- <img src="../assets/lumina-logo.png" width="40%"/> 
+ <img src="../assets/lumina-logo.png" width="40%"/>
  <br>
 </p>
 
@@ -89,7 +89,7 @@ Note: You may want to adjust the CUDA version [according to your driver version]
 >
 > However, it will fail when:
 > + A Python-only build of Apex is installed.
-> 
+>
 > If the error `No module named 'fused_layer_norm_cuda'` appears, it typically means you are using a Python-only build of Apex. To resolve this, please run `pip uninstall apex`, and Lumina-T2X should then function correctly.
 
 You can clone the repo and install following the official guidelines (note that we expect a full
@@ -99,7 +99,7 @@ build, i.e., with CUDA and C++ extensions)
 pip install ninja
 git clone https://github.com/NVIDIA/apex
 cd apex
-# if pip >= 23.1 (ref: https://pip.pypa.io/en/stable/news/#v23-1) which supports multiple `--config-settings` with the same key... 
+# if pip >= 23.1 (ref: https://pip.pypa.io/en/stable/news/#v23-1) which supports multiple `--config-settings` with the same key...
 pip install -v --disable-pip-version-check --no-cache-dir --no-build-isolation --config-settings "--build-option=--cpp_ext" --config-settings "--build-option=--cuda_ext" ./
 # otherwise
 pip install -v --disable-pip-version-check --no-cache-dir --no-build-isolation --global-option="--cpp_ext" --global-option="--cuda_ext" ./
@@ -182,7 +182,7 @@ or using git for cloning the model you want to use:
 
 ```bash
 git clone https://huggingface.co/Alpha-VLLM/Lumina-T2I
-``` 
+```
 
 3. Load your own trained model
 
@@ -257,7 +257,7 @@ Update your own personal inference settings to generate different styles of imag
   - `ckpt`: lumina-t2i checkpoint path from [huggingface repo](https://huggingface.co/Alpha-VLLM/Lumina-T2I) containing `consolidated*.pth` and `model_args.pth`.
   - `ckpt_lm`: LLM checkpoint.
   - `token`: huggingface access token for accessing gated repo.
-- transport: 
+- transport:
   - `path_type`: the type of path for transport: 'Linear', 'GVP' (Geodesic Vector Pursuit), or 'VP' (Vector Pursuit).
   - `prediction`: the prediction model for the transport dynamics.
   - `loss_weight`: the weighting of different components in the loss function, can be 'velocity' for dynamic modeling, 'likelihood' for statistical consistency, or None for no weighting
@@ -309,7 +309,7 @@ To host a local gradio demo for interactive inference, run the following command
 python -u demo.py --ckpt "/path/to/ckpt"
 
 # the demo by default uses bf16 precision. to switch to fp32:
-python -u demo.py --ckpt "/path/to/ckpt" --precision fp32 
+python -u demo.py --ckpt "/path/to/ckpt" --precision fp32
 
 # use ema model
 python -u demo.py --ckpt "/path/to/ckpt" --ema

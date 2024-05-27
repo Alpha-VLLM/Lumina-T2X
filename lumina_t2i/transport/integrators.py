@@ -100,23 +100,16 @@ class ode:
         self.drift = drift
         self.t = th.linspace(t0, t1, num_steps)
         if time_shifting_factor:
-            self.t = self.t / (
-                self.t + time_shifting_factor - time_shifting_factor * self.t
-            )
+            self.t = self.t / (self.t + time_shifting_factor - time_shifting_factor * self.t)
         self.atol = atol
         self.rtol = rtol
         self.sampler_type = sampler_type
 
     def sample(self, x, model, **model_kwargs):
-
         device = x[0].device if isinstance(x, tuple) else x.device
 
         def _fn(t, x):
-            t = (
-                th.ones(x[0].size(0)).to(device) * t
-                if isinstance(x, tuple)
-                else th.ones(x.size(0)).to(device) * t
-            )
+            t = th.ones(x[0].size(0)).to(device) * t if isinstance(x, tuple) else th.ones(x.size(0)).to(device) * t
             model_output = self.drift(x, t, model, **model_kwargs)
             return model_output
 

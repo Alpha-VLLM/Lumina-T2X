@@ -30,9 +30,7 @@ def add_options(options):
 
 
 global_options = [
-    click.option(
-        "--num_gpus", type=int, default=1, help="number of gpus you want to use."
-    ),
+    click.option("--num_gpus", type=int, default=1, help="number of gpus you want to use."),
     click.option(
         "--ckpt",
         type=str,
@@ -68,9 +66,7 @@ global_options = [
 ]
 
 transport_options = [
-    click.option(
-        "--path-type", type=click.Choice(["Linear", "GVP", "VP"]), default="Linear"
-    ),
+    click.option("--path-type", type=click.Choice(["Linear", "GVP", "VP"]), default="Linear"),
     click.option(
         "--prediction",
         type=click.Choice(["velocity", "score", "noise"]),
@@ -93,9 +89,7 @@ ode_options = [
 ]
 
 sde_options = [
-    click.option(
-        "--sampling-method", type=click.Choice(["Euler", "Heun"]), default="Euler"
-    ),
+    click.option("--sampling-method", type=click.Choice(["Euler", "Heun"]), default="Euler"),
     click.option(
         "--diffusion-form",
         type=click.Choice(
@@ -118,9 +112,7 @@ sde_options = [
         default="Mean",
         help="form of last step taken in the SDE",
     ),
-    click.option(
-        "--last-step-size", type=float, default=0.04, help="size of the last step taken"
-    ),
+    click.option("--last-step-size", type=float, default=0.04, help="size of the last step taken"),
 ]
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
@@ -162,7 +154,7 @@ def convert(weight_path, output_dir):
     """
     import torch
     from safetensors.torch import save_file, load_file
-    
+
     supported_model_type = (".pth", ".safetensors")
 
     file_path, ext = os.path.splitext(weight_path)
@@ -172,11 +164,11 @@ def convert(weight_path, output_dir):
     file_name = file_path.split("/")[-1]
     print(f"Loading your current `{ext}` model {weight_path}")
     os.makedirs(output_dir, exist_ok=True)
-    
+
     if ext == supported_model_type[0]:
         target_ext = supported_model_type[1]
         output_path = os.path.join(output_dir, file_name + target_ext)
-        
+
         torch_weight_dict = torch.load(weight_path, map_location="cpu")
         save_file(torch_weight_dict, output_path)
         print(f"Saving model with `{supported_model_type[1]}` format at {output_dir}")
@@ -184,7 +176,7 @@ def convert(weight_path, output_dir):
     elif ext == supported_model_type[1]:
         target_ext = supported_model_type[0]
         output_path = os.path.join(output_dir, file_name + target_ext)
-        
+
         safetensors_weight_dict = load_file(weight_path, device="cpu")
         torch.save(safetensors_weight_dict, output_path)
         print(f"Saving model with `{ext}` format at {output_dir}")

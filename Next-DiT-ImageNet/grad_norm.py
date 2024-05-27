@@ -3,9 +3,7 @@ import torch
 import torch.nn as nn
 import torch.distributed as dist
 import fairscale.nn.model_parallel.initialize as fs_init
-from fairscale.nn.model_parallel.layers import (
-    ColumnParallelLinear, RowParallelLinear, ParallelEmbedding
-)
+from fairscale.nn.model_parallel.layers import ColumnParallelLinear, RowParallelLinear, ParallelEmbedding
 
 
 def get_model_parallel_dim_dict(model: nn.Module) -> Dict[str, int]:
@@ -28,10 +26,11 @@ def get_model_parallel_dim_dict(model: nn.Module) -> Dict[str, int]:
 
 
 def calculate_l2_grad_norm(
-    model: nn.Module, model_parallel_dim_dict: Dict[str, int],
+    model: nn.Module,
+    model_parallel_dim_dict: Dict[str, int],
 ) -> float:
-    mp_norm_sq = torch.tensor(0., dtype=torch.float32, device="cuda")
-    non_mp_norm_sq = torch.tensor(0., dtype=torch.float32, device="cuda")
+    mp_norm_sq = torch.tensor(0.0, dtype=torch.float32, device="cuda")
+    non_mp_norm_sq = torch.tensor(0.0, dtype=torch.float32, device="cuda")
 
     for name, param in model.named_parameters():
         if param.grad is None:
@@ -56,9 +55,7 @@ def scale_grad(model: nn.Module, factor: float) -> None:
             param.grad.mul_(factor)
 
 
-def get_param_norm_dict(
-    model: nn.Module, model_parallel_dim_dict: Dict[str, int]
-) -> Dict[str, float]:
+def get_param_norm_dict(model: nn.Module, model_parallel_dim_dict: Dict[str, int]) -> Dict[str, float]:
     param_norm_dict = {}
     for name, param in model.named_parameters():
         name = ".".join(x for x in name.split(".") if not x.startswith("_"))
@@ -67,6 +64,6 @@ def get_param_norm_dict(
         norm_sq = norm_sq.item()
         if model_parallel_dim_dict[name] < 0:
             norm_sq /= fs_init.get_model_parallel_world_size()
-        norm = norm_sq ** 0.5
+        norm = norm_sq**0.5
         param_norm_dict[name] = norm
     return param_norm_dict

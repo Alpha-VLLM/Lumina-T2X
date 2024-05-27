@@ -2,7 +2,6 @@ import torch as th
 
 
 class EasyDict:
-
     def __init__(self, sub_dict):
         for k, v in sub_dict.items():
             setattr(self, k, v)

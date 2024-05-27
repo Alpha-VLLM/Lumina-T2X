@@ -22,9 +22,7 @@ class ModelFailure:
 
 
 @torch.no_grad()
-def model_main(
-    args, master_port, rank, request_queue, response_queue, mp_barrier
-):
+def model_main(args, master_port, rank, request_queue, response_queue, mp_barrier):
     # import here to avoid huggingface Tokenizer parallelism warnings
     from diffusers.models import AutoencoderKL
     from transformers import AutoModel, AutoTokenizer
@@ -58,13 +56,9 @@ def model_main(
     if dist.get_rank() == 0:
         print(f"Creating lm: {train_args.lm}")
 
-    dtype = {"bf16": torch.bfloat16, "fp16": torch.float16, "fp32": torch.float32}[
-        args.precision
-    ]
+    dtype = {"bf16": torch.bfloat16, "fp16": torch.float16, "fp32": torch.float32}[args.precision]
 
-    model_lm = AutoModel.from_pretrained(
-        train_args.lm, torch_dtype=dtype, device_map="cuda", token=args.hf_token
-    )
+    model_lm = AutoModel.from_pretrained(train_args.lm, torch_dtype=dtype, device_map="cuda", token=args.hf_token)
     cap_feat_dim = model_lm.config.hidden_size
     if args.num_gpus > 1:
         raise NotImplementedError("Inference with >1 GPUs not yet supported")
@@ -77,11 +71,7 @@ def model_main(
     if dist.get_rank() == 0:
         print(f"Creating vae: {train_args.vae}")
     vae = AutoencoderKL.from_pretrained(
-        (
-            f"stabilityai/sd-vae-ft-{train_args.vae}"
-            if train_args.vae != "sdxl"
-            else "stabilityai/sdxl-vae"
-        ),
+        (f"stabilityai/sd-vae-ft-{train_args.vae}" if train_args.vae != "sdxl" else "stabilityai/sdxl-vae"),
         torch_dtype=torch.float32,
     ).cuda()
 
@@ -183,13 +173,9 @@ def model_main(
                 )
                 if proportional_attn:
                     model_kwargs["proportional_attn"] = True
-                    model_kwargs["base_seqlen"] = (train_args.image_size // 16) ** 2 + (
-                        train_args.image_size // 16
-                    ) * 2
+                    model_kwargs["base_seqlen"] = (train_args.image_size // 16) ** 2 + (train_args.image_size // 16) * 2
                 if ntk_scaling:
-                    model_kwargs["ntk_factor"] = ((w // 16) * (h // 16)) / (
-                        (train_args.image_size // 16) ** 2
-                    )
+                    model_kwargs["ntk_factor"] = ((w // 16) * (h // 16)) / ((train_args.image_size // 16) ** 2)
 
                 if dist.get_rank() == 0:
                     print(f"caption: {cap}")
@@ -243,12 +229,8 @@ def parse_transport_args(parser):
         choices=[None, "velocity", "likelihood"],
         help="the weighting of different components in the loss function, can be 'velocity' for dynamic modeling, 'likelihood' for statistical consistency, or None for no weighting.",
     )
-    group.add_argument(
-        "--sample-eps", type=float, help="sampling in the transport model."
-    )
-    group.add_argument(
-        "--train-eps", type=float, help="training to stabilize the learning process."
-    )
+    group.add_argument("--sample-eps", type=float, help="sampling in the transport model.")
+    group.add_argument("--train-eps", type=float, help="training to stabilize the learning process.")
 
 
 def parse_ode_args(parser):
@@ -265,9 +247,7 @@ def parse_ode_args(parser):
         default=1e-3,
         help="Relative tolerance for the ODE solver.",
     )
-    group.add_argument(
-        "--reverse", action="store_true", help="run the ODE solver in reverse."
-    )
+    group.add_argument("--reverse", action="store_true", help="run the ODE solver in reverse.")
     group.add_argument(
         "--likelihood",
         action="store_true",
@@ -311,9 +291,7 @@ def parse_sde_args(parser):
         choices=[None, "Mean", "Tweedie", "Euler"],
         help="form of last step taken in the SDE",
     )
-    group.add_argument(
-        "--last-step-size", type=float, default=0.04, help="size of the last step taken"
-    )
+    group.add_argument("--last-step-size", type=float, default=0.04, help="size of the last step taken")
 
 
 def find_free_port() -> int:
@@ -389,9 +367,7 @@ def main():
                         "(Extrapolation) 1024x2048",
                         "(Extrapolation) 2048x1024",
                     ]
-                    resolution = gr.Dropdown(
-                        value=res_choices[0], choices=res_choices, label="Resolution"
-                    )
+                    resolution = gr.Dropdown(value=res_choices[0], choices=res_choices, label="Resolution")
                 with gr.Row():
                     num_sampling_steps = gr.Slider(
                         minimum=1,
@@ -430,9 +406,7 @@ def main():
                         interactive=True,
                         label="CFG scale",
                     )
-                with gr.Accordion(
-                    "Advanced Settings for Resolution Extrapolation", open=False
-                ):
+                with gr.Accordion("Advanced Settings for Resolution Extrapolation", open=False):
                     with gr.Row():
                         ntk_scaling = gr.Checkbox(
                             value=True,
@@ -471,9 +445,7 @@ def main():
                     [
                         "A cute Christmas mockup on an old wooden industrial desk table with Christmas decorations and bokeh lights in the background."
                     ],  # noqa
-                    [
-                        "A scared cute rabbit in Happy Tree Friends style and punk vibe."
-                    ],  # noqa
+                    ["A scared cute rabbit in Happy Tree Friends style and punk vibe."],  # noqa
                     [
                         "A front view of a romantic flower shop in France filled with various blooming flowers including lavenders and roses."
                     ],  # noqa

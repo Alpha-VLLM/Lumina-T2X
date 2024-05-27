@@ -52,9 +52,7 @@ class MyDataset(Dataset):
             ann, group_indice_range = self._collect_annotations()
 
         self.ann = ann
-        self.group_indices = {
-            key: list(range(val[0], val[1])) for key, val in group_indice_range.items()
-        }
+        self.group_indices = {key: list(range(val[0], val[1])) for key, val in group_indice_range.items()}
 
         logger.info(f"total length: {len(self)}")
 
@@ -78,9 +76,7 @@ class MyDataset(Dataset):
                         try:
                             meta_l.append(json.loads(line))
                         except json.decoder.JSONDecodeError as e:
-                            logger.error(
-                                f"Error decoding the following jsonl line ({i}):\n{line.rstrip()}"
-                            )
+                            logger.error(f"Error decoding the following jsonl line ({i}):\n{line.rstrip()}")
                             raise e
             else:
                 raise NotImplementedError(
@@ -113,9 +109,7 @@ class MyDataset(Dataset):
         return ann, group_indice_range
 
     def _collect_annotations_and_save_to_cache(self, cache_dir):
-        if (Path(cache_dir) / "data.h5").exists() and (
-            Path(cache_dir) / "ready"
-        ).exists():
+        if (Path(cache_dir) / "data.h5").exists() and (Path(cache_dir) / "ready").exists():
             # off-the-shelf annotation cache exists
             warnings.warn(
                 f"Use existing h5 data cache: {Path(cache_dir)}\n"
@@ -135,9 +129,7 @@ class MyDataset(Dataset):
             dt = h5py.vlen_dtype(str)
             h5_ann = file.create_dataset("ann", (len(serialized_ann),), dtype=dt)
             h5_ann[:] = serialized_ann
-            file.create_dataset(
-                "group_indice_range", data=json.dumps(group_indice_range)
-            )
+            file.create_dataset("group_indice_range", data=json.dumps(group_indice_range))
         with open(Path(cache_dir) / "ready", "w") as f:
             f.write("ready")
         logger.info(f"data cache built")

@@ -80,25 +80,17 @@ def load_model(
         ckpt_lm = train_args.lm
 
     rank0_print(f"> Creating LLM model.")
-    model_lm = AutoModelForCausalLM.from_pretrained(
-        ckpt_lm, torch_dtype=dtype, device_map="cuda", token=token
-    )
+    model_lm = AutoModelForCausalLM.from_pretrained(ckpt_lm, torch_dtype=dtype, device_map="cuda", token=token)
     cap_feat_dim = model_lm.config.hidden_size
     if num_gpus > 1:
         raise NotImplementedError("Inference with >1 GPUs not yet supported")
 
-    tokenizer = AutoTokenizer.from_pretrained(
-        ckpt_lm, add_bos_token=True, add_eos_token=True, token=token
-    )
+    tokenizer = AutoTokenizer.from_pretrained(ckpt_lm, add_bos_token=True, add_eos_token=True, token=token)
     tokenizer.padding_side = "right"
 
     rank0_print(f"> Creating VAE model: {train_args.vae}")
     vae = AutoencoderKL.from_pretrained(
-        (
-            f"stabilityai/sd-vae-ft-{train_args.vae}"
-            if train_args.vae != "sdxl"
-            else "stabilityai/sdxl-vae"
-        ),
+        (f"stabilityai/sd-vae-ft-{train_args.vae}" if train_args.vae != "sdxl" else "stabilityai/sdxl-vae"),
         torch_dtype=torch.float32,
     ).cuda()
 
@@ -170,9 +162,7 @@ def inference(cap, dtype, config, vae, model_dit, model_lm, tokenizer, *args, **
         while True:
             try:
                 # begin sampler
-                transport = create_transport(
-                    path_type, prediction, loss_weight, train_eps, sample_eps
-                )
+                transport = create_transport(path_type, prediction, loss_weight, train_eps, sample_eps)
                 sampler = Sampler(transport)
                 sample_fn = sampler.sample_ode(
                     sampling_method=solver,
@@ -224,13 +214,9 @@ def inference(cap, dtype, config, vae, model_dit, model_lm, tokenizer, *args, **
 
                 if proportional_attn:
                     model_kwargs["proportional_attn"] = True
-                    model_kwargs["base_seqlen"] = (image_size // 16) ** 2 + (
-                        image_size // 16
-                    ) * 2
+                    model_kwargs["base_seqlen"] = (image_size // 16) ** 2 + (image_size // 16) * 2
                 if ntk_scaling:
-                    model_kwargs["ntk_factor"] = ((w // 16) * (h // 16)) / (
-                        (image_size // 16) ** 2
-                    )
+                    model_kwargs["ntk_factor"] = ((w // 16) * (h // 16)) / ((image_size // 16) ** 2)
 
                 rank0_print(f"> Caption: {cap}")
                 rank0_print(f"> Num_sampling_steps: {num_sampling_steps}")
@@ -303,9 +289,7 @@ def main(
 
     # step 3: inference
     rank0_print(f"> [ATTENTION] start inference with config: {config_path}.")
-    results = inference(
-        cap, dtype, config, vae, model_dit, model_lm, tokenizer, *args, **kwargs
-    )
+    results = inference(cap, dtype, config, vae, model_dit, model_lm, tokenizer, *args, **kwargs)
 
     # step 4: post processing
     rank0_print(f"> Saving processed images.")

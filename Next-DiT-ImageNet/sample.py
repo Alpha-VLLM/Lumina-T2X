@@ -26,7 +26,7 @@ import torch.nn.functional as F
 
 
 def none_or_str(value):
-    if value == 'None':
+    if value == "None":
         return None
     return value
 
@@ -39,25 +39,40 @@ def parse_transport_args(parser):
     group.add_argument("--sample-eps", type=float)
     group.add_argument("--train-eps", type=float)
 
+
 def parse_ode_args(parser):
     group = parser.add_argument_group("ODE arguments")
-    group.add_argument("--sampling-method", type=str, default="dopri5", help="blackbox ODE solver methods; for full list check https://github.com/rtqichen/torchdiffeq")
+    group.add_argument(
+        "--sampling-method",
+        type=str,
+        default="dopri5",
+        help="blackbox ODE solver methods; for full list check https://github.com/rtqichen/torchdiffeq",
+    )
     group.add_argument("--atol", type=float, default=1e-6, help="Absolute tolerance")
     group.add_argument("--rtol", type=float, default=1e-3, help="Relative tolerance")
     group.add_argument("--reverse", action="store_true")
     group.add_argument("--likelihood", action="store_true")
 
+
 def parse_sde_args(parser):
     group = parser.add_argument_group("SDE arguments")
     group.add_argument("--sampling-method", type=str, default="Euler", choices=["Euler", "Heun"])
-    group.add_argument("--diffusion-form", type=str, default="sigma",
-                        choices=["constant", "SBDM", "sigma", "linear", "decreasing", "increasing-decreasing"],
-                        help="form of diffusion coefficient in the SDE")
+    group.add_argument(
+        "--diffusion-form",
+        type=str,
+        default="sigma",
+        choices=["constant", "SBDM", "sigma", "linear", "decreasing", "increasing-decreasing"],
+        help="form of diffusion coefficient in the SDE",
+    )
     group.add_argument("--diffusion-norm", type=float, default=1.0)
-    group.add_argument("--last-step", type=none_or_str, default="Mean", choices=[None, "Mean", "Tweedie", "Euler"],
-                        help="form of last step taken in the SDE")
-    group.add_argument("--last-step-size", type=float, default=0.04,
-                        help="size of the last step taken")
+    group.add_argument(
+        "--last-step",
+        type=none_or_str,
+        default="Mean",
+        choices=[None, "Mean", "Tweedie", "Euler"],
+        help="form of last step taken in the SDE",
+    )
+    group.add_argument("--last-step-size", type=float, default=0.04, help="size of the last step taken")
 
 
 def main(args, rank, master_port):
@@ -77,8 +92,7 @@ def main(args, rank, master_port):
     train_args = torch.load(os.path.join(args.ckpt, "model_args.pth"))
 
     if dist.get_rank() == 0:
-        print("Model arguments used for inference:",
-              json.dumps(train_args.__dict__, indent=2))
+        print("Model arguments used for inference:", json.dumps(train_args.__dict__, indent=2))
 
     # Load model:
     image_size = train_args.image_size
@@ -91,8 +105,10 @@ def main(args, rank, master_port):
     )
 
     torch_dtype = {
-        "fp32": torch.float, "tf32": torch.float,
-        "bf16": torch.bfloat16, "fp16": torch.float16,
+        "fp32": torch.float,
+        "tf32": torch.float,
+        "bf16": torch.bfloat16,
+        "fp16": torch.float16,
     }[args.precision]
     model.to(torch_dtype).cuda()
     if args.precision == "tf32":
@@ -100,22 +116,18 @@ def main(args, rank, master_port):
         torch.backends.cudnn.allow_tf32 = True
 
     # assert train_args.model_parallel_size == args.num_gpus
-    ckpt = torch.load(os.path.join(
-        args.ckpt,
-        f"consolidated{'_ema' if args.ema else ''}."
-        f"{rank:02d}-of-{args.num_gpus:02d}.pth",
-    ), map_location="cpu")
+    ckpt = torch.load(
+        os.path.join(
+            args.ckpt,
+            f"consolidated{'_ema' if args.ema else ''}." f"{rank:02d}-of-{args.num_gpus:02d}.pth",
+        ),
+        map_location="cpu",
+    )
     model.load_state_dict(ckpt, strict=True)
 
     model.eval()  # important!
-    
-    transport = create_transport(
-        args.path_type,
-        args.prediction,
-        args.loss_weight,
-        args.train_eps,
-        args.sample_eps
-    )
+
+    transport = create_transport(args.path_type, args.prediction, args.loss_weight, args.train_eps, args.sample_eps)
     sampler = Sampler(transport)
 
     if mode == "ODE":
@@ -133,9 +145,9 @@ def main(args, rank, master_port):
                 num_steps=args.num_sampling_steps,
                 atol=args.atol,
                 rtol=args.rtol,
-                reverse=args.reverse
+                reverse=args.reverse,
             )
-            
+
     elif mode == "SDE":
         sample_fn = sampler.sample_sde(
             sampling_method=args.sampling_method,
@@ -148,16 +160,19 @@ def main(args, rank, master_port):
 
     vae = AutoencoderKL.from_pretrained(
         f"stabilityai/sd-vae-ft-{train_args.vae}"
-        if args.local_diffusers_model_root is None else
-        os.path.join(args.local_diffusers_model_root,
-                     f"stabilityai/sd-vae-ft-{train_args.vae}")
+        if args.local_diffusers_model_root is None
+        else os.path.join(args.local_diffusers_model_root, f"stabilityai/sd-vae-ft-{train_args.vae}")
     ).cuda()
 
     # Create sampling noise:
     n = len(args.class_labels)
     z = torch.randn(
-        n, 4, latent_size, latent_size,
-        dtype=torch_dtype, device="cuda",
+        n,
+        4,
+        latent_size,
+        latent_size,
+        dtype=torch_dtype,
+        device="cuda",
     )
     y = torch.tensor(args.class_labels, device="cuda")
 
@@ -179,10 +194,10 @@ def main(args, rank, master_port):
         # Save and display images:
         save_image(
             samples,
-            args.image_save_path or os.path.join(
-                args.ckpt, f"sample{'_ema' if args.ema else ''}.png"
-            ),
-            nrow=8, normalize=True, value_range=(-1, 1)
+            args.image_save_path or os.path.join(args.ckpt, f"sample{'_ema' if args.ema else ''}.png"),
+            nrow=8,
+            normalize=True,
+            value_range=(-1, 1),
         )
 
     dist.barrier()
@@ -201,38 +216,43 @@ if __name__ == "__main__":
     mode = sys.argv[1]
     if mode not in ["ODE", "SDE"]:
         mode = "ODE"
-    
+
     parser.add_argument("--cfg_scale", type=float, default=4.0)
     parser.add_argument("--num_sampling_steps", type=int, default=250)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--ckpt", type=str, required=True)
     parser.add_argument(
-        "--class_labels", type=int, nargs="+",
+        "--class_labels",
+        type=int,
+        nargs="+",
         help="Class labels to generate the images for.",
         default=[207, 360, 387, 974, 88, 979, 417, 279],
     )
     parser.add_argument(
-        "--precision", type=str, choices=["fp32", "tf32", "fp16", "bf16"],
+        "--precision",
+        type=str,
+        choices=["fp32", "tf32", "fp16", "bf16"],
         default="tf32",
     )
     parser.add_argument(
-        "--local_diffusers_model_root", type=str,
+        "--local_diffusers_model_root",
+        type=str,
         help="Specify the root directory if diffusers models are to be loaded "
-             "from the local filesystem (instead of being automatically "
-             "downloaded from the Internet). Useful in environments without "
-             "Internet access."
+        "from the local filesystem (instead of being automatically "
+        "downloaded from the Internet). Useful in environments without "
+        "Internet access.",
     )
     parser.add_argument("--num_gpus", type=int, default=1)
     parser.add_argument("--ema", action="store_true", help="Use EMA models.")
     parser.add_argument("--no_ema", action="store_false", dest="ema", help="Do not use EMA models.")
     parser.set_defaults(ema=True)
     parser.add_argument(
-        "--image_save_path", type=str,
+        "--image_save_path",
+        type=str,
         help="If specified, overrides the default image save path "
-             "(sample{_ema}.png in the model checkpoint directory)."
+        "(sample{_ema}.png in the model checkpoint directory).",
     )
 
-    
     parse_transport_args(parser)
     if mode == "ODE":
         parse_ode_args(parser)
@@ -247,4 +267,3 @@ if __name__ == "__main__":
     master_port = find_free_port()
     assert args.num_gpus == 1, "Multi-GPU sampling is currently not supported."
     main(args, 0, master_port)
-

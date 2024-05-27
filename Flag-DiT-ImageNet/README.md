@@ -1,5 +1,5 @@
 <p align="center">
- <img src="../assets/lumina-logo.png" width="40%"/> 
+ <img src="../assets/lumina-logo.png" width="40%"/>
  <br>
 </p>
 
@@ -64,7 +64,7 @@ Note: You may want to adjust the CUDA version [according to your driver version]
 >
 > However, it will fail when:
 > + A Python-only build of Apex is installed.
-> 
+>
 > If the error `No module named 'fused_layer_norm_cuda'` appears, it typically means you are using a Python-only build of Apex. To resolve this, please run `pip uninstall apex`, and Lumina-T2X should then function correctly.
 
 You can clone the repo and install following the official guidelines (note that we expect a full
@@ -74,7 +74,7 @@ build, i.e., with CUDA and C++ extensions)
 pip install ninja
 git clone https://github.com/NVIDIA/apex
 cd apex
-# if pip >= 23.1 (ref: https://pip.pypa.io/en/stable/news/#v23-1) which supports multiple `--config-settings` with the same key... 
+# if pip >= 23.1 (ref: https://pip.pypa.io/en/stable/news/#v23-1) which supports multiple `--config-settings` with the same key...
 pip install -v --disable-pip-version-check --no-cache-dir --no-build-isolation --config-settings "--build-option=--cpp_ext" --config-settings "--build-option=--cuda_ext" ./
 # otherwise
 pip install -v --disable-pip-version-check --no-cache-dir --no-build-isolation --global-option="--cpp_ext" --global-option="--cuda_ext" ./
@@ -89,7 +89,7 @@ Assuming the ImageNet dataset is in `/path/to/imagenet`. It should be like this:
 ```
 /path/to/imagenet/:
     train/:
-        n01440764: 
+        n01440764:
             many_images.JPEG ...
         n01443537:
             many_images.JPEG ...

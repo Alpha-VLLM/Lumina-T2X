@@ -60,9 +60,7 @@ from transport import create_transport
 class T2IItemProcessor(ItemProcessor):
     def __init__(self, transform, tokenizer_path, text_dropout_prob, max_words=128):
         self.image_transform = transform
-        self.tokenizer = AutoTokenizer.from_pretrained(
-            tokenizer_path, add_bos_token=True, add_eos_token=True
-        )
+        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_path, add_bos_token=True, add_eos_token=True)
         self.text_dropout_prob = text_dropout_prob
         self.max_words = max_words
 
@@ -84,9 +82,7 @@ class T2IItemProcessor(ItemProcessor):
         if len(tokenized_caption) < self.max_words:
             # padded tokens are masked in model computation
             # so we simply use 0 here no matter what the actual pad_id of the tokenizer is
-            tokenized_caption = tokenized_caption + [0] * (
-                self.max_words - len(tokenized_caption)
-            )
+            tokenized_caption = tokenized_caption + [0] * (self.max_words - len(tokenized_caption))
         else:
             tokenized_caption = tokenized_caption[: self.max_words]
         tokenized_caption = torch.tensor(tokenized_caption, dtype=torch.long)
@@ -106,26 +102,18 @@ def dataloader_collate_fn(samples):
     return image, tokenized_caption, token_mask
 
 
-def get_train_sampler(
-    dataset, rank, world_size, global_batch_size, max_steps, resume_step, seed
-):
-    sample_indices = torch.empty(
-        [max_steps * global_batch_size // world_size], dtype=torch.long
-    )
+def get_train_sampler(dataset, rank, world_size, global_batch_size, max_steps, resume_step, seed):
+    sample_indices = torch.empty([max_steps * global_batch_size // world_size], dtype=torch.long)
     epoch_id, fill_ptr, offs = 0, 0, 0
     while fill_ptr < sample_indices.size(0):
         g = torch.Generator()
         g.manual_seed(seed + epoch_id)
         epoch_sample_indices = torch.randperm(len(dataset), generator=g)
         epoch_id += 1
-        epoch_sample_indices = epoch_sample_indices[
-            (rank + offs) % world_size :: world_size
-        ]
+        epoch_sample_indices = epoch_sample_indices[(rank + offs) % world_size :: world_size]
         offs = (offs + world_size - len(dataset) % world_size) % world_size
         epoch_sample_indices = epoch_sample_indices[: sample_indices.size(0) - fill_ptr]
-        sample_indices[fill_ptr : fill_ptr + epoch_sample_indices.size(0)] = (
-            epoch_sample_indices
-        )
+        sample_indices[fill_ptr : fill_ptr + epoch_sample_indices.size(0)] = epoch_sample_indices
         fill_ptr += epoch_sample_indices.size(0)
     return sample_indices[resume_step * global_batch_size // world_size :].tolist()
 
@@ -258,9 +246,7 @@ def main(args):
     mp_world_size = fs_init.get_model_parallel_world_size()
     mp_rank = fs_init.get_model_parallel_rank()
 
-    assert (
-        args.global_batch_size % dp_world_size == 0
-    ), "Batch size must be divisible by data parrallel world size."
+    assert args.global_batch_size % dp_world_size == 0, "Batch size must be divisible by data parrallel world size."
     local_batch_size = args.global_batch_size // dp_world_size
     rank = dist.get_rank()
     device = rank % torch.cuda.device_count()
@@ -293,16 +279,12 @@ def main(args):
 
     logger.info(f"Setting-up language model: {args.lm}")
 
-    model_lm = AutoModelForCausalLM.from_pretrained(
-        args.lm
-    ).get_decoder()  # e.g. meta-llama/Llama-2-7b-hf
+    model_lm = AutoModelForCausalLM.from_pretrained(args.lm).get_decoder()  # e.g. meta-llama/Llama-2-7b-hf
     cap_feat_dim = model_lm.config.hidden_size
     model_lm = setup_lm_fsdp_sync(model_lm)
 
     # Create model:
-    assert (
-        args.image_size % 8 == 0
-    ), "Image size must be divisible by 8 (for the VAE encoder)."
+    assert args.image_size % 8 == 0, "Image size must be divisible by 8 (for the VAE encoder)."
     model = models.__dict__[args.model](
         qk_norm=args.qk_norm,
         cap_feat_dim=cap_feat_dim,
@@ -361,12 +343,8 @@ def main(args):
                 ),
                 map_location="cpu",
             )
-            missing_keys, unexpected_keys = model.load_state_dict(
-                state_dict, strict=False
-            )
-            missing_keys_ema, unexpected_keys_ema = model_ema.load_state_dict(
-                state_dict, strict=False
-            )
+            missing_keys, unexpected_keys = model.load_state_dict(state_dict, strict=False)
+            missing_keys_ema, unexpected_keys_ema = model_ema.load_state_dict(state_dict, strict=False)
             del state_dict
             assert set(missing_keys) == set(missing_keys_ema)
             assert set(unexpected_keys) == set(unexpected_keys_ema)
@@ -379,16 +357,12 @@ def main(args):
     model_ema = setup_fsdp_sync(model_ema, args)
 
     # default: 1000 steps, linear noise schedule
-    transport = create_transport(
-        "Linear", "velocity", None, None, None, snr_type=args.snr_type
-    )  # default: velocity;
+    transport = create_transport("Linear", "velocity", None, None, None, snr_type=args.snr_type)  # default: velocity;
     if args.vae != "sdxl":
         vae = AutoencoderKL.from_pretrained(
             f"stabilityai/sd-vae-ft-{args.vae}"
             if args.local_diffusers_model_root is None
-            else os.path.join(
-                args.local_diffusers_model_root, f"stabilityai/sd-vae-ft-{args.vae}"
-            )
+            else os.path.join(args.local_diffusers_model_root, f"stabilityai/sd-vae-ft-{args.vae}")
         ).to(device)
     else:
         # vae
@@ -400,11 +374,7 @@ def main(args):
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.wd)
     if args.resume:
         opt_state_world_size = len(
-            [
-                x
-                for x in os.listdir(args.resume)
-                if x.startswith("optimizer.") and x.endswith(".pth")
-            ]
+            [x for x in os.listdir(args.resume) if x.startswith("optimizer.") and x.endswith(".pth")]
         )
         assert opt_state_world_size == dist.get_world_size(), (
             f"Resuming from a checkpoint with unmatched world size "
@@ -416,8 +386,7 @@ def main(args):
             torch.load(
                 os.path.join(
                     args.resume,
-                    f"optimizer.{dist.get_rank():05d}-of-"
-                    f"{dist.get_world_size():05d}.pth",
+                    f"optimizer.{dist.get_rank():05d}-of-" f"{dist.get_world_size():05d}.pth",
                 ),
                 map_location="cpu",
             )
@@ -439,19 +408,13 @@ def main(args):
     crop_size_list = generate_crop_size_list(max_num_patches, patch_size)
     logger.info("List of crop sizes:")
     for i in range(0, len(crop_size_list), 6):
-        logger.info(
-            " " + "".join([f"{f'{w} x {h}':14s}" for w, h in crop_size_list[i : i + 6]])
-        )
+        logger.info(" " + "".join([f"{f'{w} x {h}':14s}" for w, h in crop_size_list[i : i + 6]]))
     image_transform = transforms.Compose(
         [
-            transforms.Lambda(
-                functools.partial(var_center_crop, crop_size_list=crop_size_list)
-            ),
+            transforms.Lambda(functools.partial(var_center_crop, crop_size_list=crop_size_list)),
             # transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
-            transforms.Normalize(
-                mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5], inplace=True
-            ),
+            transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5], inplace=True),
         ]
     )
     dataset = MyDataset(
@@ -466,10 +429,7 @@ def main(args):
     )
     num_samples = args.global_batch_size * args.max_steps
     logger.info(f"Dataset contains {len(dataset):,} images ({args.data_path})")
-    logger.info(
-        f"Total # samples to consume: {num_samples:,} "
-        f"({num_samples / len(dataset):.2f} epochs)"
-    )
+    logger.info(f"Total # samples to consume: {num_samples:,} " f"({num_samples / len(dataset):.2f} epochs)")
     sampler = get_train_sampler(
         dataset,
         dp_rank,
@@ -507,10 +467,7 @@ def main(args):
             vae_scale = 0.18215 if args.vae != "sdxl" else 0.13025
             warnings.warn(f"vae scale: {vae_scale}")
             # Map input images to latent space + normalize latents:
-            x = [
-                vae.encode(img[None]).latent_dist.sample().mul_(vae_scale)[0]
-                for img in x
-            ]
+            x = [vae.encode(img[None]).latent_dist.sample().mul_(vae_scale)[0] for img in x]
 
         if mp_world_size > 1:
             mp_src = fs_init.get_model_parallel_src_rank()
@@ -559,11 +516,7 @@ def main(args):
                 loss_dict = transport.training_losses(model, x_mb, model_kwargs)
             loss = loss_dict["loss"].sum() / local_batch_size
             loss_item += loss.item()
-            with (
-                model.no_sync()
-                if args.data_parallel in ["sdp", "hsdp"] and not last_mb
-                else contextlib.nullcontext()
-            ):
+            with model.no_sync() if args.data_parallel in ["sdp", "hsdp"] and not last_mb else contextlib.nullcontext():
                 loss.backward()
 
         grad_norm = calculate_l2_grad_norm(model, model_parallel_dim_dict)
@@ -653,13 +606,8 @@ def main(args):
                 model_ema,
                 StateDictType.LOCAL_STATE_DICT,
             ):
-                opt_state_fn = (
-                    f"optimizer.{dist.get_rank():05d}-of-"
-                    f"{dist.get_world_size():05d}.pth"
-                )
-                torch.save(
-                    opt.state_dict(), os.path.join(checkpoint_path, opt_state_fn)
-                )
+                opt_state_fn = f"optimizer.{dist.get_rank():05d}-of-" f"{dist.get_world_size():05d}.pth"
+                torch.save(opt.state_dict(), os.path.join(checkpoint_path, opt_state_fn))
             dist.barrier()
             logger.info(f"Saved optimizer to {checkpoint_path}.")
 
@@ -685,9 +633,7 @@ if __name__ == "__main__":
     parser.add_argument("--results_dir", type=str, required=True)
     parser.add_argument("--model", type=str, default="DiT_Llama2_7B_patch2")
     parser.add_argument("--image_size", type=int, choices=[256, 512, 1024], default=256)
-    parser.add_argument(
-        "--max_steps", type=int, default=100_000, help="Number of training steps."
-    )
+    parser.add_argument("--max_steps", type=int, default=100_000, help="Number of training steps.")
     parser.add_argument("--global_batch_size", type=int, default=256)
     parser.add_argument("--micro_batch_size", type=int, default=1)
     parser.add_argument("--global_seed", type=int, default=0)
@@ -699,12 +645,8 @@ if __name__ == "__main__":
     parser.add_argument("--ckpt_every", type=int, default=50_000)
     parser.add_argument("--master_port", type=int, default=18181)
     parser.add_argument("--model_parallel_size", type=int, default=1)
-    parser.add_argument(
-        "--data_parallel", type=str, choices=["sdp", "fsdp"], default="fsdp"
-    )
-    parser.add_argument(
-        "--precision", choices=["fp32", "tf32", "fp16", "bf16"], default="bf16"
-    )
+    parser.add_argument("--data_parallel", type=str, choices=["sdp", "fsdp"], default="fsdp")
+    parser.add_argument("--precision", choices=["fp32", "tf32", "fp16", "bf16"], default="bf16")
     parser.add_argument("--grad_precision", choices=["fp32", "fp16", "bf16"])
     parser.add_argument(
         "--local_diffusers_model_root",
@@ -721,9 +663,7 @@ if __name__ == "__main__":
         dest="auto_resume",
         help="Do NOT auto resume from the last checkpoint in --results_dir.",
     )
-    parser.add_argument(
-        "--resume", type=str, help="Resume training from a checkpoint folder."
-    )
+    parser.add_argument("--resume", type=str, help="Resume training from a checkpoint folder.")
     parser.add_argument(
         "--init_from",
         type=str,
@@ -747,9 +687,7 @@ if __name__ == "__main__":
         "--qk_norm",
         action="store_true",
     )
-    parser.add_argument(
-        "--tokenizer_path", type=str, default="meta-llama/Llama-2-7b-hf"
-    )
+    parser.add_argument("--tokenizer_path", type=str, default="meta-llama/Llama-2-7b-hf")
     parser.add_argument(
         "--lm",
         type=str,
@@ -761,9 +699,7 @@ if __name__ == "__main__":
         default=0.1,
         help="Randomly change the caption of a sample to a blank string with the given probability.",
     )
-    parser.add_argument(
-        "--max_text_tokens", type=int, default=128, help="max number of text tokens"
-    )
+    parser.add_argument("--max_text_tokens", type=int, default=128, help="max number of text tokens")
     parser.add_argument(
         "--rope_scaling_factor",
         type=float,
@@ -774,9 +710,7 @@ if __name__ == "__main__":
         type=float,
         default=1.0,
     )
-    parser.add_argument(
-        "--snr_type", type=str, default="uniform", choices=["uniform", "lognorm"]
-    )
+    parser.add_argument("--snr_type", type=str, default="uniform", choices=["uniform", "lognorm"])
     args = parser.parse_args()
 
     if args.image_size == 256:

@@ -72,25 +72,13 @@ class SecretItemProcessor(ItemProcessor):
 
     def process_item(self, data_item, training_mode=False):
         if "conversations" in data_item:
-            assert (
-                "image" in data_item
-                and "conversations" in data_item
-                and len(data_item["conversations"]) == 2
-            )
+            assert "image" in data_item and "conversations" in data_item and len(data_item["conversations"]) == 2
             image = Image.open(read_general(data_item["image"])).convert("RGB")
             text = data_item["conversations"][1]["value"]
         else:
-            image_path = data_item["path"].replace(
-                "https://storage.googleapis.com/dream-machines-output/", ""
-            )
-            if (
-                "cluster_p_hdd:s3://linziyi_data/dream-machines-output"
-                not in image_path
-            ):
-                image_path = (
-                    "cluster_p_hdd:s3://linziyi_data/dream-machines-output/"
-                    + image_path
-                )
+            image_path = data_item["path"].replace("https://storage.googleapis.com/dream-machines-output/", "")
+            if "cluster_p_hdd:s3://linziyi_data/dream-machines-output" not in image_path:
+                image_path = "cluster_p_hdd:s3://linziyi_data/dream-machines-output/" + image_path
             image = Image.open(read_general(image_path)).convert("RGB")
 
             if random.uniform(0.0, 1.0) < 0.2:
@@ -114,26 +102,18 @@ def dataloader_collate_fn(samples):
     return image, caps
 
 
-def get_train_sampler(
-    dataset, rank, world_size, global_batch_size, max_steps, resume_step, seed
-):
-    sample_indices = torch.empty(
-        [max_steps * global_batch_size // world_size], dtype=torch.long
-    )
+def get_train_sampler(dataset, rank, world_size, global_batch_size, max_steps, resume_step, seed):
+    sample_indices = torch.empty([max_steps * global_batch_size // world_size], dtype=torch.long)
     epoch_id, fill_ptr, offs = 0, 0, 0
     while fill_ptr < sample_indices.size(0):
         g = torch.Generator()
         g.manual_seed(seed + epoch_id)
         epoch_sample_indices = torch.randperm(len(dataset), generator=g)
         epoch_id += 1
-        epoch_sample_indices = epoch_sample_indices[
-            (rank + offs) % world_size :: world_size
-        ]
+        epoch_sample_indices = epoch_sample_indices[(rank + offs) % world_size :: world_size]
         offs = (offs + world_size - len(dataset) % world_size) % world_size
         epoch_sample_indices = epoch_sample_indices[: sample_indices.size(0) - fill_ptr]
-        sample_indices[fill_ptr : fill_ptr + epoch_sample_indices.size(0)] = (
-            epoch_sample_indices
-        )
+        sample_indices[fill_ptr : fill_ptr + epoch_sample_indices.size(0)] = epoch_sample_indices
         fill_ptr += epoch_sample_indices.size(0)
     return sample_indices[resume_step * global_batch_size // world_size :].tolist()
 
@@ -209,13 +189,8 @@ def setup_fsdp_sync(model: nn.Module, args: argparse.Namespace) -> FSDP:
     dp_world_size = fs_init.get_data_parallel_world_size()
     mp_pp_world_size = mp_world_size * pp_world_size
 
-    hsdp_hard_condition = (
-        get_inter_node_process_group() is not None
-        and get_local_world_size() % mp_pp_world_size == 0
-    )
-    hsdp_soft_condition = (
-        hsdp_hard_condition and mp_pp_world_size <= get_local_world_size() // 4
-    )
+    hsdp_hard_condition = get_inter_node_process_group() is not None and get_local_world_size() % mp_pp_world_size == 0
+    hsdp_soft_condition = hsdp_hard_condition and mp_pp_world_size <= get_local_world_size() // 4
 
     if args.data_parallel is not None:
         if args.data_parallel == "hsdp" and not hsdp_hard_condition:
@@ -224,17 +199,13 @@ def setup_fsdp_sync(model: nn.Module, args: argparse.Namespace) -> FSDP:
     else:
         fsdp_strategy = "hsdp" if hsdp_soft_condition else "sdp"
         args.data_parallel = fsdp_strategy
-        logging.getLogger(__name__).info(
-            "Using automatically decided data parallel strategy: " f"{fsdp_strategy}."
-        )
+        logging.getLogger(__name__).info("Using automatically decided data parallel strategy: " f"{fsdp_strategy}.")
 
     if fsdp_strategy == "hsdp":
         intra_node_dp_pg = None
         for i in range(dist.get_world_size() // get_local_world_size()):
             for j in range(mp_world_size * pp_world_size):
-                ranks = list(
-                    range(j, get_local_world_size(), mp_world_size * pp_world_size)
-                )
+                ranks = list(range(j, get_local_world_size(), mp_world_size * pp_world_size))
                 ranks = [x + i * get_local_world_size() for x in ranks]
                 group = dist.new_group(ranks)
                 if dist.get_rank() in ranks:
@@ -291,10 +262,7 @@ def setup_mixed_precision(args):
 
 
 # Adapted from pipelines.StableDiffusionXLPipeline.encode_prompt
-def encode_prompt(
-    prompt_batch, text_encoder, tokenizer, proportion_empty_prompts, is_train=True
-):
-
+def encode_prompt(prompt_batch, text_encoder, tokenizer, proportion_empty_prompts, is_train=True):
     captions = []
     for caption in prompt_batch:
         if random.random() < proportion_empty_prompts:
@@ -345,9 +313,7 @@ def main(args):
     mp_world_size = fs_init.get_model_parallel_world_size()
     mp_rank = fs_init.get_model_parallel_rank()
 
-    assert (
-        args.global_batch_size % dp_world_size == 0
-    ), "Batch size must be divisible by data parrallel world size."
+    assert args.global_batch_size % dp_world_size == 0, "Batch size must be divisible by data parrallel world size."
     local_batch_size = args.global_batch_size // dp_world_size
     rank = dist.get_rank()
     device = rank % torch.cuda.device_count()
@@ -403,9 +369,7 @@ def main(args):
     cap_feat_dim = text_encoder.config.hidden_size
 
     # Create model:
-    assert (
-        args.image_size % 8 == 0
-    ), "Image size must be divisible by 8 (for the VAE encoder)."
+    assert args.image_size % 8 == 0, "Image size must be divisible by 8 (for the VAE encoder)."
 
     model = models.__dict__[args.model](
         qk_norm=args.qk_norm,
@@ -465,12 +429,8 @@ def main(args):
                 ),
                 map_location="cpu",
             )
-            missing_keys, unexpected_keys = model.load_state_dict(
-                state_dict, strict=False
-            )
-            missing_keys_ema, unexpected_keys_ema = model_ema.load_state_dict(
-                state_dict, strict=False
-            )
+            missing_keys, unexpected_keys = model.load_state_dict(state_dict, strict=False)
+            missing_keys_ema, unexpected_keys_ema = model_ema.load_state_dict(state_dict, strict=False)
             del state_dict
             assert set(missing_keys) == set(missing_keys_ema)
             assert set(unexpected_keys) == set(unexpected_keys_ema)
@@ -483,16 +443,12 @@ def main(args):
     model_ema = setup_fsdp_sync(model_ema, args)
 
     # default: 1000 steps, linear noise schedule
-    transport = create_transport(
-        "Linear", "velocity", None, None, None, snr_type=args.snr_type
-    )  # default: velocity;
+    transport = create_transport("Linear", "velocity", None, None, None, snr_type=args.snr_type)  # default: velocity;
     if args.vae != "sdxl":
         vae = AutoencoderKL.from_pretrained(
             f"stabilityai/sd-vae-ft-{args.vae}"
             if args.local_diffusers_model_root is None
-            else os.path.join(
-                args.local_diffusers_model_root, f"stabilityai/sd-vae-ft-{args.vae}"
-            )
+            else os.path.join(args.local_diffusers_model_root, f"stabilityai/sd-vae-ft-{args.vae}")
         ).to(device)
     else:
         # vae
@@ -504,11 +460,7 @@ def main(args):
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.wd)
     if args.resume:
         opt_state_world_size = len(
-            [
-                x
-                for x in os.listdir(args.resume)
-                if x.startswith("optimizer.") and x.endswith(".pth")
-            ]
+            [x for x in os.listdir(args.resume) if x.startswith("optimizer.") and x.endswith(".pth")]
         )
         assert opt_state_world_size == dist.get_world_size(), (
             f"Resuming from a checkpoint with unmatched world size "
@@ -520,8 +472,7 @@ def main(args):
             torch.load(
                 os.path.join(
                     args.resume,
-                    f"optimizer.{dist.get_rank():05d}-of-"
-                    f"{dist.get_world_size():05d}.pth",
+                    f"optimizer.{dist.get_rank():05d}-of-" f"{dist.get_world_size():05d}.pth",
                 ),
                 map_location="cpu",
             )
@@ -543,19 +494,13 @@ def main(args):
     crop_size_list = generate_crop_size_list(max_num_patches, patch_size)
     logger.info("List of crop sizes:")
     for i in range(0, len(crop_size_list), 6):
-        logger.info(
-            " " + "".join([f"{f'{w} x {h}':14s}" for w, h in crop_size_list[i : i + 6]])
-        )
+        logger.info(" " + "".join([f"{f'{w} x {h}':14s}" for w, h in crop_size_list[i : i + 6]]))
     image_transform = transforms.Compose(
         [
-            transforms.Lambda(
-                functools.partial(var_center_crop, crop_size_list=crop_size_list)
-            ),
+            transforms.Lambda(functools.partial(var_center_crop, crop_size_list=crop_size_list)),
             # transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
-            transforms.Normalize(
-                mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5], inplace=True
-            ),
+            transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5], inplace=True),
         ]
     )
     dataset = MyDataset(
@@ -565,10 +510,7 @@ def main(args):
     )
     num_samples = args.global_batch_size * args.max_steps
     logger.info(f"Dataset contains {len(dataset):,} images ({args.data_path})")
-    logger.info(
-        f"Total # samples to consume: {num_samples:,} "
-        f"({num_samples / len(dataset):.2f} epochs)"
-    )
+    logger.info(f"Total # samples to consume: {num_samples:,} " f"({num_samples / len(dataset):.2f} epochs)")
     sampler = get_train_sampler(
         dataset,
         dp_rank,
@@ -607,10 +549,7 @@ def main(args):
             if step == resume_step:
                 logger.warning(f"vae scale: {vae_scale}")
             # Map input images to latent space + normalize latents:
-            x = [
-                vae.encode(img[None]).latent_dist.sample().mul_(vae_scale)[0]
-                for img in x
-            ]
+            x = [vae.encode(img[None]).latent_dist.sample().mul_(vae_scale)[0] for img in x]
 
         if mp_world_size > 1:
             mp_src = fs_init.get_model_parallel_src_rank()
@@ -625,9 +564,7 @@ def main(args):
             ]
 
         with torch.no_grad():
-            cap_feats, cap_mask = encode_prompt(
-                caps, text_encoder, tokenizer, args.caption_dropout_prob
-            )
+            cap_feats, cap_mask = encode_prompt(caps, text_encoder, tokenizer, args.caption_dropout_prob)
 
         if mp_world_size > 1:
             local_cap_feats = cap_feats
@@ -666,11 +603,7 @@ def main(args):
             loss = loss_dict["loss"].sum() / local_batch_size
             loss_item += loss.item()
             task_loss_item += (loss_dict["task_loss"].sum() / local_batch_size).item()
-            with (
-                model.no_sync()
-                if args.data_parallel in ["sdp", "hsdp"] and not last_mb
-                else contextlib.nullcontext()
-            ):
+            with model.no_sync() if args.data_parallel in ["sdp", "hsdp"] and not last_mb else contextlib.nullcontext():
                 loss.backward()
 
         grad_norm = calculate_l2_grad_norm(model, model_parallel_dim_dict)
@@ -729,11 +662,7 @@ def main(args):
             start_time = time()
 
         # Save DiT checkpoint:
-        if (
-            step == 0
-            or (step + 1) % args.ckpt_every == 0
-            or (step + 1) == args.max_steps
-        ):
+        if step == 0 or (step + 1) % args.ckpt_every == 0 or (step + 1) == args.max_steps:
             checkpoint_path = f"{checkpoint_dir}/{step + 1:07d}"
             os.makedirs(checkpoint_path, exist_ok=True)
 
@@ -783,13 +712,8 @@ def main(args):
                 model_ema,
                 StateDictType.LOCAL_STATE_DICT,
             ):
-                opt_state_fn = (
-                    f"optimizer.{dist.get_rank():05d}-of-"
-                    f"{dist.get_world_size():05d}.pth"
-                )
-                torch.save(
-                    opt.state_dict(), os.path.join(checkpoint_path, opt_state_fn)
-                )
+                opt_state_fn = f"optimizer.{dist.get_rank():05d}-of-" f"{dist.get_world_size():05d}.pth"
+                torch.save(opt.state_dict(), os.path.join(checkpoint_path, opt_state_fn))
             dist.barrier()
             logger.info(f"Saved optimizer to {checkpoint_path}.")
 
@@ -815,9 +739,7 @@ if __name__ == "__main__":
     parser.add_argument("--results_dir", type=str, required=True)
     parser.add_argument("--model", type=str, default="DiT_Llama2_7B_patch2")
     parser.add_argument("--image_size", type=int, choices=[256, 512, 1024], default=256)
-    parser.add_argument(
-        "--max_steps", type=int, default=100_000, help="Number of training steps."
-    )
+    parser.add_argument("--max_steps", type=int, default=100_000, help="Number of training steps.")
     parser.add_argument("--global_batch_size", type=int, default=256)
     parser.add_argument("--micro_batch_size", type=int, default=1)
     parser.add_argument("--global_seed", type=int, default=0)
@@ -829,12 +751,8 @@ if __name__ == "__main__":
     parser.add_argument("--ckpt_every", type=int, default=50_000)
     parser.add_argument("--master_port", type=int, default=18181)
     parser.add_argument("--model_parallel_size", type=int, default=1)
-    parser.add_argument(
-        "--data_parallel", type=str, choices=["sdp", "fsdp"], default="fsdp"
-    )
-    parser.add_argument(
-        "--precision", choices=["fp32", "tf32", "fp16", "bf16"], default="bf16"
-    )
+    parser.add_argument("--data_parallel", type=str, choices=["sdp", "fsdp"], default="fsdp")
+    parser.add_argument("--precision", choices=["fp32", "tf32", "fp16", "bf16"], default="bf16")
     parser.add_argument("--grad_precision", choices=["fp32", "fp16", "bf16"])
     parser.add_argument(
         "--local_diffusers_model_root",
@@ -851,9 +769,7 @@ if __name__ == "__main__":
         dest="auto_resume",
         help="Do NOT auto resume from the last checkpoint in --results_dir.",
     )
-    parser.add_argument(
-        "--resume", type=str, help="Resume training from a checkpoint folder."
-    )
+    parser.add_argument("--resume", type=str, help="Resume training from a checkpoint folder.")
     parser.add_argument(
         "--init_from",
         type=str,
@@ -893,9 +809,7 @@ if __name__ == "__main__":
         type=float,
         default=1.0,
     )
-    parser.add_argument(
-        "--snr_type", type=str, default="uniform", choices=["uniform", "lognorm"]
-    )
+    parser.add_argument("--snr_type", type=str, default="uniform", choices=["uniform", "lognorm"])
     args = parser.parse_args()
 
     main(args)

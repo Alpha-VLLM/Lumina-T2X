@@ -12,11 +12,14 @@ import fairscale.nn.model_parallel.initialize as fs_init
 
 def _setup_dist_env_from_slurm(args):
     while not os.environ.get("MASTER_ADDR", ""):
-        os.environ["MASTER_ADDR"] = subprocess.check_output(
-            "sinfo -Nh -n %s | head -n 1 | awk '{print $1}'" %
-            os.environ['SLURM_NODELIST'],
-            shell=True,
-        ).decode().strip()
+        os.environ["MASTER_ADDR"] = (
+            subprocess.check_output(
+                "sinfo -Nh -n %s | head -n 1 | awk '{print $1}'" % os.environ["SLURM_NODELIST"],
+                shell=True,
+            )
+            .decode()
+            .strip()
+        )
         sleep(1)
     os.environ["MASTER_PORT"] = str(args.master_port)
     os.environ["RANK"] = os.environ["SLURM_PROCID"]
@@ -38,10 +41,7 @@ def get_local_world_size() -> int:
 
 
 def distributed_init(args):
-    if any([
-        x not in os.environ
-        for x in ["RANK", "WORLD_SIZE", "MASTER_PORT", "MASTER_ADDR"]
-    ]):
+    if any([x not in os.environ for x in ["RANK", "WORLD_SIZE", "MASTER_PORT", "MASTER_ADDR"]]):
         _setup_dist_env_from_slurm(args)
 
     dist.init_process_group("nccl")
@@ -53,8 +53,9 @@ def distributed_init(args):
     _LOCAL_WORLD_SIZE = int(os.environ["LOCAL_WORLD_SIZE"])
 
     global _INTRA_NODE_PROCESS_GROUP, _INTER_NODE_PROCESS_GROUP
-    local_ranks, local_world_sizes = [torch.empty([dist.get_world_size()], dtype=torch.long, device="cuda")
-                                      for _ in (0, 1)]
+    local_ranks, local_world_sizes = [
+        torch.empty([dist.get_world_size()], dtype=torch.long, device="cuda") for _ in (0, 1)
+    ]
     dist.all_gather_into_tensor(local_ranks, torch.tensor(get_local_rank(), device="cuda"))
     dist.all_gather_into_tensor(local_world_sizes, torch.tensor(get_local_world_size(), device="cuda"))
     local_ranks, local_world_sizes = local_ranks.tolist(), local_world_sizes.tolist()
@@ -89,4 +90,3 @@ def get_intra_node_process_group():
 def get_inter_node_process_group():
     assert _INTRA_NODE_PROCESS_GROUP is not None, "Intra- and inter-node process groups are not initialized."
     return _INTER_NODE_PROCESS_GROUP
-

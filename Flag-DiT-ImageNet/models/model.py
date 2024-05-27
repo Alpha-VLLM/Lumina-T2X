@@ -16,7 +16,9 @@ from typing import Optional, Tuple, List
 from .components import RMSNorm
 import fairscale.nn.model_parallel.initialize as fs_init
 from fairscale.nn.model_parallel.layers import (
-    ColumnParallelLinear, RowParallelLinear, ParallelEmbedding,
+    ColumnParallelLinear,
+    RowParallelLinear,
+    ParallelEmbedding,
 )
 from flash_attn import flash_attn_func
 import torch
@@ -33,21 +35,28 @@ def modulate(x, shift, scale):
 #             Embedding Layers for Timesteps and Class Labels               #
 #############################################################################
 
+
 class ParallelTimestepEmbedder(nn.Module):
     """
     Embeds scalar timesteps into vector representations.
     """
+
     def __init__(self, hidden_size, frequency_embedding_size=256):
         super().__init__()
         self.mlp = nn.Sequential(
             ColumnParallelLinear(
-                frequency_embedding_size, hidden_size, bias=True,
+                frequency_embedding_size,
+                hidden_size,
+                bias=True,
                 gather_output=False,
                 init_method=functools.partial(nn.init.normal_, std=0.02),
             ),
             nn.SiLU(),
             RowParallelLinear(
-                hidden_size, hidden_size, bias=True, input_is_parallel=True,
+                hidden_size,
+                hidden_size,
+                bias=True,
+                input_is_parallel=True,
                 init_method=functools.partial(nn.init.normal_, std=0.02),
             ),
         )
@@ -65,17 +74,13 @@ class ParallelTimestepEmbedder(nn.Module):
         """
         # https://github.com/openai/glide-text2im/blob/main/glide_text2im/nn.py
         half = dim // 2
-        freqs = torch.exp(
-            -math.log(max_period) * torch.arange(
-                start=0, end=half, dtype=torch.float32
-            ) / half
-        ).to(device=t.device)
+        freqs = torch.exp(-math.log(max_period) * torch.arange(start=0, end=half, dtype=torch.float32) / half).to(
+            device=t.device
+        )
         args = t[:, None].float() * freqs[None]
         embedding = torch.cat([torch.cos(args), torch.sin(args)], dim=-1)
         if dim % 2:
-            embedding = torch.cat([
-                embedding, torch.zeros_like(embedding[:, :1])
-            ], dim=-1)
+            embedding = torch.cat([embedding, torch.zeros_like(embedding[:, :1])], dim=-1)
         return embedding
 
     def forward(self, t):
@@ -88,11 +93,13 @@ class ParallelLabelEmbedder(nn.Module):
     r"""Embeds class labels into vector representations. Also handles label
     dropout for classifier-free guidance.
     """
+
     def __init__(self, num_classes, hidden_size, dropout_prob):
         super().__init__()
         use_cfg_embedding = int(dropout_prob > 0)
         self.embedding_table = ParallelEmbedding(
-            num_classes + use_cfg_embedding, hidden_size,
+            num_classes + use_cfg_embedding,
+            hidden_size,
             init_method=functools.partial(nn.init.normal_, std=0.02),
         )
         self.num_classes = num_classes
@@ -103,9 +110,7 @@ class ParallelLabelEmbedder(nn.Module):
         Drops labels to enable classifier-free guidance.
         """
         if force_drop_ids is None:
-            drop_ids = torch.rand(
-                labels.shape[0], device=labels.device
-            ) < self.dropout_prob
+            drop_ids = torch.rand(labels.shape[0], device=labels.device) < self.dropout_prob
             drop_ids = drop_ids.cuda()
             dist.broadcast(
                 drop_ids,
@@ -164,20 +169,32 @@ class Attention(nn.Module):
         self.head_dim = dim // n_heads
 
         self.wq = ColumnParallelLinear(
-            dim, n_heads * self.head_dim, bias=False, gather_output=False,
+            dim,
+            n_heads * self.head_dim,
+            bias=False,
+            gather_output=False,
             init_method=nn.init.xavier_uniform_,
         )
         self.wk = ColumnParallelLinear(
-            dim, self.n_kv_heads * self.head_dim, bias=False,
-            gather_output=False, init_method=nn.init.xavier_uniform_,
+            dim,
+            self.n_kv_heads * self.head_dim,
+            bias=False,
+            gather_output=False,
+            init_method=nn.init.xavier_uniform_,
         )
         self.wv = ColumnParallelLinear(
-            dim, self.n_kv_heads * self.head_dim, bias=False,
-            gather_output=False, init_method=nn.init.xavier_uniform_,
+            dim,
+            self.n_kv_heads * self.head_dim,
+            bias=False,
+            gather_output=False,
+            init_method=nn.init.xavier_uniform_,
         )
         self.wo = RowParallelLinear(
-            n_heads * self.head_dim, dim, bias=False,
-            input_is_parallel=True, init_method=nn.init.xavier_uniform_,
+            n_heads * self.head_dim,
+            dim,
+            bias=False,
+            input_is_parallel=True,
+            init_method=nn.init.xavier_uniform_,
         )
 
         if qk_norm:
@@ -211,8 +228,7 @@ class Attention(nn.Module):
         ndim = x.ndim
         assert 0 <= 1 < ndim
         assert freqs_cis.shape == (x.shape[1], x.shape[-1])
-        shape = [d if i == 1 or i == ndim - 1 else 1
-                 for i, d in enumerate(x.shape)]
+        shape = [d if i == 1 or i == ndim - 1 else 1 for i, d in enumerate(x.shape)]
         return freqs_cis.view(*shape)
 
     @staticmethod
@@ -250,7 +266,9 @@ class Attention(nn.Module):
             return xq_out.type_as(xq), xk_out.type_as(xk)
 
     def forward(
-        self, x: torch.Tensor, freqs_cis: torch.Tensor,
+        self,
+        x: torch.Tensor,
+        freqs_cis: torch.Tensor,
     ) -> torch.Tensor:
         """
         Forward pass of the attention module.
@@ -278,7 +296,7 @@ class Attention(nn.Module):
         xq, xk = xq.to(dtype), xk.to(dtype)
 
         if dtype in [torch.float16, torch.bfloat16]:
-            output = flash_attn_func(xq, xk, xv, dropout_p=0., causal=False)
+            output = flash_attn_func(xq, xk, xv, dropout_p=0.0, causal=False)
         else:
             n_rep = self.n_local_heads // self.n_local_kv_heads
             if n_rep >= 1:
@@ -288,7 +306,8 @@ class Attention(nn.Module):
                 xq.permute(0, 2, 1, 3),
                 xk.permute(0, 2, 1, 3),
                 xv.permute(0, 2, 1, 3),
-                dropout_p=0., is_causal=False,
+                dropout_p=0.0,
+                is_causal=False,
             ).permute(0, 2, 1, 3)
         output = output.flatten(-2)
 
@@ -327,20 +346,27 @@ class FeedForward(nn.Module):
         # custom dim factor multiplier
         if ffn_dim_multiplier is not None:
             hidden_dim = int(ffn_dim_multiplier * hidden_dim)
-        hidden_dim = multiple_of * (
-            (hidden_dim + multiple_of - 1) // multiple_of
-        )
+        hidden_dim = multiple_of * ((hidden_dim + multiple_of - 1) // multiple_of)
 
         self.w1 = ColumnParallelLinear(
-            dim, hidden_dim, bias=False, gather_output=False,
+            dim,
+            hidden_dim,
+            bias=False,
+            gather_output=False,
             init_method=nn.init.xavier_uniform_,
         )
         self.w2 = RowParallelLinear(
-            hidden_dim, dim, bias=False, input_is_parallel=True,
+            hidden_dim,
+            dim,
+            bias=False,
+            input_is_parallel=True,
             init_method=nn.init.xavier_uniform_,
         )
         self.w3 = ColumnParallelLinear(
-            dim, hidden_dim, bias=False, gather_output=False,
+            dim,
+            hidden_dim,
+            bias=False,
+            gather_output=False,
             init_method=nn.init.xavier_uniform_,
         )
 
@@ -353,9 +379,17 @@ class FeedForward(nn.Module):
 
 
 class TransformerBlock(nn.Module):
-    def __init__(self, layer_id: int, dim: int, n_heads: int, n_kv_heads: int,
-                 multiple_of: int, ffn_dim_multiplier: float, norm_eps: float,
-                 qk_norm: bool) -> None:
+    def __init__(
+        self,
+        layer_id: int,
+        dim: int,
+        n_heads: int,
+        n_kv_heads: int,
+        multiple_of: int,
+        ffn_dim_multiplier: float,
+        norm_eps: float,
+        qk_norm: bool,
+    ) -> None:
         """
         Initialize a TransformerBlock.
 
@@ -389,7 +423,9 @@ class TransformerBlock(nn.Module):
         self.head_dim = dim // n_heads
         self.attention = Attention(dim, n_heads, n_kv_heads, qk_norm)
         self.feed_forward = FeedForward(
-            dim=dim, hidden_dim=4 * dim, multiple_of=multiple_of,
+            dim=dim,
+            hidden_dim=4 * dim,
+            multiple_of=multiple_of,
             ffn_dim_multiplier=ffn_dim_multiplier,
         )
         self.layer_id = layer_id
@@ -399,7 +435,10 @@ class TransformerBlock(nn.Module):
         self.adaLN_modulation = nn.Sequential(
             nn.SiLU(),
             ColumnParallelLinear(
-                min(dim, 1024), 6 * dim, bias=True, gather_output=True,
+                min(dim, 1024),
+                6 * dim,
+                bias=True,
+                gather_output=True,
                 init_method=nn.init.zeros_,
             ),
         )
@@ -425,8 +464,9 @@ class TransformerBlock(nn.Module):
 
         """
         if adaln_input is not None:
-            shift_msa, scale_msa, gate_msa, shift_mlp, scale_mlp, gate_mlp = \
-                self.adaLN_modulation(adaln_input).chunk(6, dim=1)
+            shift_msa, scale_msa, gate_msa, shift_mlp, scale_mlp, gate_mlp = self.adaLN_modulation(adaln_input).chunk(
+                6, dim=1
+            )
 
             h = x + gate_msa.unsqueeze(1) * self.attention(
                 modulate(self.attention_norm(x), shift_msa, scale_msa),
@@ -438,30 +478,41 @@ class TransformerBlock(nn.Module):
 
         else:
             h = x + self.attention(
-                self.attention_norm(x), freqs_cis,
+                self.attention_norm(x),
+                freqs_cis,
             )
             out = h + self.feed_forward(self.ffn_norm(h))
 
         return out
 
+
 class ParallelFinalLayer(nn.Module):
     """
     The final layer of DiT.
     """
+
     def __init__(self, hidden_size, patch_size, out_channels):
         super().__init__()
         self.norm_final = nn.LayerNorm(
-            hidden_size, elementwise_affine=False, eps=1e-6,
+            hidden_size,
+            elementwise_affine=False,
+            eps=1e-6,
         )
         self.linear = ColumnParallelLinear(
-            hidden_size, patch_size * patch_size * out_channels, bias=True,
-            init_method=nn.init.zeros_, gather_output=True,
+            hidden_size,
+            patch_size * patch_size * out_channels,
+            bias=True,
+            init_method=nn.init.zeros_,
+            gather_output=True,
         )
         self.adaLN_modulation = nn.Sequential(
             nn.SiLU(),
             ColumnParallelLinear(
-                min(hidden_size, 1024), 2 * hidden_size, bias=True,
-                init_method=nn.init.zeros_, gather_output=True,
+                min(hidden_size, 1024),
+                2 * hidden_size,
+                bias=True,
+                init_method=nn.init.zeros_,
+                gather_output=True,
             ),
         )
 
@@ -476,6 +527,7 @@ class DiT_Llama(nn.Module):
     """
     Diffusion model with a Transformer backbone.
     """
+
     def __init__(
         self,
         input_size: int = 32,
@@ -507,17 +559,17 @@ class DiT_Llama(nn.Module):
             gather_output=True,
             init_method=nn.init.xavier_uniform_,
         )
-        nn.init.constant_(self.x_embedder.bias, 0.)
+        nn.init.constant_(self.x_embedder.bias, 0.0)
 
         self.t_embedder = ParallelTimestepEmbedder(min(dim, 1024))
-        self.y_embedder = ParallelLabelEmbedder(num_classes, min(dim, 1024),
-                                                class_dropout_prob)
+        self.y_embedder = ParallelLabelEmbedder(num_classes, min(dim, 1024), class_dropout_prob)
 
-        self.layers = nn.ModuleList([
-            TransformerBlock(layer_id, dim, n_heads, n_kv_heads, multiple_of,
-                             ffn_dim_multiplier, norm_eps, qk_norm)
-            for layer_id in range(n_layers)
-        ])
+        self.layers = nn.ModuleList(
+            [
+                TransformerBlock(layer_id, dim, n_heads, n_kv_heads, multiple_of, ffn_dim_multiplier, norm_eps, qk_norm)
+                for layer_id in range(n_layers)
+            ]
+        )
         self.final_layer = ParallelFinalLayer(dim, patch_size, self.out_channels)
 
         self.freqs_cis = DiT_Llama.precompute_freqs_cis(dim // n_heads, 4096)
@@ -532,7 +584,7 @@ class DiT_Llama(nn.Module):
         P = self.patch_size
 
         x = x.reshape(shape=(B, H, W, P, P, C))
-        x = torch.einsum('nhwpqc->nchpwq', x)
+        x = torch.einsum("nhwpqc->nchpwq", x)
         imgs = x.reshape(shape=(B, C, H * P, W * P))
         return imgs
 
@@ -557,18 +609,15 @@ class DiT_Llama(nn.Module):
         x, H, W = self.patchify(x)
         x = self.x_embedder(x)
 
-        t = self.t_embedder(t)                   # (N, D)
-        y = self.y_embedder(y, self.training)    # (N, D)
+        t = self.t_embedder(t)  # (N, D)
+        y = self.y_embedder(y, self.training)  # (N, D)
         adaln_input = t + y
 
         for layer in self.layers:
-            x = layer(
-                x, self.freqs_cis[:x.size(1)],
-                adaln_input=adaln_input
-            )
+            x = layer(x, self.freqs_cis[: x.size(1)], adaln_input=adaln_input)
 
         x = self.final_layer(x, adaln_input)
-        x = self.unpatchify(x, H, W)         # (N, out_channels, H, W)
+        x = self.unpatchify(x, H, W)  # (N, out_channels, H, W)
         if self.learn_sigma:
             x, _ = x.chunk(2, dim=1)
         return x
@@ -613,9 +662,7 @@ class DiT_Llama(nn.Module):
             torch.Tensor: Precomputed frequency tensor with complex
                 exponentials.
         """
-        freqs = 1.0 / (theta ** (
-            torch.arange(0, dim, 2)[: (dim // 2)].float() / dim
-        ))
+        freqs = 1.0 / (theta ** (torch.arange(0, dim, 2)[: (dim // 2)].float() / dim))
         t = torch.arange(end, device=freqs.device)  # type: ignore
         freqs = torch.outer(t, freqs).float()  # type: ignore
         freqs_cis = torch.polar(torch.ones_like(freqs), freqs)  # complex64
@@ -623,7 +670,9 @@ class DiT_Llama(nn.Module):
 
     def parameter_count(self) -> int:
         tensor_parallel_module_list = (
-            ColumnParallelLinear, RowParallelLinear, ParallelEmbedding,
+            ColumnParallelLinear,
+            RowParallelLinear,
+            ParallelEmbedding,
         )
         total_params = 0
 
@@ -631,10 +680,7 @@ class DiT_Llama(nn.Module):
             nonlocal total_params
             is_tp_module = isinstance(module, tensor_parallel_module_list)
             for param in module.parameters(recurse=False):
-                total_params += param.numel() * (
-                    fs_init.get_model_parallel_world_size()
-                    if is_tp_module else 1
-                )
+                total_params += param.numel() * (fs_init.get_model_parallel_world_size() if is_tp_module else 1)
             for submodule in module.children():
                 _recursive_count_params(submodule)
 
@@ -651,18 +697,12 @@ class DiT_Llama(nn.Module):
 
 
 def DiT_Llama_600M_patch2(**kwargs):
-    return DiT_Llama(
-        patch_size=2, dim=1536, n_layers=16, n_heads=32, **kwargs
-    )
+    return DiT_Llama(patch_size=2, dim=1536, n_layers=16, n_heads=32, **kwargs)
 
 
 def DiT_Llama_3B_patch2(**kwargs):
-    return DiT_Llama(
-        patch_size=2, dim=3072, n_layers=32, n_heads=32, **kwargs
-    )
+    return DiT_Llama(patch_size=2, dim=3072, n_layers=32, n_heads=32, **kwargs)
 
 
 def DiT_Llama_7B_patch2(**kwargs):
-    return DiT_Llama(
-        patch_size=2, dim=4096, n_layers=32, n_heads=32, **kwargs
-    )
+    return DiT_Llama(patch_size=2, dim=4096, n_layers=32, n_heads=32, **kwargs)

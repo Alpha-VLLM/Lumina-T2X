@@ -1,5 +1,5 @@
 <!-- <p align="center">
- <img src="./assets/lumina-logo.png" width="40%"/> 
+ <img src="./assets/lumina-logo.png" width="40%"/>
  <br>
 </p> -->
 
@@ -105,6 +105,17 @@ Installation on your environment:
 pip install git+https://github.com/Alpha-VLLM/Lumina-T2X
 ```
 
+Before contributing your code, you should run command below:
+
+```bash
+pip install git+https://github.com/Alpha-VLLM/Lumina-T2X
+
+cd Lumina-T2X
+pip install -e ".[dev]"
+pre-commit install
+pre-commit
+```
+
 ## 📑 Open-source Plan
 
 - [X] Lumina-T2I (Demos✅, Training✅, Inference✅, Checkpoints✅)
@@ -151,14 +162,14 @@ We introduce the $\textbf{Lumina-T2X}$ family, a series of text-conditioned Diff
 ### Text-to-Image Generation
 
 <p align="center">
- <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/27bd36a8-8411-47dd-a3a7-3607c1d5d644" width="90%"/> 
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/27bd36a8-8411-47dd-a3a7-3607c1d5d644" width="90%"/>
  <br>
 </p>
 
 #### Panorama Generation
 
 <p align="center">
- <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/88b75b4e-5e16-4ea3-aba8-134904dd3381" width="90%"/> 
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/88b75b4e-5e16-4ea3-aba8-134904dd3381" width="90%"/>
  <br>
 </p>
 
@@ -187,7 +198,7 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/cd061b8d-c47b-4c0c-b775
 #### Point Cloud Generation
 
 <p align="center">
- <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/742237ad-be47-4a7d-aa11-b3aaba07a75a" width="90%"/> 
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/742237ad-be47-4a7d-aa11-b3aaba07a75a" width="90%"/>
  <br>
 </p>
 
@@ -277,26 +288,26 @@ We present three multilingual capabilities of Lumina-Next-2B.
 **Generating Images conditioned on Chinese poems:**
 
 <p align="center">
- <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/9aa79d67-e304-4867-81f3-cfc934c625d9" width="90%"/> 
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/9aa79d67-e304-4867-81f3-cfc934c625d9" width="90%"/>
  <br>
 </p>
 
 **Generating Images with multilignual prompts:**
 
 <p align="center">
- <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/7c62bb94-42e4-4525-a298-9e25475b511d" width="90%"/> 
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/7c62bb94-42e4-4525-a298-9e25475b511d" width="90%"/>
  <br>
 </p>
 
 <p align="center">
- <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/07fc8138-e67c-4c9f-bc01-e749a6507ada" width="90%"/> 
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/07fc8138-e67c-4c9f-bc01-e749a6507ada" width="90%"/>
  <br>
 </p>
 
 **Generating Images with emojis:**
 
 <p align="center">
- <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/980b4999-9d1c-4fbd-a695-88b6b675f34b" width="90%"/> 
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/980b4999-9d1c-4fbd-a695-88b6b675f34b" width="90%"/>
  <br>
 </p>
 
@@ -352,30 +363,30 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/da93e13d-6462-48d2-b6dc
 <!-- ### High-res. Image Editing
 
 <p align="center">
- <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/55981976-c989-4f07-982a-1e567c7078ef" width="90%"/> 
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/55981976-c989-4f07-982a-1e567c7078ef" width="90%"/>
  <br>
- <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/a1ac7190-c49c-4d8b-965c-9ccf83a4f6a7" width="90%"/> 
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/a1ac7190-c49c-4d8b-965c-9ccf83a4f6a7" width="90%"/>
 </p>
 
 ### Compositional Generation
 
 <p align="center">
- <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/8c8eb921-134c-4f55-918a-0ad07f9a47f4" width="90%"/> 
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/8c8eb921-134c-4f55-918a-0ad07f9a47f4" width="90%"/>
  <br>
 </p>
 
 ### Resolution Extrapolation
 
 <p align="center">
- <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/e37e2db7-3ead-451e-ba18-b375eb773578" width="90%"/> 
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/e37e2db7-3ead-451e-ba18-b375eb773578" width="90%"/>
  <br>
- <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/9da47c34-5e09-48d3-9c48-78663fd01cc8" width="100%"/> 
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/9da47c34-5e09-48d3-9c48-78663fd01cc8" width="100%"/>
 </p>
 
 ### Consistent-Style Generation
 
 <p align="center">
- <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/6403417a-42c6-4048-9419-375d211e14bb" width="90%"/> 
+ <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/6403417a-42c6-4048-9419-375d211e14bb" width="90%"/>
  <br>
 </p> -->
 
@@ -398,14 +409,14 @@ We support diverse configurations, including text encoders, DiTs of different pa
 
 ```
 @article{gao2024lumina,
-      title={Lumina-T2X: Transforming Text into Any Modality, Resolution, and Duration via Flow-based Large Diffusion Transformers}, 
+      title={Lumina-T2X: Transforming Text into Any Modality, Resolution, and Duration via Flow-based Large Diffusion Transformers},
       author={Gao, Peng and Zhuo, Le and Lin, Ziyi and Liu, Dongyang and Du, Ruoyi and Luo, Xu and Qiu, Longtian and Zhang, Yuhang and others},
       journal={arXiv preprint arXiv:2405.05945},
       year={2024}
 }
 ```
 
-<!-- 
+<!--
 ## Star History
 
  [![Star History Chart](https://api.star-history.com/svg?repos=Alpha-VLLM/Lumina-T2X&type=Date)](https://star-history.com/#Alpha-VLLM/Lumina-T2X&Date) -->

@@ -42,10 +42,7 @@ def dtype_select(precision):
     return dtype[precision]
 
 
-def encode_prompt(
-    prompt_batch, text_encoder, tokenizer, proportion_empty_prompts, is_train=True
-):
-
+def encode_prompt(prompt_batch, text_encoder, tokenizer, proportion_empty_prompts, is_train=True):
     captions = []
     for caption in prompt_batch:
         if random.random() < proportion_empty_prompts:
@@ -118,25 +115,17 @@ def load_model(
         ckpt_lm = train_args.lm
 
     rank0_print(f"> Creating LLM model.")
-    model_lm = AutoModelForCausalLM.from_pretrained(
-        ckpt_lm, torch_dtype=dtype, device_map="cuda", token=token
-    )
+    model_lm = AutoModelForCausalLM.from_pretrained(ckpt_lm, torch_dtype=dtype, device_map="cuda", token=token)
     cap_feat_dim = model_lm.config.hidden_size
     if num_gpus > 1:
         raise NotImplementedError("Inference with >1 GPUs not yet supported")
 
-    tokenizer = AutoTokenizer.from_pretrained(
-        ckpt_lm, add_bos_token=True, add_eos_token=True, token=token
-    )
+    tokenizer = AutoTokenizer.from_pretrained(ckpt_lm, add_bos_token=True, add_eos_token=True, token=token)
     tokenizer.padding_side = "right"
 
     rank0_print(f"> Creating VAE model: {train_args.vae}")
     vae = AutoencoderKL.from_pretrained(
-        (
-            f"stabilityai/sd-vae-ft-{train_args.vae}"
-            if train_args.vae != "sdxl"
-            else "stabilityai/sdxl-vae"
-        ),
+        (f"stabilityai/sd-vae-ft-{train_args.vae}" if train_args.vae != "sdxl" else "stabilityai/sdxl-vae"),
         torch_dtype=torch.float32,
     ).cuda()
 
@@ -171,9 +160,7 @@ def find_free_port() -> int:
 
 
 @torch.no_grad()
-def inference(
-    cap, dtype, config, vae, model_dit, text_encoder, tokenizer, *args, **kwargs
-):
+def inference(cap, dtype, config, vae, model_dit, text_encoder, tokenizer, *args, **kwargs):
     # transport
     transport_config = config["transport"]
     path_type = transport_config["path_type"]
@@ -212,9 +199,7 @@ def inference(
         while True:
             try:
                 # begin sampler
-                transport = create_transport(
-                    path_type, prediction, loss_weight, train_eps, sample_eps
-                )
+                transport = create_transport(path_type, prediction, loss_weight, train_eps, sample_eps)
                 sampler = Sampler(transport)
                 sample_fn = sampler.sample_ode(
                     sampling_method=solver,
@@ -240,9 +225,7 @@ def inference(
                 z = z.repeat(2, 1, 1, 1)
 
                 with torch.no_grad():
-                    cap_feats, cap_mask = encode_prompt(
-                        [cap] + [""], text_encoder, tokenizer, 0.0
-                    )
+                    cap_feats, cap_mask = encode_prompt([cap] + [""], text_encoder, tokenizer, 0.0)
                 # get caption text embedding
                 cap_mask = cap_mask.to(cap_feats.device)
 
@@ -335,9 +318,7 @@ def main(
 
     # step 3: inference
     rank0_print(f"> [ATTENTION] start inference with config: {config_path}.")
-    results = inference(
-        cap, dtype, config, vae, model_dit, model_lm, tokenizer, *args, **kwargs
-    )
+    results = inference(cap, dtype, config, vae, model_dit, model_lm, tokenizer, *args, **kwargs)
 
     # step 4: post processing
     rank0_print(f"> Saving processed images.")

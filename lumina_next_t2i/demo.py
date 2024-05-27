@@ -24,10 +24,7 @@ class ModelFailure:
 
 
 # Adapted from pipelines.StableDiffusionXLPipeline.encode_prompt
-def encode_prompt(
-    prompt_batch, text_encoder, tokenizer, proportion_empty_prompts, is_train=True
-):
-
+def encode_prompt(prompt_batch, text_encoder, tokenizer, proportion_empty_prompts, is_train=True):
     captions = []
     for caption in prompt_batch:
         if random.random() < proportion_empty_prompts:
@@ -95,9 +92,7 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
     if dist.get_rank() == 0:
         print(f"Creating lm: Gemma-2B")
 
-    dtype = {"bf16": torch.bfloat16, "fp16": torch.float16, "fp32": torch.float32}[
-        args.precision
-    ]
+    dtype = {"bf16": torch.bfloat16, "fp16": torch.float16, "fp32": torch.float32}[args.precision]
 
     text_encoder = AutoModel.from_pretrained(
         "google/gemma-2b", torch_dtype=dtype, device_map="cuda", token=args.hf_token
@@ -114,11 +109,7 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
     if dist.get_rank() == 0:
         print(f"Creating vae: {train_args.vae}")
     vae = AutoencoderKL.from_pretrained(
-        (
-            f"stabilityai/sd-vae-ft-{train_args.vae}"
-            if train_args.vae != "sdxl"
-            else "stabilityai/sdxl-vae"
-        ),
+        (f"stabilityai/sd-vae-ft-{train_args.vae}" if train_args.vae != "sdxl" else "stabilityai/sdxl-vae"),
         torch_dtype=torch.float32,
     ).cuda()
 
@@ -210,9 +201,7 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                 z = z.repeat(2, 1, 1, 1)
 
                 with torch.no_grad():
-                    cap_feats, cap_mask = encode_prompt(
-                        [cap] + [""], text_encoder, tokenizer, 0.0
-                    )
+                    cap_feats, cap_mask = encode_prompt([cap] + [""], text_encoder, tokenizer, 0.0)
                 cap_mask = cap_mask.to(cap_feats.device)
 
                 train_res = 1024
@@ -287,12 +276,8 @@ def parse_transport_args(parser):
         choices=[None, "velocity", "likelihood"],
         help="the weighting of different components in the loss function, can be 'velocity' for dynamic modeling, 'likelihood' for statistical consistency, or None for no weighting.",
     )
-    group.add_argument(
-        "--sample-eps", type=float, help="sampling in the transport model."
-    )
-    group.add_argument(
-        "--train-eps", type=float, help="training to stabilize the learning process."
-    )
+    group.add_argument("--sample-eps", type=float, help="sampling in the transport model.")
+    group.add_argument("--train-eps", type=float, help="training to stabilize the learning process.")
 
 
 def parse_ode_args(parser):
@@ -309,9 +294,7 @@ def parse_ode_args(parser):
         default=1e-3,
         help="Relative tolerance for the ODE solver.",
     )
-    group.add_argument(
-        "--reverse", action="store_true", help="run the ODE solver in reverse."
-    )
+    group.add_argument("--reverse", action="store_true", help="run the ODE solver in reverse.")
     group.add_argument(
         "--likelihood",
         action="store_true",
@@ -355,9 +338,7 @@ def parse_sde_args(parser):
         choices=[None, "Mean", "Tweedie", "Euler"],
         help="form of last step taken in the SDE",
     )
-    group.add_argument(
-        "--last-step-size", type=float, default=0.04, help="size of the last step taken"
-    )
+    group.add_argument("--last-step-size", type=float, default=0.04, help="size of the last step taken")
 
 
 def find_free_port() -> int:
@@ -439,9 +420,7 @@ def main():
                         "(Extrapolation) 1024x2048",
                         "(Extrapolation) 2048x1024",
                     ]
-                    resolution = gr.Dropdown(
-                        value=res_choices[0], choices=res_choices, label="Resolution"
-                    )
+                    resolution = gr.Dropdown(value=res_choices[0], choices=res_choices, label="Resolution")
                 with gr.Row():
                     num_sampling_steps = gr.Slider(
                         minimum=1,
@@ -459,9 +438,7 @@ def main():
                         interactive=True,
                         label="Seed (0 for random)",
                     )
-                with gr.Accordion(
-                    "Advanced Settings for Resolution Extrapolation", open=False
-                ):
+                with gr.Accordion("Advanced Settings for Resolution Extrapolation", open=False):
                     with gr.Row():
                         solver = gr.Dropdown(
                             value="euler",
@@ -523,18 +500,14 @@ def main():
                     ["味噌ラーメン, 最高品質の浮世絵、江戸時代。"],
                     ["東京タワー、最高品質の浮世絵、江戸時代。"],
                     ["Astronaut on Mars During sunset"],
-                    [
-                        "Tour de Tokyo, estampes ukiyo-e de la plus haute qualité, période Edo"
-                    ],
+                    ["Tour de Tokyo, estampes ukiyo-e de la plus haute qualité, période Edo"],
                     ["🐔 playing 🏀"],
                     ["☃️ with 🌹 in the ❄️"],
                     ["🐶 wearing 😎  flying on 🌈 "],
                     ["A small 🍎 and 🍊 with 😁 emoji in the Sahara desert"],
                     ["Токийская башня, лучшие укиё-э, период Эдо"],
                     ["Tokio-Turm, hochwertigste Ukiyo-e, Edo-Zeit"],
-                    [
-                        "A scared cute rabbit in Happy Tree Friends style and punk vibe."
-                    ],  # noqa
+                    ["A scared cute rabbit in Happy Tree Friends style and punk vibe."],  # noqa
                     ["A humanoid eagle soldier of the First World War."],  # noqa
                     [
                         "A cute Christmas mockup on an old wooden industrial desk table with Christmas decorations and bokeh lights in the background."
@@ -542,9 +515,7 @@ def main():
                     [
                         "A front view of a romantic flower shop in France filled with various blooming flowers including lavenders and roses."
                     ],
-                    [
-                        "An old man, portrayed as a retro superhero, stands in the streets of New York City at night"
-                    ],
+                    ["An old man, portrayed as a retro superhero, stands in the streets of New York City at night"],
                     [
                         "many trees are surrounded by a lake in autumn colors, in the style of nature-inspired imagery, havencore, brightly colored, dark white and dark orange, bright primary colors, environmental activism, forestpunk --ar 64:51"
                     ],

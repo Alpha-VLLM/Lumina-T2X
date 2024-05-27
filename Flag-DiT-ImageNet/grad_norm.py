@@ -3,16 +3,16 @@ import torch
 import torch.nn as nn
 import torch.distributed as dist
 import fairscale.nn.model_parallel.initialize as fs_init
-from fairscale.nn.model_parallel.layers import (
-    ColumnParallelLinear, RowParallelLinear, ParallelEmbedding
-)
+from fairscale.nn.model_parallel.layers import ColumnParallelLinear, RowParallelLinear, ParallelEmbedding
 
 
 def get_model_parallel_dim_dict(model: nn.Module) -> Dict[str, int]:
     ret_dict = {}
     for module_name, module in model.named_modules():
+
         def param_fqn(param_name):
             return param_name if module_name == "" else module_name + "." + param_name
+
         if isinstance(module, ColumnParallelLinear):
             ret_dict[param_fqn("weight")] = 0
             if module.bias is not None:
@@ -30,10 +30,11 @@ def get_model_parallel_dim_dict(model: nn.Module) -> Dict[str, int]:
 
 
 def calculate_l2_grad_norm(
-    model: nn.Module, model_parallel_dim_dict: Dict[str, int],
+    model: nn.Module,
+    model_parallel_dim_dict: Dict[str, int],
 ) -> float:
-    mp_norm_sq = torch.tensor(0., dtype=torch.float32, device="cuda")
-    non_mp_norm_sq = torch.tensor(0., dtype=torch.float32, device="cuda")
+    mp_norm_sq = torch.tensor(0.0, dtype=torch.float32, device="cuda")
+    non_mp_norm_sq = torch.tensor(0.0, dtype=torch.float32, device="cuda")
 
     for name, param in model.named_parameters():
         if param.grad is None:

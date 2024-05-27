@@ -25,9 +25,7 @@ def get_model_parallel_dim_dict(model: nn.Module) -> Dict[str, int]:
             ret_dict[module_name + ".weight"] = 1
         else:
             for param_name, param in module.named_parameters(recurse=False):
-                ret_dict[
-                    (module_name + "." if len(module_name) > 0 else "") + param_name
-                ] = -1
+                ret_dict[(module_name + "." if len(module_name) > 0 else "") + param_name] = -1
     return ret_dict
 
 
@@ -61,9 +59,7 @@ def scale_grad(model: nn.Module, factor: float) -> None:
             param.grad.mul_(factor)
 
 
-def get_param_norm_dict(
-    model: nn.Module, model_parallel_dim_dict: Dict[str, int]
-) -> Dict[str, float]:
+def get_param_norm_dict(model: nn.Module, model_parallel_dim_dict: Dict[str, int]) -> Dict[str, float]:
     param_norm_dict = {}
     for name, param in model.named_parameters():
         name = ".".join(x for x in name.split(".") if not x.startswith("_"))

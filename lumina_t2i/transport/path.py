@@ -152,13 +152,9 @@ class VPCPlan(ICPlan):
         self.sigma_min = sigma_min
         self.sigma_max = sigma_max
         self.log_mean_coeff = (
-            lambda t: -0.25 * ((1 - t) ** 2) * (self.sigma_max - self.sigma_min)
-            - 0.5 * (1 - t) * self.sigma_min
+            lambda t: -0.25 * ((1 - t) ** 2) * (self.sigma_max - self.sigma_min) - 0.5 * (1 - t) * self.sigma_min
         )
-        self.d_log_mean_coeff = (
-            lambda t: 0.5 * (1 - t) * (self.sigma_max - self.sigma_min)
-            + 0.5 * self.sigma_min
-        )
+        self.d_log_mean_coeff = lambda t: 0.5 * (1 - t) * (self.sigma_max - self.sigma_min) + 0.5 * self.sigma_min
 
     def compute_alpha_t(self, t):
         """Compute coefficient of x1"""

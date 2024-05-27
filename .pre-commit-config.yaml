@@ -1,0 +1,27 @@
+# Exclude all third-party libraries and auto-generated files globally
+exclude: |
+    (?x)^(
+        assets/.+|
+        Flag-DiT-ImageNet/exps/.+|
+        Next-DiT-ImageNet/exps/.+|
+        lumina_t2i/configs/.+|
+        lumina_next_t2i/configs/.+|
+    )$
+repos:
+# Common hooks
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+    -   id: check-merge-conflict
+    -   id: check-symlinks
+    -   id: detect-private-key
+    -   id: end-of-file-fixer
+    -   id: trailing-whitespace
+        files: (.*\.(py|bzl|md|rst|c|cc|cxx|cpp|cu|h|hpp|hxx|xpu|kps|cmake|yaml|yml|hook)|BUILD|.*\.BUILD|WORKSPACE|CMakeLists\.txt)$
+# For Python files
+-   repo: https://github.com/psf/black.git
+    rev: 23.3.0
+    hooks:
+    -   id: black
+        files: (.*\.(py|pyi|bzl)|BUILD|.*\.BUILD|WORKSPACE)$
+        args: [--line-length=120]
