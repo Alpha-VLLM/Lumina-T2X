@@ -53,7 +53,7 @@ dependencies = [
 
 [project.optional-dependencies]
 train = ["check-manifest"]
-dev = ["coverage", "pre-commit"]
+dev = ["coverage", "pre-commit", "isort"]
 
 [project.urls]
 "Homepage" = "https://github.com/pypa/sampleproject"

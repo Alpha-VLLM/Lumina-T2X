@@ -19,6 +19,10 @@ repos:
     -   id: trailing-whitespace
         files: (.*\.(py|bzl|md|rst|c|cc|cxx|cpp|cu|h|hpp|hxx|xpu|kps|cmake|yaml|yml|hook)|BUILD|.*\.BUILD|WORKSPACE|CMakeLists\.txt)$
 # For Python files
+-   repo: https://github.com/PyCQA/isort
+    rev: 5.11.5
+    hooks:
+    -   id: isort
 -   repo: https://github.com/psf/black.git
     rev: 23.3.0
     hooks:

@@ -8,13 +8,13 @@ import traceback
 
 import fairscale.nn.model_parallel.initialize as fs_init
 import gradio as gr
+from safetensors.torch import load_file
 import torch
 import torch.distributed as dist
 from torchvision.transforms.functional import to_pil_image
-from safetensors.torch import load_file
 
 import models
-from transport import create_transport, Sampler
+from transport import Sampler, create_transport
 
 
 class ModelFailure:
@@ -253,45 +253,6 @@ def parse_ode_args(parser):
         action="store_true",
         help="Enable calculation of likelihood during the ODE solving process.",
     )
-
-
-def parse_sde_args(parser):
-    group = parser.add_argument_group("SDE arguments")
-    group.add_argument(
-        "--sampling-method",
-        type=str,
-        default="Euler",
-        choices=["Euler", "Heun"],
-        help="the numerical method used for sampling the stochastic differential equation: 'Euler' for simplicity or 'Heun' for improved accuracy.",
-    )
-    group.add_argument(
-        "--diffusion-form",
-        type=str,
-        default="sigma",
-        choices=[
-            "constant",
-            "SBDM",
-            "sigma",
-            "linear",
-            "decreasing",
-            "increasing-decreasing",
-        ],
-        help="form of diffusion coefficient in the SDE",
-    )
-    group.add_argument(
-        "--diffusion-norm",
-        type=float,
-        default=1.0,
-        help="Normalizes the diffusion coefficient, affecting the scale of the stochastic component.",
-    )
-    group.add_argument(
-        "--last-step",
-        type=none_or_str,
-        default="Mean",
-        choices=[None, "Mean", "Tweedie", "Euler"],
-        help="form of last step taken in the SDE",
-    )
-    group.add_argument("--last-step-size", type=float, default=0.04, help="size of the last step taken")
 
 
 def find_free_port() -> int:
