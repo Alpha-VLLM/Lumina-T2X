@@ -695,7 +695,7 @@ class NextDiT(nn.Module):
         qk_norm: bool = False,
         cap_feat_dim: int = 5120,
         rope_scaling_factor: float = 1.0,
-        ntk_factor: float = 1.0,
+        scale_factor: float = 1.0,
     ) -> None:
         super().__init__()
         self.learn_sigma = learn_sigma
@@ -749,10 +749,10 @@ class NextDiT(nn.Module):
             dim // n_heads,
             384,
             rope_scaling_factor=rope_scaling_factor,
-            ntk_factor=ntk_factor,
+            scale_factor=scale_factor,
         )
         self.rope_scaling_factor = rope_scaling_factor
-        self.ntk_factor = ntk_factor
+        self.scale_factor = scale_factor
         # self.eol_token = nn.Parameter(torch.empty(dim))
         self.pad_token = nn.Parameter(torch.empty(dim))
         # nn.init.normal_(self.eol_token, std=0.02)
@@ -891,7 +891,7 @@ class NextDiT(nn.Module):
         cap_mask,
         cfg_scale,
         rope_scaling_factor=None,
-        ntk_factor=None,
+        scale_factor=None,
         base_seqlen: Optional[int] = None,
         proportional_attn: bool = False,
     ):
@@ -900,23 +900,15 @@ class NextDiT(nn.Module):
         # for classifier-free guidance.
         # """
         # # https://github.com/openai/glide-text2im/blob/main/notebooks/text2im.ipynb
-        # print(ntk_factor, rope_scaling_factor, self.ntk_factor, self.rope_scaling_factor)
-        if rope_scaling_factor is not None or ntk_factor is not None:
-            rope_scaling_factor = rope_scaling_factor if rope_scaling_factor is not None else self.rope_scaling_factor
-            ntk_factor = ntk_factor if ntk_factor is not None else self.ntk_factor
-            if rope_scaling_factor != self.rope_scaling_factor or ntk_factor != self.ntk_factor:
-                print(
-                    f"override freqs_cis, rope_scaling {rope_scaling_factor}, ntk {ntk_factor}",
-                    flush=True,
-                )
-                self.freqs_cis = NextDiT.precompute_freqs_cis(
-                    self.dim // self.n_heads,
-                    384,
-                    rope_scaling_factor=rope_scaling_factor,
-                    ntk_factor=ntk_factor,
-                )
-                self.rope_scaling_factor = rope_scaling_factor
-                self.ntk_factor = ntk_factor
+        # print(scale_factor, rope_scaling_factor, self.scale_factor, self.rope_scaling_factor)
+        if rope_scaling_factor is not None or scale_factor is not None:
+            assert rope_scaling_factor is not None and scale_factor is not None
+            self.freqs_cis = NextDiT.precompute_freqs_cis(
+                self.dim // self.n_heads,
+                384,
+                rope_scaling_factor=rope_scaling_factor,
+                scale_factor=scale_factor, timestep=t[0],
+            )
 
         if proportional_attn:
             assert base_seqlen is not None
@@ -939,6 +931,7 @@ class NextDiT(nn.Module):
         cond_eps, uncond_eps = torch.split(eps, len(eps) // 2, dim=0)
         half_eps = uncond_eps + cfg_scale * (cond_eps - uncond_eps)
         eps = torch.cat([half_eps, half_eps], dim=0)
+
         return torch.cat([eps, rest], dim=1)
 
     @staticmethod
@@ -947,7 +940,8 @@ class NextDiT(nn.Module):
         end: int,
         theta: float = 10000.0,
         rope_scaling_factor: float = 1.0,
-        ntk_factor: float = 1.0,
+        scale_factor: float = 1.0,
+        timestep: float = 1.0,
     ):
         """
         Precompute the frequency tensor for complex exponentials (cis) with
@@ -969,18 +963,30 @@ class NextDiT(nn.Module):
                 exponentials.
         """
 
-        theta = theta * ntk_factor
+        # logger.info(f"theta {theta} rope scaling {rope_scaling_factor} ntk {scale_factor}")
+        # The precompute_freqs_cis is implemented by Time-aware Scaled RoPE.
+        freqs_inter = 1.0 / (theta ** (torch.arange(0, dim, 4)[: (dim // 4)].float().cuda() / dim)) / scale_factor
 
-        logger.info(f"theta {theta} rope scaling {rope_scaling_factor} ntk {ntk_factor}")
-        freqs = 1.0 / (theta ** (torch.arange(0, dim, 4)[: (dim // 4)].float().cuda() / dim))
-        t = torch.arange(end, device=freqs.device, dtype=torch.float)  # type: ignore
-        t = t / rope_scaling_factor
-        freqs = torch.outer(t, freqs).float()  # type: ignore
+        target_dim = timestep * dim + 1
+        scale_factor = scale_factor ** (dim / target_dim)
+        theta = theta * scale_factor
+        
+        freqs_time_scaled = 1.0 / (theta ** (
+            torch.arange(0, dim, 4)[: (dim // 4)].float().cuda() / dim
+        ))
+        
+        freqs = torch.max(freqs_inter, freqs_time_scaled)
+
+        timestep = torch.arange(end, device=freqs.device, dtype=torch.float)  # type: ignore
+        timestep = timestep / rope_scaling_factor
+        
+        freqs = torch.outer(timestep, freqs).float()  # type: ignore
         freqs_cis = torch.polar(torch.ones_like(freqs), freqs)  # complex64
 
         freqs_cis_h = freqs_cis.view(end, 1, dim // 4, 1).repeat(1, end, 1, 1)
         freqs_cis_w = freqs_cis.view(1, end, dim // 4, 1).repeat(end, 1, 1, 1)
         freqs_cis = torch.cat([freqs_cis_h, freqs_cis_w], dim=-1).flatten(2)
+
         return freqs_cis
 
     def parameter_count(self) -> int:
