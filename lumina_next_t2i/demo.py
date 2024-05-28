@@ -225,8 +225,8 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                     cfg_scale=cfg_scale,
                     scale_factor=scale_factor,
                 )
-                if proportional_attn:
-                    model_kwargs["proportional_attn"] = True
+                # if proportional_attn:
+                #     model_kwargs["proportional_attn"] = True
 
                 if dist.get_rank() == 0:
                     print(f"> caption: {cap}")
