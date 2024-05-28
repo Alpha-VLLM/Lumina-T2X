@@ -25,8 +25,9 @@ import torch.nn.functional as F
 from .components import RMSNorm
 
 
-def modulate(x, shift, scale):
-    return x * (1 + scale.unsqueeze(1)) + shift.unsqueeze(1)
+
+def modulate(x, scale):
+    return x * (1 + scale.unsqueeze(1))
 
 
 #############################################################################
@@ -551,16 +552,17 @@ class TransformerBlock(nn.Module):
             ffn_dim_multiplier=ffn_dim_multiplier,
         )
         self.layer_id = layer_id
-        self.attention_norm = RMSNorm(dim, eps=norm_eps)
         self.attention_norm1 = RMSNorm(dim, eps=norm_eps)
-        self.ffn_norm = RMSNorm(dim, eps=norm_eps)
         self.ffn_norm1 = RMSNorm(dim, eps=norm_eps)
+
+        self.attention_norm2 = RMSNorm(dim, eps=norm_eps)
+        self.ffn_norm2 = RMSNorm(dim, eps=norm_eps)
 
         self.adaLN_modulation = nn.Sequential(
             nn.SiLU(),
             ColumnParallelLinear(
                 min(dim, 1024),
-                6 * dim,
+                4 * dim,
                 bias=True,
                 gather_output=True,
                 init_method=nn.init.zeros_,
@@ -591,38 +593,39 @@ class TransformerBlock(nn.Module):
 
         """
         if adaln_input is not None:
-            shift_msa, scale_msa, gate_msa, shift_mlp, scale_mlp, gate_mlp = self.adaLN_modulation(adaln_input).chunk(
-                6, dim=1
-            )
+            scale_msa, gate_msa, scale_mlp, gate_mlp = self.adaLN_modulation(
+                adaln_input
+            ).chunk(4, dim=1)
 
-            x = x + self.attention_norm1(
-                gate_msa.unsqueeze(1)
-                * self.attention(
-                    modulate(self.attention_norm(x), shift_msa, scale_msa),
+            x = x + gate_msa.unsqueeze(1).tanh() * self.attention_norm2(
+                self.attention(
+                    modulate(self.attention_norm1(x), scale_msa),
                     x_mask,
                     freqs_cis,
                     self.attention_y_norm(y),
                     y_mask,
                 )
             )
-            x = x + self.ffn_norm1(
-                gate_mlp.unsqueeze(1)
-                * self.feed_forward(
-                    modulate(self.ffn_norm(x), shift_mlp, scale_mlp),
-                )
+            d = x.shape[-1]
+            x = x + gate_mlp.unsqueeze(1).tanh() * self.ffn_norm2(
+                self.feed_forward(
+                    modulate(self.ffn_norm1(x), scale_mlp).view(-1, d),
+                ).view(*x.shape)
             )
 
         else:
-            x = x + self.attention_norm1(
-                self.attention(
-                    self.attention_norm(x),
-                    x_mask,
-                    freqs_cis,
-                    self.attention_y_norm(y),
-                    y_mask,
-                )
+            x = x + self.attention(
+                self.attention_norm(x),
+                x_mask,
+                freqs_cis,
+                self.attention_y_norm(y),
+                y_mask,
             )
-            x = x + self.ffn_norm1(self.feed_forward(self.ffn_norm(x)))
+            # for compatibility with torch.compile because the sequence length changes
+            B, L, D = x.shape
+            x = x.view(B * L, D)
+            x = x + self.feed_forward(self.ffn_norm(x))
+            x = x.view(B, L, D)
 
         return x
 
@@ -650,7 +653,7 @@ class ParallelFinalLayer(nn.Module):
             nn.SiLU(),
             ColumnParallelLinear(
                 min(hidden_size, 1024),
-                2 * hidden_size,
+                hidden_size,
                 bias=True,
                 init_method=nn.init.zeros_,
                 gather_output=True,
@@ -658,8 +661,9 @@ class ParallelFinalLayer(nn.Module):
         )
 
     def forward(self, x, c):
-        shift, scale = self.adaLN_modulation(c).chunk(2, dim=1)
-        x = modulate(self.norm_final(x), shift, scale)
+        scale = self.adaLN_modulation(c)
+        # shift, scale = self.adaLN_modulation(c).chunk(2, dim=1)
+        x = modulate(self.norm_final(x), scale)
         x = self.linear(x)
         return x
 
