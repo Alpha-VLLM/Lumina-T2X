@@ -1,5 +1,6 @@
-import click
 import warnings
+
+import click
 
 
 class DefaultCommandFormatter(object):

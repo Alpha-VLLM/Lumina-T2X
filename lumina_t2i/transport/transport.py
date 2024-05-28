@@ -1,12 +1,11 @@
-import torch as th
-import numpy as np
-import logging
-
 import enum
 
+import numpy as np
+import torch as th
+
 from . import path
-from .utils import EasyDict, log_state, mean_flat
 from .integrators import ode, sde
+from .utils import mean_flat
 
 
 class ModelType(enum.Enum):

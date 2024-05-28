@@ -205,7 +205,7 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                     model_kwargs["proportional_attn"] = True
                     model_kwargs["base_seqlen"] = (train_args.image_size // 16) ** 2
                 if ntk_scaling:
-                    model_kwargs["ntk_factor"] = math.sqrt(w * h / train_args.image_size ** 2)
+                    model_kwargs["ntk_factor"] = math.sqrt(w * h / train_args.image_size**2)
 
                 if dist.get_rank() == 0:
                     print(f"> caption: {cap}")

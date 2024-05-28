@@ -4,10 +4,9 @@ import os
 import subprocess
 from time import sleep
 
+import fairscale.nn.model_parallel.initialize as fs_init
 import torch
 import torch.distributed as dist
-
-import fairscale.nn.model_parallel.initialize as fs_init
 
 
 def _setup_dist_env_from_slurm(args):

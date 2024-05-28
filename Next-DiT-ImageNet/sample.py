@@ -9,20 +9,20 @@
 """
 Sample new images from a pre-trained DiT.
 """
+import argparse
+import json
+import os
+import socket
+import sys
+
+from diffusers.models import AutoencoderKL
+import fairscale.nn.model_parallel.initialize as fs_init
 import torch
 import torch.distributed as dist
 from torchvision.utils import save_image
-from transport import create_transport, Sampler
-from diffusers.models import AutoencoderKL
+
 import models
-import argparse
-import multiprocessing as mp
-import socket
-import os
-import fairscale.nn.model_parallel.initialize as fs_init
-import json
-import sys
-import torch.nn.functional as F
+from transport import Sampler, create_transport
 
 
 def none_or_str(value):

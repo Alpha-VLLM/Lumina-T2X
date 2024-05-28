@@ -12,15 +12,11 @@
 import functools
 import logging
 import math
-from typing import Optional, Tuple, List
+from typing import List, Optional, Tuple
 
 # from apex.normalization import FusedRMSNorm as RMSNorm
 import fairscale.nn.model_parallel.initialize as fs_init
-from fairscale.nn.model_parallel.layers import (
-    ColumnParallelLinear,
-    RowParallelLinear,
-    ParallelEmbedding,
-)
+from fairscale.nn.model_parallel.layers import ColumnParallelLinear, ParallelEmbedding, RowParallelLinear
 from flash_attn import flash_attn_func
 from flash_attn.bert_padding import index_first_axis, pad_input, unpad_input  # noqa
 import torch

@@ -1,13 +1,10 @@
 from typing import Dict
-import torch
-import torch.nn as nn
-import torch.distributed as dist
+
 import fairscale.nn.model_parallel.initialize as fs_init
-from fairscale.nn.model_parallel.layers import (
-    ColumnParallelLinear,
-    RowParallelLinear,
-    ParallelEmbedding,
-)
+from fairscale.nn.model_parallel.layers import ColumnParallelLinear, ParallelEmbedding, RowParallelLinear
+import torch
+import torch.distributed as dist
+import torch.nn as nn
 
 
 def get_model_parallel_dim_dict(model: nn.Module) -> Dict[str, int]:

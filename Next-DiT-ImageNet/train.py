@@ -19,7 +19,7 @@ import multiprocessing as mp
 import os
 import socket
 import subprocess
-from time import time, sleep
+from time import sleep, time
 
 from PIL import Image
 from diffusers.models import AutoencoderKL
@@ -28,11 +28,11 @@ import numpy as np
 import torch
 import torch.distributed as dist
 from torch.distributed.fsdp import (
-    FullyShardedDataParallel as FSDP,
-    ShardingStrategy,
-    MixedPrecision,
-    StateDictType,
     FullStateDictConfig,
+    FullyShardedDataParallel as FSDP,
+    MixedPrecision,
+    ShardingStrategy,
+    StateDictType,
 )
 from torch.distributed.fsdp.wrap import lambda_auto_wrap_policy
 import torch.nn as nn
@@ -41,16 +41,10 @@ from torch.utils.tensorboard import SummaryWriter
 from torchvision import transforms
 from torchvision.datasets import ImageFolder
 
-import models
-
 # from diffusion import create_diffusion
-from grad_norm import (
-    get_model_parallel_dim_dict,
-    calculate_l2_grad_norm,
-    scale_grad,
-)
+from grad_norm import calculate_l2_grad_norm, get_model_parallel_dim_dict, scale_grad
+import models
 from transport import create_transport
-
 
 #############################################################################
 #                           Training Helper Functions                       #

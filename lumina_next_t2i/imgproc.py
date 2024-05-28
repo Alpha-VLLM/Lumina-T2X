@@ -1,6 +1,7 @@
+import random
+
 from PIL import Image
 import numpy as np
-import random
 
 
 def center_crop_arr(pil_image, image_size):

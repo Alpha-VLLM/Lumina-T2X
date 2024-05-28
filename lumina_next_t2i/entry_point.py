@@ -1,10 +1,9 @@
 import os
-import click
-import warnings
-import builtins
 
-from .utils.group import DefaultGroup
+import click
+
 from .utils.cli import main
+from .utils.group import DefaultGroup
 
 
 def none_or_str(value):
@@ -125,8 +124,8 @@ def convert(weight_path, output_dir):
         output_dir (str): saved directory, supports saving files with different names in the same directory.
 
     """
+    from safetensors.torch import load_file, save_file
     import torch
-    from safetensors.torch import save_file, load_file
 
     supported_model_type = (".pth", ".safetensors")
 

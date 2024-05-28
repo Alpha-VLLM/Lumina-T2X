@@ -11,21 +11,18 @@
 
 import functools
 import math
-from typing import Optional, Tuple, List
+from typing import List, Optional, Tuple
 
-from .components import RMSNorm
 import fairscale.nn.model_parallel.initialize as fs_init
-from fairscale.nn.model_parallel.layers import (
-    ColumnParallelLinear,
-    RowParallelLinear,
-    ParallelEmbedding,
-)
+from fairscale.nn.model_parallel.layers import ColumnParallelLinear, ParallelEmbedding, RowParallelLinear
 from flash_attn import flash_attn_varlen_func
 from flash_attn.bert_padding import index_first_axis, pad_input, unpad_input  # noqa
 import torch
 import torch.distributed as dist
 import torch.nn as nn
 import torch.nn.functional as F
+
+from .components import RMSNorm
 
 
 def modulate(x, shift, scale):
@@ -414,7 +411,7 @@ class Attention(nn.Module):
                     xk.permute(0, 2, 1, 3),
                     xv.permute(0, 2, 1, 3),
                     attn_mask=x_mask.bool().view(bsz, 1, 1, seqlen).expand(-1, self.n_local_heads, seqlen, -1),
-                    scale=softmax_scale
+                    scale=softmax_scale,
                 )
                 .permute(0, 2, 1, 3)
                 .to(dtype)

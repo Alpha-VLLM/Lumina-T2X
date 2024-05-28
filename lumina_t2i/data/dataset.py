@@ -14,7 +14,6 @@ import torch.distributed as dist
 from torch.utils.data import Dataset
 import yaml
 
-
 logger = logging.getLogger(__name__)
 
 

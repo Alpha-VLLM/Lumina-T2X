@@ -11,20 +11,17 @@
 
 import functools
 import math
-from typing import Optional, Tuple, List
+from typing import List, Optional, Tuple
 
-from .components import RMSNorm
 import fairscale.nn.model_parallel.initialize as fs_init
-from fairscale.nn.model_parallel.layers import (
-    ColumnParallelLinear,
-    RowParallelLinear,
-    ParallelEmbedding,
-)
+from fairscale.nn.model_parallel.layers import ColumnParallelLinear, ParallelEmbedding, RowParallelLinear
 from flash_attn import flash_attn_func
 import torch
 import torch.distributed as dist
 import torch.nn as nn
 import torch.nn.functional as F
+
+from .components import RMSNorm
 
 
 def modulate(x, shift, scale):

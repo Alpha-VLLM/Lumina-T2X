@@ -1,11 +1,11 @@
 import builtins
+import math
 import os
 import random
 import socket
 import time
 import traceback
 import warnings
-import math
 
 import fairscale.nn.model_parallel.initialize as fs_init
 import numpy as np
@@ -234,7 +234,7 @@ def inference(cap, dtype, config, vae, model_dit, text_encoder, tokenizer, *args
                     model_kwargs["proportional_attn"] = True
                     model_kwargs["base_seqlen"] = (image_size // 16) ** 2
                 if ntk_scaling:
-                    model_kwargs["ntk_factor"] = math.sqrt(w * h / image_size ** 2)
+                    model_kwargs["ntk_factor"] = math.sqrt(w * h / image_size**2)
 
                 rank0_print(f"> Caption: {cap}")
                 rank0_print(f"> Num_sampling_steps: {num_sampling_steps}")
