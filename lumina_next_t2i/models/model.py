@@ -893,7 +893,8 @@ class NextDiT(nn.Module):
                 self.dim // self.n_heads,
                 384,
                 rope_scaling_factor=rope_scaling_factor,
-                scale_factor=scale_factor, timestep=t[0],
+                scale_factor=scale_factor,
+                timestep=t[0],
             )
 
         if proportional_attn:
@@ -956,16 +957,14 @@ class NextDiT(nn.Module):
         target_dim = timestep * dim + 1
         scale_factor = scale_factor ** (dim / target_dim)
         theta = theta * scale_factor
-        
-        freqs_time_scaled = 1.0 / (theta ** (
-            torch.arange(0, dim, 4)[: (dim // 4)].float().cuda() / dim
-        ))
-        
+
+        freqs_time_scaled = 1.0 / (theta ** (torch.arange(0, dim, 4)[: (dim // 4)].float().cuda() / dim))
+
         freqs = torch.max(freqs_inter, freqs_time_scaled)
 
         timestep = torch.arange(end, device=freqs.device, dtype=torch.float)  # type: ignore
         timestep = timestep / rope_scaling_factor
-        
+
         freqs = torch.outer(timestep, freqs).float()  # type: ignore
         freqs_cis = torch.polar(torch.ones_like(freqs), freqs)  # complex64
 
