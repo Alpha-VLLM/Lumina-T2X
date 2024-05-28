@@ -994,3 +994,6 @@ class NextDiT(nn.Module):
 #############################################################################
 def NextDiT_2B_patch2(**kwargs):
     return NextDiT(patch_size=2, dim=2304, n_layers=24, n_heads=32, **kwargs)
+
+def NextDiT_2B_GQA_patch2(**kwargs):
+    return NextDiT(patch_size=2, dim=2304, n_layers=24, n_heads=32, n_kv_heads=8, **kwargs)
