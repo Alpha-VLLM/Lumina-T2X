@@ -140,6 +140,7 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
         while True:
             (
                 cap,
+                neg_cap,
                 resolution,
                 num_sampling_steps,
                 cfg_scale,
@@ -152,6 +153,7 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
 
             metadata = dict(
                 cap=cap,
+                neg_cap=neg_cap,
                 resolution=resolution,
                 num_sampling_steps=num_sampling_steps,
                 cfg_scale=cfg_scale,
@@ -210,7 +212,11 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                 z = z.repeat(2, 1, 1, 1)
 
                 with torch.no_grad():
-                    cap_feats, cap_mask = encode_prompt([cap] + [""], text_encoder, tokenizer, 0.0)
+                    if neg_cap != "":
+                        cap_feats, cap_mask = encode_prompt([cap] + [neg_cap], text_encoder, tokenizer, 0.0)
+                    else:
+                        cap_feats, cap_mask = encode_prompt([cap] + [""], text_encoder, tokenizer, 0.0)
+                        
                 cap_mask = cap_mask.to(cap_feats.device)
 
                 model_kwargs = dict(
@@ -530,6 +536,7 @@ def main():
             on_submit,
             [
                 cap,
+                neg_cap,
                 resolution,
                 num_sampling_steps,
                 cfg_scale,
