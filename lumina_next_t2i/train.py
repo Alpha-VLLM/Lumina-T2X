@@ -38,6 +38,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from torchvision import transforms
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from data import ItemProcessor, MyDataset, read_general
 from grad_norm import (
@@ -299,8 +300,6 @@ def main(args):
 
     # create tokenizers
     # Load the tokenizers
-    from transformers import AutoTokenizer, AutoModelForCausalLM
-
     tokenizer = AutoTokenizer.from_pretrained("google/gemma-2b")
     tokenizer.padding_side = "right"
 
@@ -314,7 +313,6 @@ def main(args):
         .get_decoder()
         .cuda()
     )
-    # Load scheduler and models
     text_encoder = setup_lm_fsdp_sync(text_encoder)
     print(f"text encoder: {type(text_encoder)}")
     cap_feat_dim = text_encoder.config.hidden_size

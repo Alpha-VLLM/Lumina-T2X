@@ -50,7 +50,7 @@ def load_model(
 ):
     # import here to avoid huggingface Tokenizer parallelism warnings
     from diffusers.models import AutoencoderKL
-    from transformers import AutoModelForCausalLM, AutoTokenizer
+    from transformers import AutoModel, AutoTokenizer
 
     if num_gpus != 1:
         raise NotImplementedError("Multi-GPU Inference is not yet supported")
@@ -78,7 +78,7 @@ def load_model(
         ckpt_lm = train_args.lm
 
     rank0_print(f"> Creating LLM model.")
-    model_lm = AutoModelForCausalLM.from_pretrained(ckpt_lm, torch_dtype=dtype, device_map="cuda", token=token)
+    model_lm = AutoModel.from_pretrained(ckpt_lm, torch_dtype=dtype, device_map="cuda", token=token)
     cap_feat_dim = model_lm.config.hidden_size
     if num_gpus > 1:
         raise NotImplementedError("Inference with >1 GPUs not yet supported")
@@ -135,9 +135,6 @@ def inference(cap, dtype, config, vae, model_dit, model_lm, tokenizer, *args, **
     rtol = ode_config["rtol"]
     reverse = ode_config["reverse"]
     likelihood = ode_config["likelihood"]
-
-    # sde
-    sde_config = config["sde"]
 
     # inference
     infer_config = config["infer"]
@@ -202,7 +199,7 @@ def inference(cap, dtype, config, vae, model_dit, model_lm, tokenizer, *args, **
                 tok_mask[1, : len(null_cap_tok)] = True
 
                 # get caption text embedding
-                cap_feats = model_lm.get_decoder()(input_ids=tok).last_hidden_state
+                cap_feats = model_lm(input_ids=tok).last_hidden_state
 
                 model_kwargs = dict(
                     cap_feats=cap_feats,

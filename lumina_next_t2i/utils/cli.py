@@ -5,6 +5,7 @@ import socket
 import time
 import traceback
 import warnings
+import math
 
 import fairscale.nn.model_parallel.initialize as fs_init
 import numpy as np
@@ -85,7 +86,7 @@ def load_model(
 ):
     # import here to avoid huggingface Tokenizer parallelism warnings
     from diffusers.models import AutoencoderKL
-    from transformers import AutoModelForCausalLM, AutoTokenizer
+    from transformers import AutoModel, AutoTokenizer
 
     if num_gpus != 1:
         raise NotImplementedError("Multi-GPU Inference is not yet supported")
@@ -113,7 +114,7 @@ def load_model(
         ckpt_lm = train_args.lm
 
     rank0_print(f"> Creating LLM model.")
-    model_lm = AutoModelForCausalLM.from_pretrained(ckpt_lm, torch_dtype=dtype, device_map="cuda", token=token)
+    model_lm = AutoModel.from_pretrained(ckpt_lm, torch_dtype=dtype, device_map="cuda", token=token)
     cap_feat_dim = model_lm.config.hidden_size
     if num_gpus > 1:
         raise NotImplementedError("Inference with >1 GPUs not yet supported")
@@ -173,9 +174,6 @@ def inference(cap, dtype, config, vae, model_dit, text_encoder, tokenizer, *args
     reverse = ode_config["reverse"]
     likelihood = ode_config["likelihood"]
 
-    # sde
-    sde_config = config["sde"]
-
     # inference
     infer_config = config["infer"]
     resolution = infer_config["resolution"]
@@ -227,23 +225,16 @@ def inference(cap, dtype, config, vae, model_dit, text_encoder, tokenizer, *args
                 # get caption text embedding
                 cap_mask = cap_mask.to(cap_feats.device)
 
-                train_res = 1024
-                res_cat = (w * h) ** 0.5
-                print(f"res_cat: {res_cat}")
-                max_seq_len = (res_cat // 16) ** 2 + (res_cat // 16) * 2
-                print(f"max_seq_len: {max_seq_len}")
-
-                rope_scaling_factor = 1.0
-                ntk_factor = max_seq_len / (train_res // 16) ** 2
-                print(f"ntk_factor: {ntk_factor}")
-
                 model_kwargs = dict(
                     cap_feats=cap_feats,
                     cap_mask=cap_mask,
                     cfg_scale=cfg_scale,
-                    rope_scaling_factor=rope_scaling_factor,
-                    ntk_factor=ntk_factor,
                 )
+                if proportional_attn:
+                    model_kwargs["proportional_attn"] = True
+                    model_kwargs["base_seqlen"] = (image_size // 16) ** 2
+                if ntk_scaling:
+                    model_kwargs["ntk_factor"] = math.sqrt(w * h / image_size ** 2)
 
                 rank0_print(f"> Caption: {cap}")
                 rank0_print(f"> Num_sampling_steps: {num_sampling_steps}")

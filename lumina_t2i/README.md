@@ -154,13 +154,15 @@ srun -n32 --ntasks-per-node=8 --gres=gpu:8 bash exps/5B_bs512_lr1e-4_bf16_1024px
 
 To ensure that our generative model is ready to use right out of the box, we provide a user-friendly CLI program and a locally deployable Web Demo site.
 
+### Preparation
+
 1. Install Lumina-T2I
 
 ```bash
 pip install -e .
 ```
 
-2. Prepare the pretrained model
+2. Prepare the pretrained checkpoints
 
 ⭐⭐ (Recommended) you can use huggingface_cli downloading our model:
 
@@ -176,7 +178,7 @@ or using git for cloning the model you want to use:
 git clone https://huggingface.co/Alpha-VLLM/Lumina-T2I
 ```
 
-3. Load your own trained model
+3. Converting `*.pth` files to `*.safetensors`
 
 If you are loading your own trained model, please convert it to `.safetensors` first for security reasons before loading. Assuming your trained model path is `/path/to/your/own/model.pth` and your save directory is `/path/to/new/model`.
 
@@ -195,6 +197,23 @@ lumina convert "/path/to/your/own/model.pth" "/path/to/new/directory/" # convert
 
 # example 2:
 lumina convert "/path/to/your/own/model.safetensors" "/path/to/new/directory/" # convert to `.pth`
+```
+
+### Web Demo
+
+To host a local gradio demo for interactive inference, run the following command:
+
+```bash
+# `/path/to/ckpt` should be a directory containing `consolidated*.pth` and `model_args.pth`
+
+# default
+python -u demo.py --ckpt "/path/to/ckpt"
+
+# the demo by default uses bf16 precision. to switch to fp32:
+python -u demo.py --ckpt "/path/to/ckpt" --precision fp32
+
+# use ema model
+python -u demo.py --ckpt "/path/to/ckpt" --ema
 ```
 
 ### CLI
@@ -274,21 +293,4 @@ e.g. Demo command:
 ```bash
 cd lumina_t2i
 lumina infer -c "config/infer/settings.yaml" "a snow man of ..." "./outputs"
-```
-
-### Web Demo
-
-To host a local gradio demo for interactive inference, run the following command:
-
-```bash
-# `/path/to/ckpt` should be a directory containing `consolidated*.pth` and `model_args.pth`
-
-# default
-python -u demo.py --ckpt "/path/to/ckpt"
-
-# the demo by default uses bf16 precision. to switch to fp32:
-python -u demo.py --ckpt "/path/to/ckpt" --precision fp32
-
-# use ema model
-python -u demo.py --ckpt "/path/to/ckpt" --ema
 ```

@@ -88,33 +88,6 @@ ode_options = [
     click.option("--likelihood", is_flag=True, help=""),
 ]
 
-sde_options = [
-    click.option("--sampling-method", type=click.Choice(["Euler", "Heun"]), default="Euler"),
-    click.option(
-        "--diffusion-form",
-        type=click.Choice(
-            [
-                "constant",
-                "SBDM",
-                "sigma",
-                "linear",
-                "decreasing",
-                "increasing-decreasing",
-            ]
-        ),
-        default="sigma",
-        help="form of diffusion coefficient in the SDE",
-    ),
-    click.option("--diffusion-norm", type=float, default=1.0),
-    click.option(
-        "--last-step",
-        type=click.Choice([None, "Mean", "Tweedie", "Euler"]),
-        default="Mean",
-        help="form of last step taken in the SDE",
-    ),
-    click.option("--last-step-size", type=float, default=0.04, help="size of the last step taken"),
-]
-
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 

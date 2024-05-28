@@ -109,7 +109,7 @@ pip install -v --disable-pip-version-check --no-cache-dir --no-build-isolation -
 
 To ensure that our generative model is ready to use right out of the box, we provide a user-friendly CLI program and a locally deployable Web Demo site.
 
-### CLI
+### Preparation
 
 1. Install Lumina-T2I
 
@@ -117,9 +117,9 @@ To ensure that our generative model is ready to use right out of the box, we pro
 pip install -e .
 ```
 
-2. Prepare the pretrained model
+2. Prepare the pretrained checkpoints
 
-⭐⭐ (Recommanded) you can use huggingface_cli downloading our model:
+⭐⭐ (Recommended) you can use huggingface_cli downloading our model:
 
 ```bash
 huggingface-cli download --resume-download Alpha-VLLM/Lumina-Next-T2I --local-dir /path/to/ckpt
@@ -131,16 +131,15 @@ or using git for cloning the model you want to use:
 git clone https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I
 ```
 
-3. Load your own trained model
+3. Converting `*.pth` files to `*.safetensors`
 
-If you are loading your own trained model, please convert it to `.pth` first for security reasons before loading. Assuming your trained model path is `/path/to/your/own/model.pth` and your save directory is `/path/to/new/model`. After training, convert the `.pth` model to `.safetensors` for inference.
+If you are loading your own trained model, please convert it to `.safetensors` first for security reasons before loading. Assuming your trained model path is `/path/to/your/own/model.pth` and your save directory is `/path/to/new/model`.
 
 ```bash
 lumina_next convert "/path/to/your/own/model.pth" "/path/to/new/directory/" # convert to `.safetensors`
 ```
 
-> The `output_dir` supports saving files with different names in the same directory.
-
+Explanation of the `lumina convert` command:
 ```bash
 # <weight_path> means your trained model path.
 # <output_dir> means the directory where you want to save the model.
@@ -151,6 +150,23 @@ lumina_next convert "/path/to/your/own/model.pth" "/path/to/new/directory/" # co
 
 # example 2:
 lumina_next convert "/path/to/your/own/model.safetensors" "/path/to/new/directory/" # convert to `.pth`
+```
+
+### Web Demo
+
+To host a local gradio demo for interactive inference, run the following command:
+
+```bash
+# `/path/to/ckpt` should be a directory containing `consolidated*.pth` and `model_args.pth`
+
+# default
+python -u demo.py --ckpt "/path/to/ckpt"
+
+# the demo by default uses bf16 precision. to switch to fp32:
+python -u demo.py --ckpt "/path/to/ckpt" --precision fp32
+
+# use ema model
+python -u demo.py --ckpt "/path/to/ckpt" --ema
 ```
 
 ### CLI
@@ -182,13 +198,6 @@ Update your own personal inference settings to generate different styles of imag
     reverse: false                  # option: true or false
     likelihood: false               # option: true or false
 
-  sde:
-    sampling_method: "Euler"        # option: ["Euler", "Heun"]
-    diffusion_form: "sigma"         # option: ["constant", "SBDM", "sigma", "linear", "decreasing", "increasing-decreasing"]
-    diffusion_norm: 1.0             # range: 0-1
-    last_step: Mean                 # option: [None, "Mean", "Tweedie", "Euler"]
-    last_step_size: 0.04
-
   infer:
       resolution: "1024x1024"     # option: ["1024x1024", "512x2048", "2048x512", "(Extrapolation) 1664x1664", "(Extrapolation) 1024x2048", "(Extrapolation) 2048x1024"]
       num_sampling_steps: 60      # range: 1-1000
@@ -215,13 +224,7 @@ Update your own personal inference settings to generate different styles of imag
   - `rtol`: Relative tolerance for the ODE solver. (option: ["velocity", "score", "noise"])
   - `reverse`: run the ODE solver in reverse. (option: [None, "velocity", "likelihood"])
   - `likelihood`: Enable calculation of likelihood during the ODE solving process.
-- sde
-  - `sampling-method`: the numerical method used for sampling the stochastic differential equation: 'Euler' for simplicity or 'Heun' for improved accuracy.
-  - `diffusion-form`: form of diffusion coefficient in the SDE
-  - `diffusion-norm`: Normalizes the diffusion coefficient, affecting the scale of the stochastic component.
-  - `last-step`: form of last step taken in the SDE
-  - `last-step-size`: size of the last step taken
-- infer
+- infer:
   - `resolution`: generated image resolution.
   - `num_sampling_steps`: sampling step for generating image.
   - `cfg_scale`: classifier-free guide scaling factor
@@ -243,21 +246,4 @@ e.g. Demo command:
 ```bash
 cd lumina_next_t2i
 lumina_next infer -c "configs/infer/settings.yaml" "a snow man of ..." "./outputs"
-```
-
-### Web Demo
-
-To host a local gradio demo for interactive inference, run the following command:
-
-```bash
-# `/path/to/ckpt` should be a directory containing `consolidated*.pth` and `model_args.pth`
-
-# default
-python -u demo.py --ckpt "/path/to/ckpt"
-
-# the demo by default uses bf16 precision. to switch to fp32:
-python -u demo.py --ckpt "/path/to/ckpt" --precision fp32
-
-# use ema model
-python -u demo.py --ckpt "/path/to/ckpt" --ema
 ```
