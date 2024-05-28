@@ -216,7 +216,7 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                         cap_feats, cap_mask = encode_prompt([cap] + [neg_cap], text_encoder, tokenizer, 0.0)
                     else:
                         cap_feats, cap_mask = encode_prompt([cap] + [""], text_encoder, tokenizer, 0.0)
-                        
+
                 cap_mask = cap_mask.to(cap_feats.device)
 
                 model_kwargs = dict(
@@ -529,7 +529,7 @@ def main():
             if isinstance(result, ModelFailure):
                 raise RuntimeError
             img, metadata = result
-            
+
             return img, metadata
 
         submit_btn.click(

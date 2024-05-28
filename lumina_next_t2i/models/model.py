@@ -25,7 +25,6 @@ import torch.nn.functional as F
 from .components import RMSNorm
 
 
-
 def modulate(x, scale):
     return x * (1 + scale.unsqueeze(1))
 
@@ -593,9 +592,7 @@ class TransformerBlock(nn.Module):
 
         """
         if adaln_input is not None:
-            scale_msa, gate_msa, scale_mlp, gate_mlp = self.adaLN_modulation(
-                adaln_input
-            ).chunk(4, dim=1)
+            scale_msa, gate_msa, scale_mlp, gate_mlp = self.adaLN_modulation(adaln_input).chunk(4, dim=1)
 
             x = x + gate_msa.unsqueeze(1).tanh() * self.attention_norm2(
                 self.attention(
@@ -998,6 +995,7 @@ class NextDiT(nn.Module):
 #############################################################################
 def NextDiT_2B_patch2(**kwargs):
     return NextDiT(patch_size=2, dim=2304, n_layers=24, n_heads=32, **kwargs)
+
 
 def NextDiT_2B_GQA_patch2(**kwargs):
     return NextDiT(patch_size=2, dim=2304, n_layers=24, n_heads=32, n_kv_heads=8, **kwargs)
