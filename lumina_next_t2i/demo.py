@@ -188,7 +188,6 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                 # seq_len = (res_cat // 16) ** 2 + (res_cat // 16) * 2
                 # print(f"> seq_len: {seq_len}")
 
-                # rope_scaling_factor = 1.0
                 # scale_factor = seq_len / (train_res // 16) ** 2
                 # print(f"> scale_factor: {scale_factor}")
 
@@ -201,7 +200,6 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                 train_seq_len = 64
                 if scaling_method == "ntk":
                     scale_factor = seq_len / train_seq_len
-                    rope_scaling_factor = 1.0
                 else:
                     raise NotImplementedError
 
@@ -219,12 +217,10 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                     cap_feats=cap_feats,
                     cap_mask=cap_mask,
                     cfg_scale=cfg_scale,
+                    scale_factor=scale_factor,
                 )
                 if proportional_attn:
                     model_kwargs["proportional_attn"] = True
-                    model_kwargs["base_seqlen"] = (train_args.image_size // 16) ** 2
-                if ntk_scaling:
-                    model_kwargs["ntk_factor"] = math.sqrt(w * h / train_args.image_size**2)
 
                 if dist.get_rank() == 0:
                     print(f"> caption: {cap}")
@@ -524,17 +520,16 @@ def main():
             for q in request_queues:
                 q.put(args)
             result = response_queue.get()
-            img, metadata = result
-
             if isinstance(result, ModelFailure):
                 raise RuntimeError
+            img, metadata = result
+            
             return img, metadata
 
         submit_btn.click(
             on_submit,
             [
                 cap,
-                neg_cap,
                 resolution,
                 num_sampling_steps,
                 cfg_scale,
@@ -549,7 +544,6 @@ def main():
 
     mp_barrier.wait()
     demo.queue().launch(
-        share=True,
         server_name="0.0.0.0",
     )
 

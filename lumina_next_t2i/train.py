@@ -317,8 +317,7 @@ def main(args):
     model = models.__dict__[args.model](
         qk_norm=args.qk_norm,
         cap_feat_dim=cap_feat_dim,
-        rope_scaling_factor=args.rope_scaling_factor,
-        ntk_factor=args.ntk_factor,
+        scaling_factor=args.scaling_factor,
     )
     logger.info(f"DiT Parameters: {model.parameter_count():,}")
     model_patch_size = model.patch_size
@@ -717,12 +716,7 @@ if __name__ == "__main__":
         help="Randomly change the caption of a sample to a blank string with the given probability.",
     )
     parser.add_argument(
-        "--rope_scaling_factor",
-        type=float,
-        default=1.0,
-    )
-    parser.add_argument(
-        "--ntk_factor",
+        "--scaling_factor",
         type=float,
         default=1.0,
     )

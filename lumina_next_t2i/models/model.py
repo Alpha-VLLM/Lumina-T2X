@@ -683,7 +683,6 @@ class NextDiT(nn.Module):
         learn_sigma: bool = True,
         qk_norm: bool = False,
         cap_feat_dim: int = 5120,
-        rope_scaling_factor: float = 1.0,
         scale_factor: float = 1.0,
     ) -> None:
         super().__init__()
@@ -735,12 +734,10 @@ class NextDiT(nn.Module):
         self.freqs_cis = NextDiT.precompute_freqs_cis(
             dim // n_heads,
             384,
-            rope_scaling_factor=rope_scaling_factor,
             scale_factor=scale_factor,
         )
         self.dim = dim
         self.n_heads = n_heads
-        self.rope_scaling_factor = rope_scaling_factor
         self.scale_factor = scale_factor
         # self.eol_token = nn.Parameter(torch.empty(dim))
         self.pad_token = nn.Parameter(torch.empty(dim))
@@ -876,7 +873,6 @@ class NextDiT(nn.Module):
         cap_feats,
         cap_mask,
         cfg_scale,
-        rope_scaling_factor=None,
         scale_factor=None,
         base_seqlen: Optional[int] = None,
         proportional_attn: bool = False,
@@ -886,13 +882,12 @@ class NextDiT(nn.Module):
         # for classifier-free guidance.
         # """
         # # https://github.com/openai/glide-text2im/blob/main/notebooks/text2im.ipynb
-        # print(scale_factor, rope_scaling_factor, self.scale_factor, self.rope_scaling_factor)
-        if rope_scaling_factor is not None or scale_factor is not None:
-            assert rope_scaling_factor is not None and scale_factor is not None
+        # print(scale_factor, self.scale_factor)
+        if scale_factor is not None:
+            assert scale_factor is not None
             self.freqs_cis = NextDiT.precompute_freqs_cis(
                 self.dim // self.n_heads,
                 384,
-                rope_scaling_factor=rope_scaling_factor,
                 scale_factor=scale_factor,
                 timestep=t[0],
             )
@@ -926,7 +921,6 @@ class NextDiT(nn.Module):
         dim: int,
         end: int,
         theta: float = 10000.0,
-        rope_scaling_factor: float = 1.0,
         scale_factor: float = 1.0,
         timestep: float = 1.0,
     ):
@@ -950,7 +944,7 @@ class NextDiT(nn.Module):
                 exponentials.
         """
 
-        # logger.info(f"theta {theta} rope scaling {rope_scaling_factor} ntk {scale_factor}")
+        # logger.info(f"theta {theta} ntk {scale_factor}")
         # The precompute_freqs_cis is implemented by Time-aware Scaled RoPE.
         freqs_inter = 1.0 / (theta ** (torch.arange(0, dim, 4)[: (dim // 4)].float().cuda() / dim)) / scale_factor
 
@@ -963,7 +957,6 @@ class NextDiT(nn.Module):
         freqs = torch.max(freqs_inter, freqs_time_scaled)
 
         timestep = torch.arange(end, device=freqs.device, dtype=torch.float)  # type: ignore
-        timestep = timestep / rope_scaling_factor
 
         freqs = torch.outer(timestep, freqs).float()  # type: ignore
         freqs_cis = torch.polar(torch.ones_like(freqs), freqs)  # complex64
