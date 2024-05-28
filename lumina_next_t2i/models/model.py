@@ -739,7 +739,6 @@ class NextDiT(nn.Module):
         self.dim = dim
         self.n_heads = n_heads
         self.scale_factor = scale_factor
-        # self.eol_token = nn.Parameter(torch.empty(dim))
         self.pad_token = nn.Parameter(torch.empty(dim))
         nn.init.normal_(self.pad_token, std=0.02)
 
@@ -877,10 +876,10 @@ class NextDiT(nn.Module):
         base_seqlen: Optional[int] = None,
         proportional_attn: bool = False,
     ):
-        # """
-        # Forward pass of NextDiT, but also batches the unconditional forward pass
-        # for classifier-free guidance.
-        # """
+        """
+        Forward pass of NextDiT, but also batches the unconditional forward pass
+        for classifier-free guidance.
+        """
         # # https://github.com/openai/glide-text2im/blob/main/notebooks/text2im.ipynb
         # print(scale_factor, self.scale_factor)
         if scale_factor is not None:
