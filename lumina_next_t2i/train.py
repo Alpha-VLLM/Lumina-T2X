@@ -21,10 +21,8 @@ import socket
 from time import time
 
 from PIL import Image
-from data import ItemProcessor, MyDataset, read_general
 from diffusers.models import AutoencoderKL
 import fairscale.nn.model_parallel.initialize as fs_init
-from imgproc import generate_crop_size_list, var_center_crop
 import numpy as np
 import torch
 import torch.distributed as dist
@@ -42,7 +40,9 @@ from torch.utils.tensorboard import SummaryWriter
 from torchvision import transforms
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
+from data import ItemProcessor, MyDataset, read_general
 from grad_norm import calculate_l2_grad_norm, get_model_parallel_dim_dict, scale_grad
+from imgproc import generate_crop_size_list, var_center_crop
 import models
 from parallel import distributed_init, get_intra_node_process_group
 from transport import create_transport
