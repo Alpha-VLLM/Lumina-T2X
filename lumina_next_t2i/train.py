@@ -317,7 +317,6 @@ def main(args):
     model = models.__dict__[args.model](
         qk_norm=args.qk_norm,
         cap_feat_dim=cap_feat_dim,
-        scaling_factor=args.scaling_factor,
     )
     logger.info(f"DiT Parameters: {model.parameter_count():,}")
     model_patch_size = model.patch_size
@@ -714,11 +713,6 @@ if __name__ == "__main__":
         type=float,
         default=0.1,
         help="Randomly change the caption of a sample to a blank string with the given probability.",
-    )
-    parser.add_argument(
-        "--scaling_factor",
-        type=float,
-        default=1.0,
     )
     parser.add_argument("--snr_type", type=str, default="uniform", choices=["uniform", "lognorm"])
     args = parser.parse_args()

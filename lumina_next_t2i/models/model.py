@@ -603,26 +603,23 @@ class TransformerBlock(nn.Module):
                     y_mask,
                 )
             )
-            d = x.shape[-1]
             x = x + gate_mlp.unsqueeze(1).tanh() * self.ffn_norm2(
                 self.feed_forward(
-                    modulate(self.ffn_norm1(x), scale_mlp).view(-1, d),
-                ).view(*x.shape)
+                    modulate(self.ffn_norm1(x), scale_mlp),
+                )
             )
 
         else:
-            x = x + self.attention(
-                self.attention_norm(x),
-                x_mask,
-                freqs_cis,
-                self.attention_y_norm(y),
-                y_mask,
+            x = x + self.attention_norm2(
+                self.attention(
+                    self.attention_norm1(x),
+                    x_mask,
+                    freqs_cis,
+                    self.attention_y_norm(y),
+                    y_mask,
+                )
             )
-            # for compatibility with torch.compile because the sequence length changes
-            B, L, D = x.shape
-            x = x.view(B * L, D)
-            x = x + self.feed_forward(self.ffn_norm(x))
-            x = x.view(B, L, D)
+            x = x + self.ffn_norm2(self.feed_forward(self.ffn_norm1(x)))
 
         return x
 
@@ -873,7 +870,7 @@ class NextDiT(nn.Module):
         cap_feats,
         cap_mask,
         cfg_scale,
-        scale_factor=None,
+        scale_factor=1.0,
         base_seqlen: Optional[int] = None,
         proportional_attn: bool = False,
     ):
@@ -882,15 +879,12 @@ class NextDiT(nn.Module):
         for classifier-free guidance.
         """
         # # https://github.com/openai/glide-text2im/blob/main/notebooks/text2im.ipynb
-        # print(scale_factor, self.scale_factor)
-        if scale_factor is not None:
-            assert scale_factor is not None
-            self.freqs_cis = NextDiT.precompute_freqs_cis(
-                self.dim // self.n_heads,
-                384,
-                scale_factor=scale_factor,
-                timestep=t[0],
-            )
+        self.freqs_cis = NextDiT.precompute_freqs_cis(
+            self.dim // self.n_heads,
+            384,
+            scale_factor=scale_factor,
+            timestep=t[0],
+        )
 
         if proportional_attn:
             assert base_seqlen is not None
@@ -944,7 +938,6 @@ class NextDiT(nn.Module):
                 exponentials.
         """
 
-        # logger.info(f"theta {theta} ntk {scale_factor}")
         # The precompute_freqs_cis is implemented by Time-aware Scaled RoPE.
         freqs_inter = 1.0 / (theta ** (torch.arange(0, dim, 4)[: (dim // 4)].float().cuda() / dim)) / scale_factor
 

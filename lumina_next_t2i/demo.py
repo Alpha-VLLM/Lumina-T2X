@@ -160,6 +160,7 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                 solver=solver,
                 t_shift=t_shift,
                 seed=seed,
+                scaling_method=scaling_method,
                 proportional_attn=proportional_attn,
             )
             print("> params:", json.dumps(metadata, indent=2))
@@ -184,27 +185,10 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                 )
                 # end sampler
 
-                # train_res = 1024
-                # res_cat = (w * h) ** 0.5
-                # print(f"> res_cat: {res_cat}")
-                # seq_len = (res_cat // 16) ** 2 + (res_cat // 16) * 2
-                # print(f"> seq_len: {seq_len}")
-
-                # scale_factor = seq_len / (train_res // 16) ** 2
-                # print(f"> scale_factor: {scale_factor}")
-
+                do_extrapolation = "Extrapolation" in resolution
                 resolution = resolution.split(" ")[-1]
                 w, h = resolution.split("x")
                 w, h = int(w), int(h)
-                res_cat = (w * h) ** 0.5
-                seq_len = res_cat // 16
-
-                train_seq_len = 64
-                if scaling_method == "ntk":
-                    scale_factor = seq_len / train_seq_len
-                else:
-                    raise NotImplementedError
-
                 latent_w, latent_h = w // 8, h // 8
                 if int(seed) != 0:
                     torch.random.manual_seed(int(seed))
@@ -223,10 +207,14 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                     cap_feats=cap_feats,
                     cap_mask=cap_mask,
                     cfg_scale=cfg_scale,
-                    scale_factor=scale_factor,
                 )
-                # if proportional_attn:
-                #     model_kwargs["proportional_attn"] = True
+                if proportional_attn:
+                    model_kwargs["proportional_attn"] = True
+                    model_kwargs["base_seqlen"] = (train_args.image_size // 16) ** 2
+                if do_extrapolation and scaling_method == "Time-aware":
+                    model_kwargs["scale_factor"] = math.sqrt(w * h / train_args.image_size**2)
+                else:
+                    model_kwargs["scale_factor"] = 1.0
 
                 if dist.get_rank() == 0:
                     print(f"> caption: {cap}")
@@ -438,10 +426,10 @@ def main():
                     )
                 with gr.Accordion("Advanced Settings for Resolution Extrapolation", open=False):
                     with gr.Row():
-                        scaling_methods = gr.Dropdown(
-                            value="ntk",
-                            choices=["ntk"],
-                            label="scaling methods",
+                        scaling_method = gr.Dropdown(
+                            value="Time-aware",
+                            choices=["Time-aware", "None"],
+                            label="RoPE scaling method",
                         )
                         proportional_attn = gr.Checkbox(
                             value=True,
@@ -450,12 +438,20 @@ def main():
                         )
                 with gr.Row():
                     submit_btn = gr.Button("Submit", variant="primary")
-                    # reset_btn = gr.ClearButton([
-                    #     cap, resolution,
-                    #     num_sampling_steps, cfg_scale, solver,
-                    #     t_shift, seed,
-                    #     ntk_scaling, proportional_attn
-                    # ])
+                    reset_btn = gr.ClearButton(
+                        [
+                            cap,
+                            neg_cap,
+                            resolution,
+                            num_sampling_steps,
+                            cfg_scale,
+                            solver,
+                            t_shift,
+                            seed,
+                            scaling_method,
+                            proportional_attn,
+                        ]
+                    )
             with gr.Column():
                 output_img = gr.Image(
                     label="Generated image",
@@ -543,7 +539,7 @@ def main():
                 solver,
                 t_shift,
                 seed,
-                scaling_methods,
+                scaling_method,
                 proportional_attn,
             ],
             [output_img, gr_metadata],
