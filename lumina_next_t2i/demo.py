@@ -438,22 +438,7 @@ def main():
                         )
                 with gr.Row():
                     submit_btn = gr.Button("Submit", variant="primary")
-                    reset_btn = gr.ClearButton(
-                        [
-                            cap,
-                            neg_cap,
-                            resolution,
-                            num_sampling_steps,
-                            cfg_scale,
-                            solver,
-                            t_shift,
-                            seed,
-                            scaling_method,
-                            proportional_attn,
-                        ],
-                        value="Cancel",
-                        variant="stop",
-                    )
+                    stop_btn = gr.Button(value="Stop Generation", variant="stop")
             with gr.Column():
                 output_img = gr.Image(
                     label="Generated image",
@@ -546,7 +531,8 @@ def main():
             ],
             [output_img, gr_metadata],
         )
-
+        stop_btn.click(fn=None, inputs=None, outputs=None, cancels=[submit_event])
+        
     mp_barrier.wait()
     demo.queue().launch(
         server_name="0.0.0.0",
