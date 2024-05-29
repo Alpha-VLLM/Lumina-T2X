@@ -515,7 +515,7 @@ def main():
 
             return img, metadata
 
-        submit_btn.click(
+        submit_event = submit_btn.click(
             on_submit,
             [
                 cap,
