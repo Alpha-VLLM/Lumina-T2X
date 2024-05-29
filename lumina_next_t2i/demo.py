@@ -450,7 +450,9 @@ def main():
                             seed,
                             scaling_method,
                             proportional_attn,
-                        ]
+                        ],
+                        value="Cancel",
+                        variant="stop",
                     )
             with gr.Column():
                 output_img = gr.Image(
