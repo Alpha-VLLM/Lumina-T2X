@@ -25,8 +25,8 @@ import torch.nn.functional as F
 from .components import RMSNorm
 
 
-def modulate(x, shift, scale):
-    return x * (1 + scale.unsqueeze(1)) + shift.unsqueeze(1)
+def modulate(x, scale):
+    return x * (1 + scale.unsqueeze(1))
 
 
 #############################################################################
@@ -551,16 +551,17 @@ class TransformerBlock(nn.Module):
             ffn_dim_multiplier=ffn_dim_multiplier,
         )
         self.layer_id = layer_id
-        self.attention_norm = RMSNorm(dim, eps=norm_eps)
         self.attention_norm1 = RMSNorm(dim, eps=norm_eps)
-        self.ffn_norm = RMSNorm(dim, eps=norm_eps)
         self.ffn_norm1 = RMSNorm(dim, eps=norm_eps)
+
+        self.attention_norm2 = RMSNorm(dim, eps=norm_eps)
+        self.ffn_norm2 = RMSNorm(dim, eps=norm_eps)
 
         self.adaLN_modulation = nn.Sequential(
             nn.SiLU(),
             ColumnParallelLinear(
                 min(dim, 1024),
-                6 * dim,
+                4 * dim,
                 bias=True,
                 gather_output=True,
                 init_method=nn.init.zeros_,
@@ -591,38 +592,37 @@ class TransformerBlock(nn.Module):
 
         """
         if adaln_input is not None:
-            shift_msa, scale_msa, gate_msa, shift_mlp, scale_mlp, gate_mlp = self.adaLN_modulation(adaln_input).chunk(
-                6, dim=1
-            )
+            scale_msa, gate_msa, scale_mlp, gate_mlp = self.adaLN_modulation(adaln_input).chunk(4, dim=1)
 
-            x = x + self.attention_norm1(
-                gate_msa.unsqueeze(1)
-                * self.attention(
-                    modulate(self.attention_norm(x), shift_msa, scale_msa),
+            x = x + gate_msa.unsqueeze(1).tanh() * self.attention_norm2(
+                self.attention(
+                    modulate(self.attention_norm1(x), scale_msa),
                     x_mask,
                     freqs_cis,
                     self.attention_y_norm(y),
                     y_mask,
                 )
             )
-            x = x + self.ffn_norm1(
-                gate_mlp.unsqueeze(1)
-                * self.feed_forward(
-                    modulate(self.ffn_norm(x), shift_mlp, scale_mlp),
-                )
+            d = x.shape[-1]
+            x = x + gate_mlp.unsqueeze(1).tanh() * self.ffn_norm2(
+                self.feed_forward(
+                    modulate(self.ffn_norm1(x), scale_mlp).view(-1, d),
+                ).view(*x.shape)
             )
 
         else:
-            x = x + self.attention_norm1(
-                self.attention(
-                    self.attention_norm(x),
-                    x_mask,
-                    freqs_cis,
-                    self.attention_y_norm(y),
-                    y_mask,
-                )
+            x = x + self.attention(
+                self.attention_norm(x),
+                x_mask,
+                freqs_cis,
+                self.attention_y_norm(y),
+                y_mask,
             )
-            x = x + self.ffn_norm1(self.feed_forward(self.ffn_norm(x)))
+            # for compatibility with torch.compile because the sequence length changes
+            B, L, D = x.shape
+            x = x.view(B * L, D)
+            x = x + self.feed_forward(self.ffn_norm(x))
+            x = x.view(B, L, D)
 
         return x
 
@@ -650,7 +650,7 @@ class ParallelFinalLayer(nn.Module):
             nn.SiLU(),
             ColumnParallelLinear(
                 min(hidden_size, 1024),
-                2 * hidden_size,
+                hidden_size,
                 bias=True,
                 init_method=nn.init.zeros_,
                 gather_output=True,
@@ -658,8 +658,9 @@ class ParallelFinalLayer(nn.Module):
         )
 
     def forward(self, x, c):
-        shift, scale = self.adaLN_modulation(c).chunk(2, dim=1)
-        x = modulate(self.norm_final(x), shift, scale)
+        scale = self.adaLN_modulation(c)
+        # shift, scale = self.adaLN_modulation(c).chunk(2, dim=1)
+        x = modulate(self.norm_final(x), scale)
         x = self.linear(x)
         return x
 
@@ -683,8 +684,7 @@ class NextDiT(nn.Module):
         learn_sigma: bool = True,
         qk_norm: bool = False,
         cap_feat_dim: int = 5120,
-        rope_scaling_factor: float = 1.0,
-        ntk_factor: float = 1.0,
+        scale_factor: float = 1.0,
     ) -> None:
         super().__init__()
         self.learn_sigma = learn_sigma
@@ -735,13 +735,11 @@ class NextDiT(nn.Module):
         self.freqs_cis = NextDiT.precompute_freqs_cis(
             dim // n_heads,
             384,
-            rope_scaling_factor=rope_scaling_factor,
-            ntk_factor=ntk_factor,
+            scale_factor=scale_factor,
         )
         self.dim = dim
         self.n_heads = n_heads
-        self.rope_scaling_factor = rope_scaling_factor
-        self.ntk_factor = ntk_factor
+        self.scale_factor = scale_factor
         self.pad_token = nn.Parameter(torch.empty(dim))
         nn.init.normal_(self.pad_token, std=0.02)
 
@@ -875,33 +873,24 @@ class NextDiT(nn.Module):
         cap_feats,
         cap_mask,
         cfg_scale,
-        rope_scaling_factor=None,
-        ntk_factor=None,
+        scale_factor=None,
         base_seqlen: Optional[int] = None,
         proportional_attn: bool = False,
     ):
         """
-        Forward pass of DiT, but also batches the unconditional forward pass
+        Forward pass of NextDiT, but also batches the unconditional forward pass
         for classifier-free guidance.
         """
-        # https://github.com/openai/glide-text2im/blob/main/notebooks/text2im.ipynb
-
-        if rope_scaling_factor is not None or ntk_factor is not None:
-            rope_scaling_factor = rope_scaling_factor if rope_scaling_factor is not None else self.rope_scaling_factor
-            ntk_factor = ntk_factor if ntk_factor is not None else self.ntk_factor
-            if rope_scaling_factor != self.rope_scaling_factor or ntk_factor != self.ntk_factor:
-                print(
-                    f"override freqs_cis, rope_scaling {rope_scaling_factor}, ntk {ntk_factor}",
-                    flush=True,
-                )
-                self.freqs_cis = NextDiT.precompute_freqs_cis(
-                    self.dim // self.n_heads,
-                    384,
-                    rope_scaling_factor=rope_scaling_factor,
-                    ntk_factor=ntk_factor,
-                )
-                self.rope_scaling_factor = rope_scaling_factor
-                self.ntk_factor = ntk_factor
+        # # https://github.com/openai/glide-text2im/blob/main/notebooks/text2im.ipynb
+        # print(scale_factor, self.scale_factor)
+        if scale_factor is not None:
+            assert scale_factor is not None
+            self.freqs_cis = NextDiT.precompute_freqs_cis(
+                self.dim // self.n_heads,
+                384,
+                scale_factor=scale_factor,
+                timestep=t[0],
+            )
 
         if proportional_attn:
             assert base_seqlen is not None
@@ -924,6 +913,7 @@ class NextDiT(nn.Module):
         cond_eps, uncond_eps = torch.split(eps, len(eps) // 2, dim=0)
         half_eps = uncond_eps + cfg_scale * (cond_eps - uncond_eps)
         eps = torch.cat([half_eps, half_eps], dim=0)
+
         return torch.cat([eps, rest], dim=1)
 
     @staticmethod
@@ -931,8 +921,8 @@ class NextDiT(nn.Module):
         dim: int,
         end: int,
         theta: float = 10000.0,
-        rope_scaling_factor: float = 1.0,
-        ntk_factor: float = 1.0,
+        scale_factor: float = 1.0,
+        timestep: float = 1.0,
     ):
         """
         Precompute the frequency tensor for complex exponentials (cis) with
@@ -954,18 +944,27 @@ class NextDiT(nn.Module):
                 exponentials.
         """
 
-        theta = theta * ntk_factor
+        # logger.info(f"theta {theta} ntk {scale_factor}")
+        # The precompute_freqs_cis is implemented by Time-aware Scaled RoPE.
+        freqs_inter = 1.0 / (theta ** (torch.arange(0, dim, 4)[: (dim // 4)].float().cuda() / dim)) / scale_factor
 
-        print(f"theta {theta} rope scaling {rope_scaling_factor} ntk {ntk_factor}")
-        freqs = 1.0 / (theta ** (torch.arange(0, dim, 4)[: (dim // 4)].float().cuda() / dim))
-        t = torch.arange(end, device=freqs.device, dtype=torch.float)  # type: ignore
-        t = t / rope_scaling_factor
-        freqs = torch.outer(t, freqs).float()  # type: ignore
+        target_dim = timestep * dim + 1
+        scale_factor = scale_factor ** (dim / target_dim)
+        theta = theta * scale_factor
+
+        freqs_time_scaled = 1.0 / (theta ** (torch.arange(0, dim, 4)[: (dim // 4)].float().cuda() / dim))
+
+        freqs = torch.max(freqs_inter, freqs_time_scaled)
+
+        timestep = torch.arange(end, device=freqs.device, dtype=torch.float)  # type: ignore
+
+        freqs = torch.outer(timestep, freqs).float()  # type: ignore
         freqs_cis = torch.polar(torch.ones_like(freqs), freqs)  # complex64
 
         freqs_cis_h = freqs_cis.view(end, 1, dim // 4, 1).repeat(1, end, 1, 1)
         freqs_cis_w = freqs_cis.view(1, end, dim // 4, 1).repeat(end, 1, 1, 1)
         freqs_cis = torch.cat([freqs_cis_h, freqs_cis_w], dim=-1).flatten(2)
+
         return freqs_cis
 
     def parameter_count(self) -> int:
@@ -996,3 +995,7 @@ class NextDiT(nn.Module):
 #############################################################################
 def NextDiT_2B_patch2(**kwargs):
     return NextDiT(patch_size=2, dim=2304, n_layers=24, n_heads=32, **kwargs)
+
+
+def NextDiT_2B_GQA_patch2(**kwargs):
+    return NextDiT(patch_size=2, dim=2304, n_layers=24, n_heads=32, n_kv_heads=8, **kwargs)

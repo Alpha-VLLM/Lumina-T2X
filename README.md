@@ -64,6 +64,7 @@
 
 ## 📰 News
 
+- **[2024-05-29] 🥰🥰🥰 We released 2K Resolution inference code and Time-aware Scaled RoPE.**
 - **[2024-05-25] 🤩🤩🤩 We released training scripts for Flag-DiT and Next-DiT, and we have reported the comparison results between Next-DiT and Flag-DiT. [Comparsion Results](https://github.com/Alpha-VLLM/Lumina-T2X/blob/main/Next-DiT-ImageNet/README.md#results)**
 - **[2024-05-21] 🚀🚀🚀 Lumina-Next-T2I supports a higher-order solver. It can generate images in just 10 steps without any distillation. Try our demos [DEMO](http://106.14.2.150:10021/). The inference code will be released soon.**
 - [2024-05-18] 🤩🤩🤩 **We released training scripts for Lumina-T2I 5B. [README](https://github.com/Alpha-VLLM/Lumina-T2X/tree/main/lumina_t2i#training)**

@@ -140,25 +140,26 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
         while True:
             (
                 cap,
+                neg_cap,
                 resolution,
                 num_sampling_steps,
                 cfg_scale,
                 solver,
                 t_shift,
                 seed,
-                ntk_scaling,
+                scaling_method,
                 proportional_attn,
             ) = request_queue.get()
 
             metadata = dict(
                 cap=cap,
+                neg_cap=neg_cap,
                 resolution=resolution,
                 num_sampling_steps=num_sampling_steps,
                 cfg_scale=cfg_scale,
                 solver=solver,
                 t_shift=t_shift,
                 seed=seed,
-                ntk_scaling=ntk_scaling,
                 proportional_attn=proportional_attn,
             )
             print("> params:", json.dumps(metadata, indent=2))
@@ -183,9 +184,27 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                 )
                 # end sampler
 
+                # train_res = 1024
+                # res_cat = (w * h) ** 0.5
+                # print(f"> res_cat: {res_cat}")
+                # seq_len = (res_cat // 16) ** 2 + (res_cat // 16) * 2
+                # print(f"> seq_len: {seq_len}")
+
+                # scale_factor = seq_len / (train_res // 16) ** 2
+                # print(f"> scale_factor: {scale_factor}")
+
                 resolution = resolution.split(" ")[-1]
                 w, h = resolution.split("x")
                 w, h = int(w), int(h)
+                res_cat = (w * h) ** 0.5
+                seq_len = res_cat // 16
+
+                train_seq_len = 64
+                if scaling_method == "ntk":
+                    scale_factor = seq_len / train_seq_len
+                else:
+                    raise NotImplementedError
+
                 latent_w, latent_h = w // 8, h // 8
                 if int(seed) != 0:
                     torch.random.manual_seed(int(seed))
@@ -193,19 +212,21 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                 z = z.repeat(2, 1, 1, 1)
 
                 with torch.no_grad():
-                    cap_feats, cap_mask = encode_prompt([cap] + [""], text_encoder, tokenizer, 0.0)
+                    if neg_cap != "":
+                        cap_feats, cap_mask = encode_prompt([cap] + [neg_cap], text_encoder, tokenizer, 0.0)
+                    else:
+                        cap_feats, cap_mask = encode_prompt([cap] + [""], text_encoder, tokenizer, 0.0)
+
                 cap_mask = cap_mask.to(cap_feats.device)
 
                 model_kwargs = dict(
                     cap_feats=cap_feats,
                     cap_mask=cap_mask,
                     cfg_scale=cfg_scale,
+                    scale_factor=scale_factor,
                 )
-                if proportional_attn:
-                    model_kwargs["proportional_attn"] = True
-                    model_kwargs["base_seqlen"] = (train_args.image_size // 16) ** 2
-                if ntk_scaling:
-                    model_kwargs["ntk_factor"] = math.sqrt(w * h / train_args.image_size**2)
+                # if proportional_attn:
+                #     model_kwargs["proportional_attn"] = True
 
                 if dist.get_rank() == 0:
                     print(f"> caption: {cap}")
@@ -221,6 +242,7 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                 samples = vae.decode(samples / factor).sample
                 samples = (samples + 1.0) / 2.0
                 samples.clamp_(0.0, 1.0)
+
                 img = to_pil_image(samples[0].float())
                 print("> generated image, done.")
 
@@ -352,13 +374,28 @@ def main():
                     label="Caption",
                     interactive=True,
                     value="Miss Mexico portrait of the most beautiful mexican woman, Exquisite detail, 30-megapixel, 4k, 85-mm-lens, sharp-focus, f:8, "
-                    "ISO 100, shutter-speed 1:125, diffuse-back-lighting, award-winning photograph, small-catchlight, High-sharpness, facial-symmetry, 8k --q 2 --ar 18:32 --v 5",
+                    "ISO 100, shutter-speed 1:125, diffuse-back-lighting, award-winning photograph, small-catchlight, High-sharpness, facial-symmetry, 8k",
+                    placeholder="Enter a caption.",
+                )
+                neg_cap = gr.Textbox(
+                    lines=2,
+                    label="Negative Caption",
+                    interactive=True,
+                    value="",
+                    placeholder="Enter a negative caption.",
                 )
                 with gr.Row():
                     res_choices = ["1024x1024", "512x2048", "2048x512"] + [
                         "(Extrapolation) 1664x1664",
-                        "(Extrapolation) 1024x2048",
+                        "(Extrapolation) 2048x2048",
                         "(Extrapolation) 2048x1024",
+                        "(Extrapolation) 1024x2048",
+                        "(Extrapolation) 3072x1280",
+                        "(Extrapolation) 1280x3072",
+                        "(Extrapolation) 2560x1536",
+                        "(Extrapolation) 1536x2560",
+                        "(Extrapolation) 2048x1920",
+                        "(Extrapolation) 1920x2048",
                     ]
                     resolution = gr.Dropdown(value=res_choices[0], choices=res_choices, label="Resolution")
                 with gr.Row():
@@ -380,8 +417,8 @@ def main():
                     )
                 with gr.Row():
                     solver = gr.Dropdown(
-                        value="euler",
-                        choices=["euler", "dopri5", "dopri8"],
+                        value="midpoint",
+                        choices=["euler", "midpoint", "rk4"],
                         label="solver",
                     )
                     t_shift = gr.Slider(
@@ -401,10 +438,10 @@ def main():
                     )
                 with gr.Accordion("Advanced Settings for Resolution Extrapolation", open=False):
                     with gr.Row():
-                        ntk_scaling = gr.Checkbox(
-                            value=True,
-                            interactive=True,
-                            label="ntk scaling",
+                        scaling_methods = gr.Dropdown(
+                            value="ntk",
+                            choices=["ntk"],
+                            label="scaling methods",
                         )
                         proportional_attn = gr.Checkbox(
                             value=True,
@@ -489,23 +526,24 @@ def main():
             for q in request_queues:
                 q.put(args)
             result = response_queue.get()
-            img, metadata = result
-
             if isinstance(result, ModelFailure):
                 raise RuntimeError
+            img, metadata = result
+
             return img, metadata
 
         submit_btn.click(
             on_submit,
             [
                 cap,
+                neg_cap,
                 resolution,
                 num_sampling_steps,
                 cfg_scale,
                 solver,
                 t_shift,
                 seed,
-                ntk_scaling,
+                scaling_methods,
                 proportional_attn,
             ],
             [output_img, gr_metadata],
@@ -513,7 +551,6 @@ def main():
 
     mp_barrier.wait()
     demo.queue().launch(
-        share=True,
         server_name="0.0.0.0",
     )
 
