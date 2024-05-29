@@ -66,14 +66,14 @@
 
 - **[2024-05-29] 🥰🥰🥰 We released 2K Resolution inference code and Time-aware Scaled RoPE.**
 - **[2024-05-25] 🤩🤩🤩 We released training scripts for Flag-DiT and Next-DiT, and we have reported the comparison results between Next-DiT and Flag-DiT. [Comparsion Results](https://github.com/Alpha-VLLM/Lumina-T2X/blob/main/Next-DiT-ImageNet/README.md#results)**
-- **[2024-05-21] 🚀🚀🚀 Lumina-Next-T2I supports a higher-order solver. It can generate images in just 10 steps without any distillation. Try our demos [DEMO](http://106.14.2.150:10021/). The inference code will be released soon.**
+- [2024-05-21] 🚀🚀🚀 Lumina-Next-T2I supports a higher-order solver. It can generate images in just 10 steps without any distillation. Try our demos [DEMO](http://106.14.2.150:10021/).
 - [2024-05-18] 🤩🤩🤩 **We released training scripts for Lumina-T2I 5B. [README](https://github.com/Alpha-VLLM/Lumina-T2X/tree/main/lumina_t2i#training)**
 - [2024-05-16] ❗❗❗ **We have converted the `.pth` weights to `.safetensors` weights. Please pull the latest code and use `demo.py` for inference.**
 - [2024-05-14] 🔥🔥🔥 Lumina-Next now supports simple **text-to-music** generation ([examples](#text-to-music-generation)), **high-resolution (1024*4096) Panorama** generation conditioned on text ([examples](#panorama-generation)), and **3D point cloud** generation conditioned on labels ([examples](#point-cloud-generation)).
 - [2024-05-13] 🔥🔥🔥 We give [examples](#multilingual-generation) demonstrating Lumina-T2X's capability to support **multilingual prompts**, and even support prompts containing **emojis**.
 - **[2024-05-12]** 🤩🤩🤩 **We excitedly released our `Lumina-Next-T2I` model ([checkpoint](https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I)) which uses a 2B Next-DiT model as the backbone and Gemma-2B as the text encoder. Try it out at [demo1](http://106.14.2.150:10020/) & [demo2](http://106.14.2.150:10021/) & [demo3](http://106.14.2.150:10022/).**
 - **[2024-05-10]** 🔥🔥🔥 **We released the technical report on [arXiv](https://arxiv.org/abs/2405.05945).**
-- **[2024-05-09]** 🚀🚀🚀 **We released `Lumina-T2A` (Text-to-Audio) Demos. [Examples](#text-to-audio-generation)**
+- [2024-05-09] 🚀🚀🚀 We released `Lumina-T2A` (Text-to-Audio) Demos. [Examples](#text-to-audio-generation)
 - [2024-04-29] 🔥 We released the 5B model [checkpoint](https://huggingface.co/Alpha-VLLM/Lumina-T2I) and demo built upon it for text-to-image generation.
 - [2024-04-25] 🔥 Support 720P video generation with arbitrary aspect ratio. [Examples](#text-to-video-generation) 🚀🚀🚀
 - [2024-04-19]  Demo examples released.
