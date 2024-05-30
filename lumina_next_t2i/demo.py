@@ -438,7 +438,6 @@ def main():
                         )
                 with gr.Row():
                     submit_btn = gr.Button("Submit", variant="primary")
-                    stop_btn = gr.Button(value="Stop Generation", variant="stop")
             with gr.Column():
                 output_img = gr.Image(
                     label="Generated image",
@@ -515,7 +514,7 @@ def main():
 
             return img, metadata
 
-        submit_event = submit_btn.click(
+        submit_btn.click(
             on_submit,
             [
                 cap,
@@ -531,7 +530,6 @@ def main():
             ],
             [output_img, gr_metadata],
         )
-        stop_btn.click(fn=None, inputs=None, outputs=None, cancels=[submit_event])
         
     mp_barrier.wait()
     demo.queue().launch(
