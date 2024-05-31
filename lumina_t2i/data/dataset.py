@@ -91,8 +91,9 @@ class MyDataset(Dataset):
                 logger.info(f"sample (ratio = {meta['ratio']}) {len(meta_l)} items")
             if "root" in meta:
                 for item in meta_l:
-                    if "image" in item:
-                        item["image"] = os.path.join(meta["root"], item["image"])
+                    for path_key in ["path", "image_url", "image"]:
+                        if path_key in item:
+                            item[path_key] = os.path.join(meta["root"], item[path_key])
             if meta_type not in group_ann:
                 group_ann[meta_type] = []
             group_ann[meta_type] += meta_l

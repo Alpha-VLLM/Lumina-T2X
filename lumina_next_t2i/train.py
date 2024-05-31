@@ -447,7 +447,7 @@ def main(args):
     dataset = MyDataset(
         args.data_path,
         item_processor=T2IItemProcessor(image_transform),
-        cache_on_disk=False,
+        cache_on_disk=args.cache_data_on_disk,
     )
     num_samples = args.global_batch_size * args.max_steps
     logger.info(f"Dataset contains {len(dataset):,} images ({args.data_path})")
@@ -651,6 +651,7 @@ if __name__ == "__main__":
     # hyperparameters we used in our paper (except training iters).
     parser = argparse.ArgumentParser()
     parser.add_argument("--data_path", type=str, required=True)
+    parser.add_argument("--cache_data_on_disk", default=False, action="store_true")
     parser.add_argument("--results_dir", type=str, required=True)
     parser.add_argument("--model", type=str, default="DiT_Llama2_7B_patch2")
     parser.add_argument("--image_size", type=int, choices=[256, 512, 1024], default=256)
