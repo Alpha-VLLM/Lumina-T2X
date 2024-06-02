@@ -102,7 +102,9 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
     if args.num_gpus > 1:
         raise NotImplementedError("Inference with >1 GPUs not yet supported")
 
-    tokenizer = AutoTokenizer.from_pretrained("google/gemma-2b", token=args.hf_token)
+    tokenizer = AutoTokenizer.from_pretrained(
+        "google/gemma-2b", add_bos_token=True, add_eos_token=True, token=args.hf_token
+    )
     tokenizer.padding_side = "right"
 
     if dist.get_rank() == 0:
@@ -123,12 +125,13 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
 
     assert train_args.model_parallel_size == args.num_gpus
     if args.ema:
-        print("Loading ema model.")
+        print(args.ckpt, "Loading ema model.")
     ckpt = load_file(
         os.path.join(
             args.ckpt,
             f"consolidated{'_ema' if args.ema else ''}.{rank:02d}-of-{args.num_gpus:02d}.safetensors",
-        )
+        ),
+        device="cpu",
     )
     model.load_state_dict(ckpt, strict=True)
 
@@ -137,7 +140,10 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
     with torch.autocast("cuda", dtype):
         while True:
             (
-                cap,
+                cap1,
+                cap2,
+                cap3,
+                cap4,
                 neg_cap,
                 resolution,
                 num_sampling_steps,
@@ -146,12 +152,14 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                 t_shift,
                 seed,
                 scaling_method,
-                scaling_watershed,
                 proportional_attn,
             ) = request_queue.get()
 
             metadata = dict(
-                cap=cap,
+                cap1=cap1,
+                cap2=cap2,
+                cap3=cap3,
+                cap4=cap4,
                 neg_cap=neg_cap,
                 resolution=resolution,
                 num_sampling_steps=num_sampling_steps,
@@ -160,7 +168,6 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                 t_shift=t_shift,
                 seed=seed,
                 scaling_method=scaling_method,
-                scaling_watershed=scaling_watershed,
                 proportional_attn=proportional_attn,
             )
             print("> params:", json.dumps(metadata, indent=2))
@@ -186,7 +193,9 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                 # end sampler
 
                 do_extrapolation = "Extrapolation" in resolution
-                resolution = resolution.split(" ")[-1]
+                split = resolution.split(" ")[1].replace("(", "")
+                w_split, h_split = split.split("x")
+                resolution = resolution.split(" ")[0]
                 w, h = resolution.split("x")
                 w, h = int(w), int(h)
                 latent_w, latent_h = w // 8, h // 8
@@ -195,35 +204,39 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                 z = torch.randn([1, 4, latent_h, latent_w], device="cuda").to(dtype)
                 z = z.repeat(2, 1, 1, 1)
 
+                cap_list = [cap1, cap2, cap3, cap4]
+                global_cap = " ".join(cap_list)
                 with torch.no_grad():
                     if neg_cap != "":
-                        cap_feats, cap_mask = encode_prompt([cap] + [neg_cap], text_encoder, tokenizer, 0.0)
+                        cap_feats, cap_mask = encode_prompt(
+                            cap_list + [neg_cap] + [global_cap], text_encoder, tokenizer, 0.0
+                        )
                     else:
-                        cap_feats, cap_mask = encode_prompt([cap] + [""], text_encoder, tokenizer, 0.0)
+                        cap_feats, cap_mask = encode_prompt(
+                            cap_list + [""] + [global_cap], text_encoder, tokenizer, 0.0
+                        )
 
                 cap_mask = cap_mask.to(cap_feats.device)
 
                 model_kwargs = dict(
-                    cap_feats=cap_feats,
-                    cap_mask=cap_mask,
+                    cap_feats=cap_feats[:-1],
+                    cap_mask=cap_mask[:-1],
+                    global_cap_feats=cap_feats[-1:],
+                    global_cap_mask=cap_mask[-1:],
                     cfg_scale=cfg_scale,
+                    h_split_num=int(h_split),
+                    w_split_num=int(w_split),
                 )
                 if proportional_attn:
                     model_kwargs["proportional_attn"] = True
                     model_kwargs["base_seqlen"] = (train_args.image_size // 16) ** 2
-                else:
-                    model_kwargs["proportional_attn"] = False
-                    model_kwargs["base_seqlen"] = None
-
                 if do_extrapolation and scaling_method == "Time-aware":
                     model_kwargs["scale_factor"] = math.sqrt(w * h / train_args.image_size**2)
-                    model_kwargs["scale_watershed"] = scaling_watershed
                 else:
                     model_kwargs["scale_factor"] = 1.0
-                    model_kwargs["scale_watershed"] = 1.0
 
                 if dist.get_rank() == 0:
-                    print(f"> caption: {cap}")
+                    print(f"> caption: {global_cap}")
                     print(f"> num_sampling_steps: {num_sampling_steps}")
                     print(f"> cfg_scale: {cfg_scale}")
 
@@ -351,24 +364,50 @@ def main():
         processes.append(p)
 
     description = """
-    # Lumina Next Text-to-Image
-
-    Lumina-Next-T2I is a 2B Next-DiT model with 2B text encoder.
-
-    Demo current model: `Lumina-Next-T2I`
-
+    # Lumina Next Text-to-Image (Compositional Generation)
+    <div style="display: flex; flex-wrap: wrap;">
+        <div style="flex: 7; padding-right: 20px;">
+            <h3>Lumina-Next-T2I is a 2B Next-DiT model with 2B text encoder.</h3>
+            <p>Demo current model: `Lumina-Next-T2I`</p>
+            <h3>Lumina-Next-T2I Compositional Generation creates images in a grid format, specifying a caption for each grid to represent the style of different regions.</h3>
+            <h3><span style='color: orange;'>For example, a 4x1 grid size means the width is divided into 4 grids and the height is divided into 1 grid.</h3>
+        </div>
+        <div style="flex: 5; padding-left: 20px;">
+            <img src="/file=../assets/compostional_intro.png" width="90%"/>
+        </div>
+    </div>
     """
     with gr.Blocks() as demo:
         with gr.Row():
-            gr.Markdown(description)
+            gr.Markdown(description, latex_delimiters=[])
         with gr.Row():
             with gr.Column():
-                cap = gr.Textbox(
+                cap1 = gr.Textbox(
                     lines=2,
-                    label="Caption",
+                    label="Caption (Grid #1)",
                     interactive=True,
-                    value="Miss Mexico portrait of the most beautiful mexican woman, Exquisite detail, 30-megapixel, 4k, 85-mm-lens, sharp-focus, f:8, "
-                    "ISO 100, shutter-speed 1:125, diffuse-back-lighting, award-winning photograph, small-catchlight, High-sharpness, facial-symmetry, 8k",
+                    value="A full moon hanging in the sky.",
+                    placeholder="Enter a caption.",
+                )
+                cap2 = gr.Textbox(
+                    lines=2,
+                    label="Caption (Grid #2)",
+                    interactive=True,
+                    value="A small river meanders by, sparkling with light.",
+                    placeholder="Enter a caption.",
+                )
+                cap3 = gr.Textbox(
+                    lines=2,
+                    label="Caption (Grid #3)",
+                    interactive=True,
+                    value="An old house with old brick walls.",
+                    placeholder="Enter a caption.",
+                )
+                cap4 = gr.Textbox(
+                    lines=2,
+                    label="Caption (Grid #4)",
+                    interactive=True,
+                    value="A huge cherry tree with pink cherry blossoms.",
                     placeholder="Enter a caption.",
                 )
                 neg_cap = gr.Textbox(
@@ -380,22 +419,23 @@ def main():
                 )
                 with gr.Row():
                     res_choices = [
-                        "1024x1024",
-                        "512x2048",
-                        "2048x512",
-                        "(Extrapolation) 1536x1536",
-                        "(Extrapolation) 2048x1024",
-                        "(Extrapolation) 1024x2048",
-                        "(Extrapolation) 2048x2048",
-                        "(Extrapolation) 4096x1024",
-                        "(Extrapolation) 1024x4096",
+                        "2048x1024 (4x1 Grids)",
+                        "2560x1024 (4x1 Grids)",
+                        "3072x1024 (4x1 Grids)",
+                        "1024x1024 (2x2 Grids)",
+                        "1536x1536 (2x2 Grids)",
+                        "2048x2048 (2x2 Grids)",
+                        "1024x2048 (1x4 Grids)",
+                        "1024x2560 (1x4 Grids)",
+                        "1024x3072 (1x4 Grids)",
                     ]
                     resolution = gr.Dropdown(value=res_choices[0], choices=res_choices, label="Resolution")
+
                 with gr.Row():
                     num_sampling_steps = gr.Slider(
                         minimum=1,
                         maximum=70,
-                        value=30,
+                        value=20,
                         step=1,
                         interactive=True,
                         label="Sampling steps",
@@ -408,42 +448,34 @@ def main():
                         interactive=True,
                         label="Seed (0 for random)",
                     )
-                with gr.Row():
-                    solver = gr.Dropdown(
-                        value="midpoint",
-                        choices=["euler", "midpoint", "rk4"],
-                        label="solver",
-                    )
-                    t_shift = gr.Slider(
-                        minimum=1,
-                        maximum=20,
-                        value=4,
-                        step=1,
-                        interactive=True,
-                        label="Time shift",
-                    )
-                    cfg_scale = gr.Slider(
-                        minimum=1.0,
-                        maximum=20.0,
-                        value=4.0,
-                        interactive=True,
-                        label="CFG scale",
-                    )
                 with gr.Accordion("Advanced Settings for Resolution Extrapolation", open=False):
+                    with gr.Row():
+                        solver = gr.Dropdown(
+                            value="midpoint",
+                            choices=["euler", "midpoint", "rk4"],
+                            label="solver",
+                        )
+                        t_shift = gr.Slider(
+                            minimum=1,
+                            maximum=20,
+                            value=4,
+                            step=1,
+                            interactive=True,
+                            label="Time shift",
+                        )
+                        cfg_scale = gr.Slider(
+                            minimum=1.0,
+                            maximum=20.0,
+                            value=4.0,
+                            interactive=True,
+                            label="CFG scale",
+                        )
                     with gr.Row():
                         scaling_method = gr.Dropdown(
                             value="Time-aware",
                             choices=["Time-aware", "None"],
                             label="RoPE scaling method",
                         )
-                        scaling_watershed = gr.Slider(
-                            minimum=0.0,
-                            maximum=1.0,
-                            value=0.3,
-                            interactive=True,
-                            label="Linear/NTK watershed",
-                        )
-                    with gr.Row():
                         proportional_attn = gr.Checkbox(
                             value=True,
                             interactive=True,
@@ -463,74 +495,74 @@ def main():
         with gr.Row():
             gr.Examples(
                 [
-                    ["👽🤖👹👻"],
-                    ["孤舟蓑笠翁"],
-                    ["两只黄鹂鸣翠柳"],
-                    ["大漠孤烟直，长河落日圆"],
-                    ["秋风起兮白云飞，草木黄落兮雁南归"],
-                    ["도쿄 타워, 최고 품질의 우키요에, 에도 시대"],
-                    ["味噌ラーメン, 最高品質の浮世絵、江戸時代。"],
-                    ["東京タワー、最高品質の浮世絵、江戸時代。"],
-                    ["Astronaut on Mars During sunset"],
-                    ["Tour de Tokyo, estampes ukiyo-e de la plus haute qualité, période Edo"],
-                    ["🐔 playing 🏀"],
-                    ["☃️ with 🌹 in the ❄️"],
-                    ["🐶 wearing 😎  flying on 🌈 "],
-                    ["A small 🍎 and 🍊 with 😁 emoji in the Sahara desert"],
-                    ["Токийская башня, лучшие укиё-э, период Эдо"],
-                    ["Tokio-Turm, hochwertigste Ukiyo-e, Edo-Zeit"],
-                    ["A scared cute rabbit in Happy Tree Friends style and punk vibe."],  # noqa
-                    ["A humanoid eagle soldier of the First World War."],  # noqa
                     [
-                        "A cute Christmas mockup on an old wooden industrial desk table with Christmas decorations and bokeh lights in the background."
+                        "A colossal ancient robot stands amidst the ruins of a forgotten civilization. Its metallic body is covered in intricate carvings and symbols, showing signs of age and wear.",
+                        "A colossal ancient robot stands amidst the ruins of a forgotten civilization. Its metallic body is covered in intricate carvings and symbols, showing signs of age and wear. ",
+                        "A winding countryside path meanders through rolling green hills, lined with wildflowers and tall grasses swaying in the breeze.",
+                        "A quaint countryside cottage bathed in the warm glow of the setting sun. The small house is surrounded by a lush garden filled with blooming flowers and tall, swaying grass.",
+                        "2048x1024 (4x1 Grids)",
                     ],
                     [
-                        "A front view of a romantic flower shop in France filled with various blooming flowers including lavenders and roses."
-                    ],
-                    ["An old man, portrayed as a retro superhero, stands in the streets of New York City at night"],
-                    [
-                        "many trees are surrounded by a lake in autumn colors, in the style of nature-inspired imagery, havencore, brightly colored, dark white and dark orange, bright primary colors, environmental activism, forestpunk --ar 64:51"
-                    ],
-                    [
-                        "A fluffy mouse holding a watermelon, in a magical and colorful setting, illustrated in the style of Hayao Miyazaki anime by Studio Ghibli."
+                        "A full moon hanging in the sky.",
+                        "A few small boats appeared on the lake.",
+                        "Hogwarts' Castle in the Moonlight.",
+                        "The calm surface of the lake is illuminated by the moonlight.",
+                        "3072x1024 (4x1 Grids)",
                     ],
                     [
-                        "Inka warrior with a war make up, medium shot, natural light, Award winning wildlife photography, hyperrealistic, 8k resolution, --ar 9:16"
+                        "A tranquil cherry blossom forest with pink petals covering the ground.",
+                        "A majestic polar bear stands on a vast, snowy landscape, its white fur blending seamlessly with the snow.",
+                        "A majestic polar bear stands on a vast, snowy landscape, its white fur blending seamlessly with the snow.",
+                        "A tranquil cherry blossom forest with pink petals covering the ground.",
+                        "2048x1024 (4x1 Grids)",
                     ],
                     [
-                        "Character of lion in style of saiyan, mafia, gangsta, citylights background, Hyper detailed, hyper realistic, unreal engine ue5, cgi 3d, cinematic shot, 8k"
+                        "A close-up portrait of a grey Maine cat with striking, emerald blue eyes that reflect curiosity and wisdom. The cat has soft, fluffy fur with a mix of white and gray tabby markings.",
+                        "A close-up portrait of a grey Maine cat with striking, emerald blue eyes that reflect curiosity and wisdom. The cat has soft, fluffy fur with a mix of white and gray tabby markings.",
+                        "A sharply dressed man in a tailored, dark navy suit stands confidently. The suit jacket fits perfectly, with a crisp white dress shirt underneath and a silk tie in a subtle, elegant pattern",
+                        "A sharply dressed man in a tailored, dark navy suit stands confidently. The suit jacket fits perfectly, with a crisp white dress shirt underneath and a silk tie in a subtle, elegant pattern",
+                        "1536x1536 (2x2 Grids)",
                     ],
                     [
-                        "In the sky above, a giant, whimsical cloud shaped like the 😊 emoji casts a soft, golden light over the scene"
+                        "An underwater city inhabited by aquatic creatures, with colorful coral reefs and schools of fish.",
+                        "A sprawling space station, bustling with activity and interstellar travelers.",
+                        "A dystopian wasteland with ruins and debris.",
+                        "A lone astronaut exploring the desolate surface of a distant planet, with the vast expanse of space stretching out behind them.",
+                        "1536x1536 (2x2 Grids)",
                     ],
                     [
-                        "Cyberpunk eagle, neon ambiance, abstract black oil, gear mecha, detailed acrylic, grunge, intricate complexity, rendered in unreal engine 5, photorealistic, 8k"
-                    ],
-                    [
-                        "close-up photo of a beautiful red rose breaking through a cube made of ice , splintered cracked ice surface, frosted colors, blood dripping from rose, melting ice, Valentine’s Day vibes, cinematic, sharp focus, intricate, cinematic, dramatic light"
-                    ],
-                    [
-                        "3D cartoon Fox Head with Human Body, Wearing Iridescent Holographic Liquid Texture & Translucent Material Sun Protective Shirt, Boss Feel, Nike or Addidas Sun Protective Shirt, WitchPunk, Y2K Style, Green and blue, Blue, Metallic Feel, Strong Reflection, plain background, no background, pure single color background, Digital Fashion, Surreal Futurism, Supreme Kong NFT Artwork Style, disney style, headshot photography for portrait studio shoot, fashion editorial aesthetic, high resolution in the style of HAPE PRIME NFT, NFT 3D IP Feel, Bored Ape Yacht Club NFT project Feel, high detail, fine luster, 3D render, oc render, best quality, 8K, bright, front lighting, Face Shot, fine luster, ultra detailed"
+                        "A snowy mountain.",
+                        "A steampunk ship sails gracefully",
+                        "A beautiful river",
+                        "A tranquil garden filled with blooming flowers",
+                        "1024x2048 (1x4 Grids)",
                     ],
                 ],
-                [cap],
+                [cap1, cap2, cap3, cap4, resolution],
                 label="Examples",
             )
 
-        def on_submit(*args):
+        def on_submit(*infer_args):
             for q in request_queues:
-                q.put(args)
+                q.put(infer_args)
             result = response_queue.get()
-            if isinstance(result, ModelFailure):
-                raise RuntimeError
             img, metadata = result
+
+            if isinstance(result, ModelFailure):
+                import traceback
+
+                print(traceback.format_exc())
+                raise RuntimeError
 
             return img, metadata
 
         submit_btn.click(
             on_submit,
             [
-                cap,
+                cap1,
+                cap2,
+                cap3,
+                cap4,
                 neg_cap,
                 resolution,
                 num_sampling_steps,
@@ -539,21 +571,13 @@ def main():
                 t_shift,
                 seed,
                 scaling_method,
-                scaling_watershed,
                 proportional_attn,
             ],
             [output_img, gr_metadata],
         )
 
-        def show_scaling_watershed(scaling_m):
-            return gr.update(visible=scaling_m == "Time-aware")
-
-        scaling_method.change(show_scaling_watershed, scaling_method, scaling_watershed)
-
     mp_barrier.wait()
-    demo.queue().launch(
-        server_name="0.0.0.0",
-    )
+    demo.queue().launch(server_name="0.0.0.0", allowed_paths=["../assets"])
 
 
 if __name__ == "__main__":
