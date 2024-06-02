@@ -44,14 +44,6 @@
 [[📽️ Video Introduction of Lumina-T2X](https://www.youtube.com/watch?v=KFtHmS5eUCM)]
 [👋 join our <a href="http://imagebind-llm.opengvlab.com/qrcode/" target="_blank">WeChat</a>]
 
-[[🤖️ Lumina-T2I 5B Checkpoints](https://huggingface.co/Alpha-VLLM/Lumina-T2I)]
-[[🤖️ Lumina-Next-T2I 2B Checkpoints (recommend)](https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I)]
-
-[[🔮 GUI Demo for Lumina-Next-T2I 2B model (node1)](http://106.14.2.150:10020/)]
-
-[[🔮 GUI Demo for Lumina-Next-T2I 2B model (node2)](http://106.14.2.150:10021/)]
-
-[[🔮 GUI Demo for Lumina-Next-T2I 2B model (node3)](http://106.14.2.150:10022/)]
 -->
 
 <!-- [[📺 Website](https://lumina-t2-x-web.vercel.app/)] -->
@@ -64,6 +56,7 @@
 
 ## 📰 News
 
+- **[2024-06-03] 🔥🔥🔥 We have released the `Compositional Generation` version of `Lumina-Next-T2I`, which enables compositional generation with multiple caption for different region. [model](https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I). [DEMO](http://106.14.2.150:10023/)**
 - **[2024-05-29] 🥰🥰🥰 We updated the new `Lumina-Next-T2I` [Code](https://github.com/Alpha-VLLM/Lumina-T2X/tree/main/lumina_next_t2i) and [HF Model](https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I). Supporting 2K Resolution image generation and Time-aware Scaled RoPE.**
 - **[2024-05-25] 🤩🤩🤩 We released training scripts for Flag-DiT and Next-DiT, and we have reported the comparison results between Next-DiT and Flag-DiT. [Comparsion Results](https://github.com/Alpha-VLLM/Lumina-T2X/blob/main/Next-DiT-ImageNet/README.md#results)**
 - [2024-05-21] 🚀🚀🚀 Lumina-Next-T2I supports a higher-order solver. It can generate images in just 10 steps without any distillation. Try our demos [DEMO](http://106.14.2.150:10021/).
