@@ -146,6 +146,7 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                 t_shift,
                 seed,
                 scaling_method,
+                scaling_watershed,
                 proportional_attn,
             ) = request_queue.get()
 
@@ -159,6 +160,7 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                 t_shift=t_shift,
                 seed=seed,
                 scaling_method=scaling_method,
+                scaling_watershed=scaling_watershed,
                 proportional_attn=proportional_attn,
             )
             print("> params:", json.dumps(metadata, indent=2))
@@ -209,10 +211,16 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                 if proportional_attn:
                     model_kwargs["proportional_attn"] = True
                     model_kwargs["base_seqlen"] = (train_args.image_size // 16) ** 2
+                else:
+                    model_kwargs["proportional_attn"] = False
+                    model_kwargs["base_seqlen"] = None
+
                 if do_extrapolation and scaling_method == "Time-aware":
                     model_kwargs["scale_factor"] = math.sqrt(w * h / train_args.image_size**2)
+                    model_kwargs["scale_watershed"] = scaling_watershed
                 else:
                     model_kwargs["scale_factor"] = 1.0
+                    model_kwargs["scale_watershed"] = 1.0
 
                 if dist.get_rank() == 0:
                     print(f"> caption: {cap}")
@@ -429,6 +437,14 @@ def main():
                             choices=["Time-aware", "None"],
                             label="RoPE scaling method",
                         )
+                        scaling_watershed = gr.Slider(
+                            minimum=0.0,
+                            maximum=1.0,
+                            value=0.3,
+                            interactive=True,
+                            label="Linear/NTK watershed",
+                        )
+                    with gr.Row():
                         proportional_attn = gr.Checkbox(
                             value=True,
                             interactive=True,
@@ -440,7 +456,6 @@ def main():
                 output_img = gr.Image(
                     label="Generated image",
                     interactive=False,
-                    format="png",
                 )
                 with gr.Accordion(label="Generation Parameters", open=True):
                     gr_metadata = gr.JSON(label="metadata", show_label=False)
@@ -524,10 +539,16 @@ def main():
                 t_shift,
                 seed,
                 scaling_method,
+                scaling_watershed,
                 proportional_attn,
             ],
             [output_img, gr_metadata],
         )
+
+        def show_scaling_watershed(scaling_m):
+            return gr.update(visible=scaling_m == "Time-aware")
+
+        scaling_method.change(show_scaling_watershed, scaling_method, scaling_watershed)
 
     mp_barrier.wait()
     demo.queue().launch(

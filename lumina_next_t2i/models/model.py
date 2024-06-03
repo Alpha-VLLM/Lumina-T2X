@@ -871,6 +871,7 @@ class NextDiT(nn.Module):
         cap_mask,
         cfg_scale,
         scale_factor=1.0,
+        scale_watershed=1.0,
         base_seqlen: Optional[int] = None,
         proportional_attn: bool = False,
     ):
@@ -883,7 +884,8 @@ class NextDiT(nn.Module):
             self.dim // self.n_heads,
             384,
             scale_factor=scale_factor,
-            timestep=t[0],
+            scale_watershed=scale_watershed,
+            timestep=t[0].item(),
         )
 
         if proportional_attn:
@@ -916,6 +918,7 @@ class NextDiT(nn.Module):
         end: int,
         theta: float = 10000.0,
         scale_factor: float = 1.0,
+        scale_watershed: float = 1.0,
         timestep: float = 1.0,
     ):
         """
@@ -938,16 +941,15 @@ class NextDiT(nn.Module):
                 exponentials.
         """
 
-        # The precompute_freqs_cis is implemented by Time-aware Scaled RoPE.
-        freqs_inter = 1.0 / (theta ** (torch.arange(0, dim, 4)[: (dim // 4)].float().cuda() / dim)) / scale_factor
+        if timestep < scale_watershed:
+            linear_factor = scale_factor
+            ntk_factor = 1.0
+        else:
+            linear_factor = 1.0
+            ntk_factor = scale_factor
 
-        target_dim = timestep * dim + 1
-        scale_factor = scale_factor ** (dim / target_dim)
-        theta = theta * scale_factor
-
-        freqs_time_scaled = 1.0 / (theta ** (torch.arange(0, dim, 4)[: (dim // 4)].float().cuda() / dim))
-
-        freqs = torch.max(freqs_inter, freqs_time_scaled)
+        theta = theta * ntk_factor
+        freqs = 1.0 / (theta ** (torch.arange(0, dim, 4)[: (dim // 4)].float().cuda() / dim)) / linear_factor
 
         timestep = torch.arange(end, device=freqs.device, dtype=torch.float)  # type: ignore
 
