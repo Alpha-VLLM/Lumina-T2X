@@ -118,12 +118,13 @@ To ensure that our generative model is ready to use right out of the box, we pro
 1. Install Lumina-T2I
 
 ```bash
+cd .. # go to the root of the repo.
 pip install -e .
 ```
 
 2. Prepare the pretrained checkpoints
 
-⭐⭐ (Recommended) you can use huggingface_cli downloading our model:
+⭐⭐ (Recommended) you can use `huggingface-cli` downloading our model:
 
 ```bash
 huggingface-cli download --resume-download Alpha-VLLM/Lumina-Next-T2I --local-dir /path/to/ckpt
