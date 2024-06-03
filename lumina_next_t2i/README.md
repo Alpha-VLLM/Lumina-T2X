@@ -131,7 +131,7 @@ or using git for cloning the model you want to use:
 git clone https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I
 ```
 
-3. Converting `*.pth` files to `*.safetensors` (optional)
+3. Converting `*.pth` files to `*.safetensors`
 
 If you are loading your own trained model, please convert it to `.safetensors` first for security reasons before loading. Assuming your trained model path is `/path/to/your/own/model.pth` and your save directory is `/path/to/new/model`.
 
