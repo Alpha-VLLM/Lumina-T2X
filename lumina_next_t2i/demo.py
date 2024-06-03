@@ -102,9 +102,7 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
     if args.num_gpus > 1:
         raise NotImplementedError("Inference with >1 GPUs not yet supported")
 
-    tokenizer = AutoTokenizer.from_pretrained(
-        "google/gemma-2b", add_bos_token=True, add_eos_token=True, token=args.hf_token
-    )
+    tokenizer = AutoTokenizer.from_pretrained("google/gemma-2b", token=args.hf_token)
     tokenizer.padding_side = "right"
 
     if dist.get_rank() == 0:
@@ -530,7 +528,7 @@ def main():
             ],
             [output_img, gr_metadata],
         )
-        
+
     mp_barrier.wait()
     demo.queue().launch(
         server_name="0.0.0.0",

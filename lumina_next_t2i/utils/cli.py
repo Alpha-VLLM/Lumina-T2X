@@ -119,7 +119,7 @@ def load_model(
     if num_gpus > 1:
         raise NotImplementedError("Inference with >1 GPUs not yet supported")
 
-    tokenizer = AutoTokenizer.from_pretrained(ckpt_lm, add_bos_token=True, add_eos_token=True, token=token)
+    tokenizer = AutoTokenizer.from_pretrained(ckpt_lm, token=token)
     tokenizer.padding_side = "right"
 
     rank0_print(f"> Creating VAE model: {train_args.vae}")
