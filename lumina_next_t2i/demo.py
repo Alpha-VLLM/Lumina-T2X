@@ -379,17 +379,16 @@ def main():
                     placeholder="Enter a negative caption.",
                 )
                 with gr.Row():
-                    res_choices = ["1024x1024", "512x2048", "2048x512"] + [
-                        "(Extrapolation) 1664x1664",
-                        "(Extrapolation) 2048x2048",
+                    res_choices = [
+                        "1024x1024",
+                        "512x2048",
+                        "2048x512",
+                        "(Extrapolation) 1536x1536",
                         "(Extrapolation) 2048x1024",
                         "(Extrapolation) 1024x2048",
-                        "(Extrapolation) 3072x1280",
-                        "(Extrapolation) 1280x3072",
-                        "(Extrapolation) 2560x1536",
-                        "(Extrapolation) 1536x2560",
-                        "(Extrapolation) 2048x1920",
-                        "(Extrapolation) 1920x2048",
+                        "(Extrapolation) 2048x2048",
+                        "(Extrapolation) 4096x1024",
+                        "(Extrapolation) 1024x4096",
                     ]
                     resolution = gr.Dropdown(value=res_choices[0], choices=res_choices, label="Resolution")
                 with gr.Row():
