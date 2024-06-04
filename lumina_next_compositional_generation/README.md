@@ -105,10 +105,6 @@ pip install -v --disable-pip-version-check --no-cache-dir --no-build-isolation -
 pip install -v --disable-pip-version-check --no-cache-dir --no-build-isolation --global-option="--cpp_ext" --global-option="--cuda_ext" ./
 ```
 
-## Training
-
-The training process is the same as `Lumina-Next-T2I`. refer to [Lumina-Next-T2I Training](../lumina_next_t2i/README.md). (coming soon)
-
 ## Inference
 
 To ensure that our generative model is ready to use right out of the box, we provide a user-friendly CLI program and a locally deployable Web Demo site.
