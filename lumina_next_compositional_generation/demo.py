@@ -102,9 +102,7 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
     if args.num_gpus > 1:
         raise NotImplementedError("Inference with >1 GPUs not yet supported")
 
-    tokenizer = AutoTokenizer.from_pretrained(
-        "google/gemma-2b", add_bos_token=True, add_eos_token=True, token=args.hf_token
-    )
+    tokenizer = AutoTokenizer.from_pretrained("google/gemma-2b", token=args.hf_token)
     tokenizer.padding_side = "right"
 
     if dist.get_rank() == 0:
@@ -152,6 +150,7 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                 t_shift,
                 seed,
                 scaling_method,
+                scaling_watershed,
                 proportional_attn,
             ) = request_queue.get()
 
@@ -168,6 +167,7 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                 t_shift=t_shift,
                 seed=seed,
                 scaling_method=scaling_method,
+                scaling_watershed=scaling_watershed,
                 proportional_attn=proportional_attn,
             )
             print("> params:", json.dumps(metadata, indent=2))
@@ -230,10 +230,16 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
                 if proportional_attn:
                     model_kwargs["proportional_attn"] = True
                     model_kwargs["base_seqlen"] = (train_args.image_size // 16) ** 2
+                else:
+                    model_kwargs["proportional_attn"] = False
+                    model_kwargs["base_seqlen"] = None
+
                 if do_extrapolation and scaling_method == "Time-aware":
                     model_kwargs["scale_factor"] = math.sqrt(w * h / train_args.image_size**2)
+                    model_kwargs["scale_watershed"] = scaling_watershed
                 else:
                     model_kwargs["scale_factor"] = 1.0
+                    model_kwargs["scale_watershed"] = 1.0
 
                 if dist.get_rank() == 0:
                     print(f"> caption: {global_cap}")
@@ -430,12 +436,11 @@ def main():
                         "1024x3072 (1x4 Grids)",
                     ]
                     resolution = gr.Dropdown(value=res_choices[0], choices=res_choices, label="Resolution")
-
                 with gr.Row():
                     num_sampling_steps = gr.Slider(
                         minimum=1,
                         maximum=70,
-                        value=20,
+                        value=30,
                         step=1,
                         interactive=True,
                         label="Sampling steps",
@@ -448,34 +453,42 @@ def main():
                         interactive=True,
                         label="Seed (0 for random)",
                     )
+                with gr.Row():
+                    solver = gr.Dropdown(
+                        value="midpoint",
+                        choices=["euler", "midpoint", "rk4"],
+                        label="solver",
+                    )
+                    t_shift = gr.Slider(
+                        minimum=1,
+                        maximum=20,
+                        value=4,
+                        step=1,
+                        interactive=True,
+                        label="Time shift",
+                    )
+                    cfg_scale = gr.Slider(
+                        minimum=1.0,
+                        maximum=20.0,
+                        value=4.0,
+                        interactive=True,
+                        label="CFG scale",
+                    )
                 with gr.Accordion("Advanced Settings for Resolution Extrapolation", open=False):
-                    with gr.Row():
-                        solver = gr.Dropdown(
-                            value="midpoint",
-                            choices=["euler", "midpoint", "rk4"],
-                            label="solver",
-                        )
-                        t_shift = gr.Slider(
-                            minimum=1,
-                            maximum=20,
-                            value=4,
-                            step=1,
-                            interactive=True,
-                            label="Time shift",
-                        )
-                        cfg_scale = gr.Slider(
-                            minimum=1.0,
-                            maximum=20.0,
-                            value=4.0,
-                            interactive=True,
-                            label="CFG scale",
-                        )
                     with gr.Row():
                         scaling_method = gr.Dropdown(
                             value="Time-aware",
                             choices=["Time-aware", "None"],
                             label="RoPE scaling method",
                         )
+                        scaling_watershed = gr.Slider(
+                            minimum=0.0,
+                            maximum=1.0,
+                            value=0.3,
+                            interactive=True,
+                            label="Linear/NTK watershed",
+                        )
+                    with gr.Row():
                         proportional_attn = gr.Checkbox(
                             value=True,
                             interactive=True,
@@ -542,17 +555,13 @@ def main():
                 label="Examples",
             )
 
-        def on_submit(*infer_args):
+        def on_submit(*args):
             for q in request_queues:
-                q.put(infer_args)
+                q.put(args)
             result = response_queue.get()
-            img, metadata = result
-
             if isinstance(result, ModelFailure):
-                import traceback
-
-                print(traceback.format_exc())
                 raise RuntimeError
+            img, metadata = result
 
             return img, metadata
 
@@ -571,13 +580,21 @@ def main():
                 t_shift,
                 seed,
                 scaling_method,
+                scaling_watershed,
                 proportional_attn,
             ],
             [output_img, gr_metadata],
         )
 
+        def show_scaling_watershed(scaling_m):
+            return gr.update(visible=scaling_m == "Time-aware")
+
+        scaling_method.change(show_scaling_watershed, scaling_method, scaling_watershed)
+
     mp_barrier.wait()
-    demo.queue().launch(server_name="0.0.0.0", allowed_paths=["../assets"])
+    demo.queue().launch(
+        server_name="0.0.0.0",
+    )
 
 
 if __name__ == "__main__":
