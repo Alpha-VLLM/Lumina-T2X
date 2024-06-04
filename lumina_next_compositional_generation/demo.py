@@ -379,7 +379,7 @@ def main():
             <h3><span style='color: orange;'>For example, a 4x1 grid size means the width is divided into 4 grids and the height is divided into 1 grid.</h3>
         </div>
         <div style="flex: 5; padding-left: 20px;">
-            <img src="/file=../assets/compostional_intro.png" width="90%"/>
+            <img src="/file=../assets/compositional_intro.png" width="90%"/>
         </div>
     </div>
     """
@@ -594,6 +594,7 @@ def main():
     mp_barrier.wait()
     demo.queue().launch(
         server_name="0.0.0.0",
+        allowed_paths=["../assets"],
     )
 
 
