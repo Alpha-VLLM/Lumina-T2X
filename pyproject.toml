@@ -52,15 +52,11 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-train = ["check-manifest"]
-dev = ["coverage", "pre-commit", "isort"]
+dev = ["coverage", "pre-commit", "isort", "black"]
+image = ["diffusers", "fairscale", "accelerate", "tensorboard", "transformers", "gradio", "torchdiffeq", "click"
+]
+music = ["soundfile", "omegaconf", "torchdyn", "pytorch_lightning", "pytorch_memlab", "einops", "ninja", "torchlibrosa", "protobuf", "sentencepiece", "gradio", "transformers"]
 
-[project.urls]
-"Homepage" = "https://github.com/pypa/sampleproject"
-"Bug Reports" = "https://github.com/pypa/sampleproject/issues"
-"Funding" = "https://donate.pypi.org"
-"Say Thanks!" = "http://saythanks.io/to/example"
-"Source" = "https://github.com/pypa/sampleproject/"
 
 [project.scripts]
 lumina = "lumina_t2i:entry_point"

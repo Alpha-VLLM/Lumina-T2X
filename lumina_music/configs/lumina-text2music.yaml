@@ -1,0 +1,75 @@
+model:
+  base_learning_rate: 3.0e-06
+  target: models.diffusion.ddpm_audio.CFM
+  params:
+    linear_start: 0.00085
+    linear_end: 0.012
+    num_timesteps_cond: 1
+    log_every_t: 200
+    timesteps: 1000
+    first_stage_key: image
+    cond_stage_key: caption
+    mel_dim: 20
+    mel_length: 256
+    channels: 0
+    cond_stage_trainable: True
+    conditioning_key: crossattn
+    monitor: val/loss_simple_ema
+    scale_by_std: true
+    use_ema: false
+    scheduler_config:
+      target: models.lr_scheduler.LambdaLinearScheduler
+      params:
+        warm_up_steps:
+        - 10000
+        cycle_lengths:
+        - 10000000000000
+        f_start:
+        - 1.0e-06
+        f_max:
+        - 1.0
+        f_min:
+        - 1.0
+    unet_config:
+      target: models.diffusion.flag_large_dit.FlagDiTv2
+      params:
+        in_channels: 20
+        context_dim: 1024
+        hidden_size: 768
+        num_heads: 32
+        depth: 16
+        max_len: 1000
+
+    first_stage_config:
+      target: models.autoencoder1d.AutoencoderKL
+      params:
+        embed_dim: 20
+        monitor: val/rec_loss
+        ckpt_path: /path/to/ckpt/maa2/maa2.ckpt
+        ddconfig:
+          double_z: true
+          in_channels: 80
+          out_ch: 80
+          z_channels: 20
+          kernel_size: 5
+          ch: 384
+          ch_mult:
+          - 1
+          - 2
+          - 4
+          num_res_blocks: 2
+          attn_layers:
+          - 3
+          down_layers:
+          - 0
+          dropout: 0.0
+        lossconfig:
+          target: torch.nn.Identity
+    cond_stage_config:
+        target: models.encoders.modules.FrozenFLANEmbedder
+
+test_dataset:
+  target: data.joinaudiodataset_struct_sample_anylen.TestManifest
+  params:
+    manifest: ./musiccaps_test_16000_struct.tsv
+    spec_crop_len: 624
