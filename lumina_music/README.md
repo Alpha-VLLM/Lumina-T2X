@@ -1,4 +1,4 @@
-# Lumina-T2Music
+# Lumina Text-to-Music
 
 We will provide our implementation and pretrained models as open source in this repository recently.
 
