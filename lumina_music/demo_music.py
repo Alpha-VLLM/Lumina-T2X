@@ -2,15 +2,15 @@ import argparse
 import builtins
 import json
 import multiprocessing as mp
+import os
 import socket
 import traceback
-import argparse
-import os
+
 import gradio as gr
 from omegaconf import OmegaConf
-from models.util import instantiate_from_config
 import torch
 
+from models.util import instantiate_from_config
 from models.vocoder.bigvgan.models import VocoderBigVGAN
 
 
@@ -20,7 +20,7 @@ def load_model_from_config(config, ckpt=None, verbose=True):
         print(f"Loading model from {ckpt}")
         pl_sd = torch.load(ckpt, map_location="cpu")
         sd = pl_sd["state_dict"]
-        
+
         m, u = model.load_state_dict(sd, strict=False)
         if len(m) > 0 and verbose:
             print("missing keys:")
@@ -39,29 +39,24 @@ class ModelFailure:
 
 
 class GenSamples:
-    def __init__(
-        self, args, model, config, vocoder=None) -> None:
+    def __init__(self, args, model, config, vocoder=None) -> None:
         self.args = args
         self.model = model
         self.channel_dim = self.model.channels
         self.config = config
 
-    def gen_test_sample(self, prompt, steps, cfg_scale, solver):  
+    def gen_test_sample(self, prompt, steps, cfg_scale, solver):
         uc = None
         if cfg_scale != 1.0:
             try:
-                uc = self.model.get_learned_conditioning(
-                    {"ori_caption": "", "struct_caption": ""}
-                )
+                uc = self.model.get_learned_conditioning({"ori_caption": "", "struct_caption": ""})
             except:
                 uc = self.model.get_learned_conditioning(prompt)
         for n in range(self.args.n_iter):
             try:
-                c = self.model.get_learned_conditioning(
-                    prompt
-                )
+                c = self.model.get_learned_conditioning(prompt)
             except:
-                c = self.model.get_learned_conditioning(prompt['ori_caption'])
+                c = self.model.get_learned_conditioning(prompt["ori_caption"])
 
             if self.channel_dim > 0:
                 shape = [
@@ -76,11 +71,21 @@ class GenSamples:
 
             if cfg_scale == 1:  # w/o cfg
                 sample, _ = self.model.sample(
-                    c, 1, timesteps=steps, x_latent=x0, solver=solver,
+                    c,
+                    1,
+                    timesteps=steps,
+                    x_latent=x0,
+                    solver=solver,
                 )
             else:  # cfg
                 sample, _ = self.model.sample_cfg(
-                    c, cfg_scale, uc, 1, timesteps=steps, x_latent=x0, solver=solver,
+                    c,
+                    cfg_scale,
+                    uc,
+                    1,
+                    timesteps=steps,
+                    x_latent=x0,
+                    solver=solver,
                 )
 
             x_samples_ddim = self.model.decode_first_stage(sample)
@@ -115,16 +120,16 @@ def model_main(args, rank, request_queue, response_queue, mp_barrier):
     config = OmegaConf.load(args.config_path)
     model = load_model_from_config(config, args.ckpt)
     model.eval().to(device)
-    
+
     print(f"Creating Decoder: Vocoder")
     vocoder = VocoderBigVGAN(args.vocoder_ckpt, device)
-    
+
     print("Creating Generator")
     generator = GenSamples(args, model, config, vocoder)
 
     if args.ema:
         print("Loading ema model.")
-        
+
     mp_barrier.wait()
 
     with torch.autocast("cuda", dtype):
@@ -151,7 +156,7 @@ def model_main(args, rank, request_queue, response_queue, mp_barrier):
                     samples_ddim = samples_ddim.squeeze(0).cpu().numpy()
                     wav = vocoder.vocode(samples_ddim)
                 print("> generated audio, done.")
-                
+
                 if response_queue is not None:
                     response_queue.put(((args.sample_rate, wav), metadata))
             except Exception:
@@ -265,9 +270,7 @@ def main():
                         interactive=True,
                         label="Seed (0 for random)",
                     )
-                with gr.Accordion(
-                    "Advanced Settings for Resolution Extrapolation", open=False
-                ):
+                with gr.Accordion("Advanced Settings for Resolution Extrapolation", open=False):
                     with gr.Row():
                         solver = gr.Dropdown(
                             value="euler",
@@ -295,31 +298,66 @@ def main():
         with gr.Row():
             gr.Examples(
                 [
-                    ["This country song with banjo, acoustic piano, violin, and upright bass is an upbeat, uptempo tune that will get your feet tapping."],
-                    ["The upbeat instrumental song features punchy digital drums, lively piano harmony, and funky bass line, accompanied by perky synthesised violins and various background sounds superimposed by music, creating a happy and lively atmosphere with a fast tempo and a sound of beeping."],
-                    ["A sentimental country song featuring gentle fiddle and acoustic guitar alongside electric guitar, with a slow tempo and easygoing melody that evokes a sense of longing."],
-                    ["This vintage guitar demonstration on YouTube showcases a passionate and spirited soloist's unique and melancholic country music style, despite the buzzing noise, bad audio quality, and ambient room noise."],
-                    ["The song is characterized by a cheerful instrumental with a dominant marimba melody, but suffers from excessive noise and low-quality production."],
-                    ["This is a suspenseful and mysterious sci-fi instrumental music with a booming lower harmony, string section harmony, horn section, and tuba that builds tension as if exploring a dangerous territory."],
-                    ["A bagpipe ensemble performs a quick melody with unison and drone accompaniment, featuring trills and ornamental flourishes."],
-                    ["A fast-paced, intense rock song with amplified electric guitar and stringed instruments showcasing skilled and dexterous musicianship, featuring sonic power and vibrato, recorded at home."],
-                    ["A joyful duet with a medium tempo, featuring a charming accordion melody, tambourine beats, and hand percussion alongside keyboard harmony, delivering a simple and cheerful Christmas song with jingle bells in Spanish and animated, merry lyrics tailored towards children."],
-                    ["This instrumental progressive rock song features a complex, electric guitar solo with impressive tapping techniques."],
-                    ["A low-quality classical piece with a wide strings, low brass, and woodwinds melody that creates a suspenseful and intense atmosphere."],
-                    ["This bluesy song features a soothing combination of harmonica, acoustic guitar arpeggio, and pad synth."],
+                    [
+                        "This country song with banjo, acoustic piano, violin, and upright bass is an upbeat, uptempo tune that will get your feet tapping."
+                    ],
+                    [
+                        "The upbeat instrumental song features punchy digital drums, lively piano harmony, and funky bass line, accompanied by perky synthesised violins and various background sounds superimposed by music, creating a happy and lively atmosphere with a fast tempo and a sound of beeping."
+                    ],
+                    [
+                        "A sentimental country song featuring gentle fiddle and acoustic guitar alongside electric guitar, with a slow tempo and easygoing melody that evokes a sense of longing."
+                    ],
+                    [
+                        "This vintage guitar demonstration on YouTube showcases a passionate and spirited soloist's unique and melancholic country music style, despite the buzzing noise, bad audio quality, and ambient room noise."
+                    ],
+                    [
+                        "The song is characterized by a cheerful instrumental with a dominant marimba melody, but suffers from excessive noise and low-quality production."
+                    ],
+                    [
+                        "This is a suspenseful and mysterious sci-fi instrumental music with a booming lower harmony, string section harmony, horn section, and tuba that builds tension as if exploring a dangerous territory."
+                    ],
+                    [
+                        "A bagpipe ensemble performs a quick melody with unison and drone accompaniment, featuring trills and ornamental flourishes."
+                    ],
+                    [
+                        "A fast-paced, intense rock song with amplified electric guitar and stringed instruments showcasing skilled and dexterous musicianship, featuring sonic power and vibrato, recorded at home."
+                    ],
+                    [
+                        "A joyful duet with a medium tempo, featuring a charming accordion melody, tambourine beats, and hand percussion alongside keyboard harmony, delivering a simple and cheerful Christmas song with jingle bells in Spanish and animated, merry lyrics tailored towards children."
+                    ],
+                    [
+                        "This instrumental progressive rock song features a complex, electric guitar solo with impressive tapping techniques."
+                    ],
+                    [
+                        "A low-quality classical piece with a wide strings, low brass, and woodwinds melody that creates a suspenseful and intense atmosphere."
+                    ],
+                    [
+                        "This bluesy song features a soothing combination of harmonica, acoustic guitar arpeggio, and pad synth."
+                    ],
                     ["The song features a rapid and complex brass motif led by a high pitched trumpet."],
-                    ["A poorly produced, noisy and mono cover song with an aggressive yet groovy funky acoustic bass guitar solo melody."],
-                    ["This folk music song has an uplifting and medium-to-uptempo rhythm highlighted by the sounds of the violin, horn, brass, xylophone, and drums."],
-                    ["An amateur recording featuring two acoustic guitars with a technically challenging and flamenco-inspired nylon string guitar played in a somewhat sloppy manner."],
-                    ["A mystical, solo instrumental piece featuring the tranquil sounds of the bass flute creates an enchanting fantasy forest ambiance with a touch of reverb."],
-                    ["The instrumental track features a relaxing mix of guitar and piano music set to a moderate tempo with lingering bassline, pads, and synth sounds to create a meditative listening experience."],
-                    ["The song features a passionate electric guitar solo melody with a chorus pedal effect, but is marred by low quality, noise, and lacking stereo presence."],
+                    [
+                        "A poorly produced, noisy and mono cover song with an aggressive yet groovy funky acoustic bass guitar solo melody."
+                    ],
+                    [
+                        "This folk music song has an uplifting and medium-to-uptempo rhythm highlighted by the sounds of the violin, horn, brass, xylophone, and drums."
+                    ],
+                    [
+                        "An amateur recording featuring two acoustic guitars with a technically challenging and flamenco-inspired nylon string guitar played in a somewhat sloppy manner."
+                    ],
+                    [
+                        "A mystical, solo instrumental piece featuring the tranquil sounds of the bass flute creates an enchanting fantasy forest ambiance with a touch of reverb."
+                    ],
+                    [
+                        "The instrumental track features a relaxing mix of guitar and piano music set to a moderate tempo with lingering bassline, pads, and synth sounds to create a meditative listening experience."
+                    ],
+                    [
+                        "The song features a passionate electric guitar solo melody with a chorus pedal effect, but is marred by low quality, noise, and lacking stereo presence."
+                    ],
                     ["The haunting melody of the cello evokes a deep sense of emotion in this classical masterpiece."],
                 ],
                 [cap],
                 label="Examples",
-                examples_per_page=10
-                
+                examples_per_page=10,
             )
 
         def on_submit(*args):
@@ -327,7 +365,7 @@ def main():
                 q.put(args)
             result = response_queue.get()
             audio, metadata = result
-            
+
             if isinstance(result, ModelFailure):
                 raise RuntimeError
 
@@ -346,10 +384,7 @@ def main():
         )
 
     mp_barrier.wait()
-    demo.queue().launch(
-        server_name="0.0.0.0",
-        server_port=7865
-    )
+    demo.queue().launch(server_name="0.0.0.0", server_port=7865)
 
 
 if __name__ == "__main__":
