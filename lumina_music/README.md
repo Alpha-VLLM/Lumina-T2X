@@ -37,24 +37,36 @@ git clone https://github.com/Alpha-VLLM/Lumina-T2X
 
 Note: You may want to adjust the CUDA version [according to your driver version](https://docs.nvidia.com/deploy/cuda-compatibility/#default-to-minor-version).
 
-  ```bash
-  conda create -n Lumina_T2X -y
-  conda activate Lumina_T2X
-  conda install python=3.11 pytorch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 pytorch-cuda=12.1 -c pytorch -c nvidia -y
-  ```
+```bash
+conda create -n Lumina_T2X -y
+conda activate Lumina_T2X
+conda install python=3.11 pytorch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 pytorch-cuda=12.1 -c pytorch -c nvidia -y
+```
 
 ### 2. Install dependencies
 
-  ```bash
-  cd lumina_music
-  pip install -r requirements.txt
-  ```
+>[!Warning]
+> The environment dependencies for Lumina-T2Music are different from those for Lumina-T2I. Please install the appropriate environment.
+
+Installing `Lumina-T2Music` dependencies:
+
+```bash
+cd .. # If you are in the `lumina_music` directory, execute this line.
+pip install -e ".[music]"
+```
+
+or you can use `requirements.txt` to install the environment.
+
+```bash
+cd lumina_music # If you are not in the `lumina_music` folder, run this line.
+pip install -r requirements.txt
+```
 
 ### 3. Install ``flash-attn``
 
-  ```bash
-  pip install flash-attn --no-build-isolation
-  ```
+```bash
+pip install flash-attn --no-build-isolation
+```
 
 ### 4. Install [nvidia apex](https://github.com/nvidia/apex) (optional)
 
