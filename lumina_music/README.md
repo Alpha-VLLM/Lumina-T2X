@@ -105,18 +105,44 @@ git clone https://huggingface.co/Alpha-VLLM/Lumina-T2Music
 
 To host a local gradio demo for interactive inference, run the following command:
 
+1. updated `AutoencoderKL` ckpt path
+
+you should update `configs/lumina-text2music.yaml` to set `AutoencoderKL` checkpoint path. Please replace `/path/to/ckpt` with the path where your checkpoints are located (<real_path>).
+
+```diff
+  ...
+        depth: 16
+        max_len: 1000
+
+    first_stage_config:
+      target: models.autoencoder1d.AutoencoderKL
+      params:
+        embed_dim: 20
+        monitor: val/rec_loss
+        - ckpt_path: /path/to/ckpt/maa2/maa2.ckpt
+        + ckpt_path: <real_path>/maa2/maa2.ckpt
+        ddconfig:
+          double_z: true
+          in_channels: 80
+          out_ch: 80
+  ...
+```
+
+2. setting `Lumina-T2Music` and `Vocoder` checkpoint path and run demo
+
+Please replace `/path/to/ckpt` with the actual downloaded path.
+
 ```bash
-# `/path/to/ckpt` should be a directory containing `consolidated*.pth` and `model_args.pth`
+# `/path/to/ckpt` should be a directory containing `music_generation`, `maa2`, and `bigvnat`.
 
 # default
 python -u demo_music.py \
-    --ckpt "</path/to/music/generation/ckpt>" \
-    --vocoder_ckpt "</path/to/vocder/ckpt>" \
+    --ckpt "/path/to/ckpt/music_generation" \
+    --vocoder_ckpt "/path/to/ckpt/bigvnat" \
     --config_path "configs/lumina-text2music.yaml" \
     --sample_rate 16000
 ```
 
-
-# Disclaimer
+## Disclaimer
 
 Any organization or individual is prohibited from using any technology mentioned in this paper to generate someone's speech without his/her consent, including but not limited to government leaders, political figures, and celebrities. If you do not comply with this item, you could be in violation of copyright laws.

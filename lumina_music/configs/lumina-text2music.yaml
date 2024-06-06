@@ -45,7 +45,7 @@ model:
       params:
         embed_dim: 20
         monitor: val/rec_loss
-        ckpt_path: ../checkpoints_tmp/maa2/maa2.ckpt
+        ckpt_path: /path/to/ckpt/maa2/maa2.ckpt
         ddconfig:
           double_z: true
           in_channels: 80

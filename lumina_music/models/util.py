@@ -1,30 +1,30 @@
-import importlib
-
-import torch
-import numpy as np
-from tqdm import tqdm
-from inspect import isfunction
-from PIL import Image, ImageDraw, ImageFont
 import hashlib
-import requests
+import importlib
+from inspect import isfunction
 import os
 
+from PIL import Image, ImageDraw, ImageFont
+import numpy as np
+import requests
+import torch
+from tqdm import tqdm
+
 URL_MAP = {
-    'vggishish_lpaps': 'https://a3s.fi/swift/v1/AUTH_a235c0f452d648828f745589cde1219a/specvqgan_public/vggishish16.pt',
-    'vggishish_mean_std_melspec_10s_22050hz': 'https://a3s.fi/swift/v1/AUTH_a235c0f452d648828f745589cde1219a/specvqgan_public/train_means_stds_melspec_10s_22050hz.txt',
-    'melception': 'https://a3s.fi/swift/v1/AUTH_a235c0f452d648828f745589cde1219a/specvqgan_public/melception-21-05-10T09-28-40.pt',
+    "vggishish_lpaps": "https://a3s.fi/swift/v1/AUTH_a235c0f452d648828f745589cde1219a/specvqgan_public/vggishish16.pt",
+    "vggishish_mean_std_melspec_10s_22050hz": "https://a3s.fi/swift/v1/AUTH_a235c0f452d648828f745589cde1219a/specvqgan_public/train_means_stds_melspec_10s_22050hz.txt",
+    "melception": "https://a3s.fi/swift/v1/AUTH_a235c0f452d648828f745589cde1219a/specvqgan_public/melception-21-05-10T09-28-40.pt",
 }
 
 CKPT_MAP = {
-    'vggishish_lpaps': 'vggishish16.pt',
-    'vggishish_mean_std_melspec_10s_22050hz': 'train_means_stds_melspec_10s_22050hz.txt',
-    'melception': 'melception-21-05-10T09-28-40.pt',
+    "vggishish_lpaps": "vggishish16.pt",
+    "vggishish_mean_std_melspec_10s_22050hz": "train_means_stds_melspec_10s_22050hz.txt",
+    "melception": "melception-21-05-10T09-28-40.pt",
 }
 
 MD5_MAP = {
-    'vggishish_lpaps': '197040c524a07ccacf7715d7080a80bd',
-    'vggishish_mean_std_melspec_10s_22050hz': 'f449c6fd0e248936c16f6d22492bb625',
-    'melception': 'a71a41041e945b457c7d3d814bbcf72d',
+    "vggishish_lpaps": "197040c524a07ccacf7715d7080a80bd",
+    "vggishish_mean_std_melspec_10s_22050hz": "f449c6fd0e248936c16f6d22492bb625",
+    "melception": "a71a41041e945b457c7d3d814bbcf72d",
 }
 
 
@@ -46,7 +46,6 @@ def md5_hash(path):
     return hashlib.md5(content).hexdigest()
 
 
-
 def log_txt_as_img(wh, xc, size=10):
     # wh a tuple of (width, height),xc a list of captions to plot
     b = len(xc)
@@ -54,9 +53,9 @@ def log_txt_as_img(wh, xc, size=10):
     for bi in range(b):
         txt = Image.new("RGB", wh, color="white")
         draw = ImageDraw.Draw(txt)
-        font = ImageFont.truetype('data/DejaVuSans.ttf', size=size)
+        font = ImageFont.truetype("data/DejaVuSans.ttf", size=size)
         nc = int(40 * (wh[0] / 256))
-        lines = "\n".join(xc[bi][start:start + nc] for start in range(0, len(xc[bi]), nc))
+        lines = "\n".join(xc[bi][start : start + nc] for start in range(0, len(xc[bi]), nc))
 
         try:
             draw.text((0, 0), lines, fill="black", font=font)
@@ -77,7 +76,7 @@ def ismap(x):
 
 
 def isimage(x):
-    if not isinstance(x,torch.Tensor):
+    if not isinstance(x, torch.Tensor):
         return False
     return (len(x.shape) == 4) and (x.shape[1] == 3 or x.shape[1] == 1)
 
@@ -109,12 +108,12 @@ def count_params(model, verbose=False):
 
 def instantiate_from_config(config, reload=False):
     if not "target" in config:
-        if config == '__is_first_stage__':
+        if config == "__is_first_stage__":
             return None
         elif config == "__is_unconditional__":
             return None
         raise KeyError("Expected key `target` to instantiate.")
-    return get_obj_from_str(config["target"],reload=reload)(**config.get("params", dict()))
+    return get_obj_from_str(config["target"], reload=reload)(**config.get("params", dict()))
 
 
 def get_obj_from_str(string, reload=False):
@@ -123,6 +122,7 @@ def get_obj_from_str(string, reload=False):
         module_imp = importlib.import_module(module)
         importlib.reload(module_imp)
     return getattr(importlib.import_module(module, package=None), cls)
+
 
 def get_ckpt_path(name, root, check=False):
     assert name in URL_MAP
