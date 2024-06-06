@@ -158,6 +158,12 @@ python -u demo_music.py \
     --sample_rate 16000
 ```
 
+or you can run `run_music.sh` script for web demo after updating `AutoencoderKL` ckpt path on `configs/lumina-text2music.yaml`, `--ckpt`, and `--vocoder_ckpt`.
+
+```bash
+bash run_music.sh
+```
+
 ## Disclaimer
 
 Any organization or individual is prohibited from using any technology mentioned in this paper to generate someone's speech without his/her consent, including but not limited to government leaders, political figures, and celebrities. If you do not comply with this item, you could be in violation of copyright laws.

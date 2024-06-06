@@ -2,8 +2,8 @@
 
 export HF_ENDPOINT=https://hf-mirror.com
 
-python demo_music.py \
-    --ckpt "</path/to/music/generation>" \
-    --vocoder_ckpt "</path/to/vocoder>" \
-    --config_path configs/lumina-text2music.yaml \
+python -u demo_music.py \
+    --ckpt "/path/to/ckpt/music_generation" \
+    --vocoder_ckpt "/path/to/ckpt/bigvnat" \
+    --config_path "configs/lumina-text2music.yaml" \
     --sample_rate 16000
