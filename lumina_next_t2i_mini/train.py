@@ -22,7 +22,6 @@ from time import time
 
 from PIL import Image
 from diffusers.models import AutoencoderKL
-import fairscale.nn.model_parallel.initialize as fs_init
 import numpy as np
 import torch
 import torch.distributed as dist
@@ -41,7 +40,7 @@ from torchvision import transforms
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from data import ItemProcessor, MyDataset, read_general
-from grad_norm import calculate_l2_grad_norm, get_model_parallel_dim_dict, scale_grad
+from grad_norm import calculate_l2_grad_norm, scale_grad
 from imgproc import generate_crop_size_list, var_center_crop
 import models
 from parallel import distributed_init, get_intra_node_process_group
@@ -169,7 +168,6 @@ def setup_fsdp_sync(model: nn.Module, args: argparse.Namespace) -> FSDP:
             lambda_auto_wrap_policy,
             lambda_fn=lambda m: m in model.get_fsdp_wrap_module_list(),
         ),
-        process_group=fs_init.get_data_parallel_group(),
         sharding_strategy={
             "fsdp": ShardingStrategy.FULL_SHARD,
             "sdp": ShardingStrategy.SHARD_GRAD_OP,
@@ -255,10 +253,10 @@ def main(args):
 
     distributed_init(args)
 
-    dp_world_size = fs_init.get_data_parallel_world_size()
-    dp_rank = fs_init.get_data_parallel_rank()
-    mp_world_size = fs_init.get_model_parallel_world_size()
-    mp_rank = fs_init.get_model_parallel_rank()
+    dp_world_size = dist.get_world_size()
+    dp_rank = dist.get_rank()
+    mp_world_size = 1
+    mp_rank = 0
 
     assert args.global_batch_size % dp_world_size == 0, "Batch size must be divisible by data parrallel world size."
     local_batch_size = args.global_batch_size // dp_world_size
@@ -320,8 +318,6 @@ def main(args):
     )
     logger.info(f"DiT Parameters: {model.parameter_count():,}")
     model_patch_size = model.patch_size
-
-    model_parallel_dim_dict = get_model_parallel_dim_dict(model)
 
     if args.auto_resume and args.resume is None:
         try:
@@ -490,30 +486,8 @@ def main(args):
             # Map input images to latent space + normalize latents:
             x = [vae.encode(img[None]).latent_dist.sample().mul_(vae_scale)[0] for img in x]
 
-        if mp_world_size > 1:
-            mp_src = fs_init.get_model_parallel_src_rank()
-            mp_group = fs_init.get_model_parallel_group()
-            for img in x:
-                dist.broadcast(img, mp_src, mp_group)
-            dist.broadcast_object_list(caps, mp_src, mp_group)
-            assert caps.size(0) % mp_world_size == 0
-            caps = caps[
-                caps.size(0) // mp_world_size * mp_rank,
-                caps.size(0) // mp_world_size * (mp_rank + 1),
-            ]
-
         with torch.no_grad():
             cap_feats, cap_mask = encode_prompt(caps, text_encoder, tokenizer, args.caption_dropout_prob)
-
-        if mp_world_size > 1:
-            local_cap_feats = cap_feats
-            cap_feats = torch.zeros(
-                [mp_world_size, *local_cap_feats.size()],
-                dtype=local_cap_feats.dtype,
-                device=local_cap_feats.device,
-            )
-            dist.all_gather_into_tensor(cap_feats, local_cap_feats, group=mp_group)
-            cap_feats = cap_feats.flatten(0, 1)
 
         loss_item = 0.0
         opt.zero_grad()
@@ -539,7 +513,7 @@ def main(args):
             with model.no_sync() if args.data_parallel in ["sdp", "hsdp"] and not last_mb else contextlib.nullcontext():
                 loss.backward()
 
-        grad_norm = calculate_l2_grad_norm(model, model_parallel_dim_dict)
+        grad_norm = calculate_l2_grad_norm(model)
         if grad_norm > args.grad_clip:
             scale_grad(model, args.grad_clip / grad_norm)
 
@@ -586,13 +560,8 @@ def main(args):
                 FullStateDictConfig(rank0_only=True, offload_to_cpu=True),
             ):
                 consolidated_model_state_dict = model.state_dict()
-                if fs_init.get_data_parallel_rank() == 0:
-                    consolidated_fn = (
-                        "consolidated."
-                        f"{fs_init.get_model_parallel_rank():02d}-of-"
-                        f"{fs_init.get_model_parallel_world_size():02d}"
-                        ".pth"
-                    )
+                if dp_rank == 0:
+                    consolidated_fn = "consolidated." f"{mp_rank:02d}-of-" f"{mp_world_size:02d}" ".pth"
                     torch.save(
                         consolidated_model_state_dict,
                         os.path.join(checkpoint_path, consolidated_fn),
@@ -607,13 +576,8 @@ def main(args):
                 FullStateDictConfig(rank0_only=True, offload_to_cpu=True),
             ):
                 consolidated_ema_state_dict = model_ema.state_dict()
-                if fs_init.get_data_parallel_rank() == 0:
-                    consolidated_ema_fn = (
-                        "consolidated_ema."
-                        f"{fs_init.get_model_parallel_rank():02d}-of-"
-                        f"{fs_init.get_model_parallel_world_size():02d}"
-                        ".pth"
-                    )
+                if dp_rank == 0:
+                    consolidated_ema_fn = "consolidated_ema." f"{mp_rank:02d}-of-" f"{mp_world_size:02d}" ".pth"
                     torch.save(
                         consolidated_ema_state_dict,
                         os.path.join(checkpoint_path, consolidated_ema_fn),
@@ -665,7 +629,6 @@ if __name__ == "__main__":
     parser.add_argument("--log_every", type=int, default=100)
     parser.add_argument("--ckpt_every", type=int, default=50_000)
     parser.add_argument("--master_port", type=int, default=18181)
-    parser.add_argument("--model_parallel_size", type=int, default=1)
     parser.add_argument("--data_parallel", type=str, choices=["sdp", "fsdp"], default="fsdp")
     parser.add_argument("--precision", choices=["fp32", "tf32", "fp16", "bf16"], default="bf16")
     parser.add_argument("--grad_precision", choices=["fp32", "fp16", "bf16"])

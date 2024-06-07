@@ -13,12 +13,9 @@ import functools
 import math
 from typing import List, Optional, Tuple
 
-import fairscale.nn.model_parallel.initialize as fs_init
-from fairscale.nn.model_parallel.layers import ColumnParallelLinear, ParallelEmbedding, RowParallelLinear
 from flash_attn import flash_attn_varlen_func
 from flash_attn.bert_padding import index_first_axis, pad_input, unpad_input  # noqa
 import torch
-import torch.distributed as dist
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -34,7 +31,7 @@ def modulate(x, scale):
 #############################################################################
 
 
-class ParallelTimestepEmbedder(nn.Module):
+class TimestepEmbedder(nn.Module):
     """
     Embeds scalar timesteps into vector representations.
     """
@@ -42,22 +39,23 @@ class ParallelTimestepEmbedder(nn.Module):
     def __init__(self, hidden_size, frequency_embedding_size=256):
         super().__init__()
         self.mlp = nn.Sequential(
-            ColumnParallelLinear(
+            nn.Linear(
                 frequency_embedding_size,
                 hidden_size,
                 bias=True,
-                gather_output=False,
-                init_method=functools.partial(nn.init.normal_, std=0.02),
             ),
             nn.SiLU(),
-            RowParallelLinear(
+            nn.Linear(
                 hidden_size,
                 hidden_size,
                 bias=True,
-                input_is_parallel=True,
-                init_method=functools.partial(nn.init.normal_, std=0.02),
             ),
         )
+        nn.init.normal_(self.mlp[0].weight, std=0.02)
+        nn.init.zeros_(self.mlp[0].bias)
+        nn.init.normal_(self.mlp[2].weight, std=0.02)
+        nn.init.zeros_(self.mlp[2].bias)
+
         self.frequency_embedding_size = frequency_embedding_size
 
     @staticmethod
@@ -87,48 +85,6 @@ class ParallelTimestepEmbedder(nn.Module):
         return t_emb
 
 
-class ParallelLabelEmbedder(nn.Module):
-    r"""Embeds class labels into vector representations. Also handles label
-    dropout for classifier-free guidance.
-    """
-
-    def __init__(self, num_classes, hidden_size, dropout_prob):
-        super().__init__()
-        use_cfg_embedding = int(dropout_prob > 0)
-        self.embedding_table = ParallelEmbedding(
-            num_classes + use_cfg_embedding,
-            hidden_size,
-            init_method=functools.partial(nn.init.normal_, std=0.02),
-        )
-        self.num_classes = num_classes
-        self.dropout_prob = dropout_prob
-
-    def token_drop(self, labels, force_drop_ids=None):
-        """
-        Drops labels to enable classifier-free guidance.
-        """
-        if force_drop_ids is None:
-            drop_ids = torch.rand(labels.shape[0], device=labels.device) < self.dropout_prob
-            drop_ids = drop_ids.cuda()
-            dist.broadcast(
-                drop_ids,
-                fs_init.get_model_parallel_src_rank(),
-                fs_init.get_model_parallel_group(),
-            )
-            drop_ids = drop_ids.to(labels.device)
-        else:
-            drop_ids = force_drop_ids == 1
-        labels = torch.where(drop_ids, self.num_classes, labels)
-        return labels
-
-    def forward(self, labels, train, force_drop_ids=None):
-        use_dropout = self.dropout_prob > 0
-        if (train and use_dropout) or (force_drop_ids is not None):
-            labels = self.token_drop(labels, force_drop_ids)
-        embeddings = self.embedding_table(labels)
-        return embeddings
-
-
 #############################################################################
 #                               Core NextDiT Model                              #
 #############################################################################
@@ -156,57 +112,50 @@ class Attention(nn.Module):
         """
         super().__init__()
         self.n_kv_heads = n_heads if n_kv_heads is None else n_kv_heads
-        model_parallel_size = fs_init.get_model_parallel_world_size()
-        self.n_local_heads = n_heads // model_parallel_size
-        self.n_local_kv_heads = self.n_kv_heads // model_parallel_size
+        self.n_local_heads = n_heads
+        self.n_local_kv_heads = self.n_kv_heads
         self.n_rep = self.n_local_heads // self.n_local_kv_heads
         self.head_dim = dim // n_heads
 
-        self.wq = ColumnParallelLinear(
+        self.wq = nn.Linear(
             dim,
             n_heads * self.head_dim,
             bias=False,
-            gather_output=False,
-            init_method=nn.init.xavier_uniform_,
         )
-        self.wk = ColumnParallelLinear(
+        nn.init.xavier_uniform_(self.wq.weight)
+        self.wk = nn.Linear(
             dim,
             self.n_kv_heads * self.head_dim,
             bias=False,
-            gather_output=False,
-            init_method=nn.init.xavier_uniform_,
         )
-        self.wv = ColumnParallelLinear(
+        nn.init.xavier_uniform_(self.wk.weight)
+        self.wv = nn.Linear(
             dim,
             self.n_kv_heads * self.head_dim,
             bias=False,
-            gather_output=False,
-            init_method=nn.init.xavier_uniform_,
         )
+        nn.init.xavier_uniform_(self.wv.weight)
         if y_dim > 0:
-            self.wk_y = ColumnParallelLinear(
+            self.wk_y = nn.Linear(
                 y_dim,
                 self.n_kv_heads * self.head_dim,
                 bias=False,
-                gather_output=False,
-                init_method=nn.init.xavier_uniform_,
             )
-            self.wv_y = ColumnParallelLinear(
+            nn.init.xavier_uniform_(self.wk_y.weight)
+            self.wv_y = nn.Linear(
                 y_dim,
                 self.n_kv_heads * self.head_dim,
                 bias=False,
-                gather_output=False,
-                init_method=nn.init.xavier_uniform_,
             )
+            nn.init.xavier_uniform_(self.wv_y.weight)
             self.gate = nn.Parameter(torch.zeros([self.n_local_heads]))
 
-        self.wo = RowParallelLinear(
+        self.wo = nn.Linear(
             n_heads * self.head_dim,
             dim,
             bias=False,
-            input_is_parallel=True,
-            init_method=nn.init.xavier_uniform_,
         )
+        nn.init.xavier_uniform_(self.wo.weight)
 
         if qk_norm:
             self.q_norm = nn.LayerNorm(self.n_local_heads * self.head_dim)
@@ -458,10 +407,10 @@ class FeedForward(nn.Module):
                 dimension. Defaults to None.
 
         Attributes:
-            w1 (ColumnParallelLinear): Linear transformation for the first
+            w1 (nn.Linear): Linear transformation for the first
                 layer.
-            w2 (RowParallelLinear): Linear transformation for the second layer.
-            w3 (ColumnParallelLinear): Linear transformation for the third
+            w2 (nn.Linear): Linear transformation for the second layer.
+            w3 (nn.Linear): Linear transformation for the third
                 layer.
 
         """
@@ -472,27 +421,24 @@ class FeedForward(nn.Module):
             hidden_dim = int(ffn_dim_multiplier * hidden_dim)
         hidden_dim = multiple_of * ((hidden_dim + multiple_of - 1) // multiple_of)
 
-        self.w1 = ColumnParallelLinear(
+        self.w1 = nn.Linear(
             dim,
             hidden_dim,
             bias=False,
-            gather_output=False,
-            init_method=nn.init.xavier_uniform_,
         )
-        self.w2 = RowParallelLinear(
+        nn.init.xavier_uniform_(self.w1.weight)
+        self.w2 = nn.Linear(
             hidden_dim,
             dim,
             bias=False,
-            input_is_parallel=True,
-            init_method=nn.init.xavier_uniform_,
         )
-        self.w3 = ColumnParallelLinear(
+        nn.init.xavier_uniform_(self.w2.weight)
+        self.w3 = nn.Linear(
             dim,
             hidden_dim,
             bias=False,
-            gather_output=False,
-            init_method=nn.init.xavier_uniform_,
         )
+        nn.init.xavier_uniform_(self.w3.weight)
 
     # @torch.compile
     def _forward_silu_gating(self, x1, x3):
@@ -559,14 +505,14 @@ class TransformerBlock(nn.Module):
 
         self.adaLN_modulation = nn.Sequential(
             nn.SiLU(),
-            ColumnParallelLinear(
+            nn.Linear(
                 min(dim, 1024),
                 4 * dim,
                 bias=True,
-                gather_output=True,
-                init_method=nn.init.zeros_,
             ),
         )
+        nn.init.zeros_(self.adaLN_modulation[1].weight)
+        nn.init.zeros_(self.adaLN_modulation[1].bias)
 
         self.attention_y_norm = RMSNorm(y_dim, eps=norm_eps)
 
@@ -624,7 +570,7 @@ class TransformerBlock(nn.Module):
         return x
 
 
-class ParallelFinalLayer(nn.Module):
+class FinalLayer(nn.Module):
     """
     The final layer of NextDiT.
     """
@@ -636,23 +582,24 @@ class ParallelFinalLayer(nn.Module):
             elementwise_affine=False,
             eps=1e-6,
         )
-        self.linear = ColumnParallelLinear(
+        self.linear = nn.Linear(
             hidden_size,
             patch_size * patch_size * out_channels,
             bias=True,
-            init_method=nn.init.zeros_,
-            gather_output=True,
         )
+        nn.init.zeros_(self.linear.weight)
+        nn.init.zeros_(self.linear.bias)
+
         self.adaLN_modulation = nn.Sequential(
             nn.SiLU(),
-            ColumnParallelLinear(
+            nn.Linear(
                 min(hidden_size, 1024),
                 hidden_size,
                 bias=True,
-                init_method=nn.init.zeros_,
-                gather_output=True,
             ),
         )
+        nn.init.zeros_(self.adaLN_modulation[1].weight)
+        nn.init.zeros_(self.adaLN_modulation[1].bias)
 
     def forward(self, x, c):
         scale = self.adaLN_modulation(c)
@@ -689,26 +636,25 @@ class NextDiT(nn.Module):
         self.out_channels = in_channels * 2 if learn_sigma else in_channels
         self.patch_size = patch_size
 
-        self.x_embedder = ColumnParallelLinear(
+        self.x_embedder = nn.Linear(
             in_features=patch_size * patch_size * in_channels,
             out_features=dim,
             bias=True,
-            gather_output=True,
-            init_method=nn.init.xavier_uniform_,
         )
+        nn.init.xavier_uniform_(self.x_embedder.weight)
         nn.init.constant_(self.x_embedder.bias, 0.0)
 
-        self.t_embedder = ParallelTimestepEmbedder(min(dim, 1024))
+        self.t_embedder = TimestepEmbedder(min(dim, 1024))
         self.cap_embedder = nn.Sequential(
             nn.LayerNorm(cap_feat_dim),
-            ColumnParallelLinear(
+            nn.Linear(
                 cap_feat_dim,
                 min(dim, 1024),
                 bias=True,
-                gather_output=True,
-                init_method=nn.init.zeros_,
             ),
         )
+        nn.init.zeros_(self.cap_embedder[1].weight)
+        nn.init.zeros_(self.cap_embedder[1].bias)
 
         self.layers = nn.ModuleList(
             [
@@ -726,7 +672,7 @@ class NextDiT(nn.Module):
                 for layer_id in range(n_layers)
             ]
         )
-        self.final_layer = ParallelFinalLayer(dim, patch_size, self.out_channels)
+        self.final_layer = FinalLayer(dim, patch_size, self.out_channels)
 
         assert (dim // n_heads) % 4 == 0, "2d rope needs head dim to be divisible by 4"
         self.freqs_cis = NextDiT.precompute_freqs_cis(
@@ -963,18 +909,12 @@ class NextDiT(nn.Module):
         return freqs_cis
 
     def parameter_count(self) -> int:
-        tensor_parallel_module_list = (
-            ColumnParallelLinear,
-            RowParallelLinear,
-            ParallelEmbedding,
-        )
         total_params = 0
 
         def _recursive_count_params(module):
             nonlocal total_params
-            is_tp_module = isinstance(module, tensor_parallel_module_list)
             for param in module.parameters(recurse=False):
-                total_params += param.numel() * (fs_init.get_model_parallel_world_size() if is_tp_module else 1)
+                total_params += param.numel()
             for submodule in module.children():
                 _recursive_count_params(submodule)
 

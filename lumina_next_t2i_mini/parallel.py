@@ -4,7 +4,6 @@ import os
 import subprocess
 from time import sleep
 
-import fairscale.nn.model_parallel.initialize as fs_init
 import torch
 import torch.distributed as dist
 
@@ -44,7 +43,6 @@ def distributed_init(args):
         _setup_dist_env_from_slurm(args)
 
     dist.init_process_group("nccl")
-    fs_init.initialize_model_parallel(args.model_parallel_size)
     torch.cuda.set_device(dist.get_rank() % torch.cuda.device_count())
 
     global _LOCAL_RANK, _LOCAL_WORLD_SIZE

@@ -8,7 +8,6 @@ import random
 import socket
 import traceback
 
-import fairscale.nn.model_parallel.initialize as fs_init
 import gradio as gr
 import numpy as np
 from safetensors.torch import load_file
@@ -83,7 +82,6 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
     dist.init_process_group("nccl")
     # set up fairscale environment because some methods of the Lumina model need it,
     # though for single-GPU inference fairscale actually has no effect
-    fs_init.initialize_model_parallel(args.num_gpus)
     torch.cuda.set_device(rank)
 
     train_args = torch.load(os.path.join(args.ckpt, "model_args.pth"))
@@ -121,7 +119,6 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
     )
     model.eval().to("cuda", dtype=dtype)
 
-    assert train_args.model_parallel_size == args.num_gpus
     if args.ema:
         print("Loading ema model.")
     ckpt = load_file(
