@@ -81,8 +81,6 @@ def parse_ode_args(parser):
 def main(args, rank, master_port):
     # Setup PyTorch:
     torch.set_grad_enabled(False)
-    if int(args.seed) != 0:
-        torch.random.manual_seed(int(args.seed))
                     
     os.environ["RANK"] = str(rank)
     os.environ["WORLD_SIZE"] = str(args.num_gpus)
@@ -111,10 +109,9 @@ def main(args, rank, master_port):
         "google/gemma-2b",
         torch_dtype=dtype,
         device_map="cuda"
-        ).cuda()
+        ).eval()
     # Load scheduler and models
     cap_feat_dim = text_encoder.config.hidden_size
-    text_encoder.eval()
 
     if dist.get_rank() == 0:
         print(f"Creating vae: {train_args.vae}")
@@ -134,6 +131,8 @@ def main(args, rank, master_port):
 
     if args.debug == False:
         # assert train_args.model_parallel_size == args.num_gpus
+        if args.ema:
+            print("Loading ema model.")
         ckpt = torch.load(os.path.join(
             args.ckpt,
             f"consolidated{'_ema' if args.ema else ''}."
@@ -141,22 +140,6 @@ def main(args, rank, master_port):
         ), map_location="cpu")
         model.load_state_dict(ckpt, strict=True)
 
-    transport = create_transport(
-        args.path_type,
-        args.prediction,
-        args.loss_weight,
-        args.train_eps,
-        args.sample_eps
-    )
-    sampler = Sampler(transport)
-    sample_fn = sampler.sample_ode(
-        sampling_method=args.sampling_method,
-        num_steps=args.num_sampling_steps,
-        atol=args.atol,
-        rtol=args.rtol,
-        reverse=args.reverse,
-        time_shifting_factor=args.time_shifting_factor
-    )
     sample_folder_dir = args.image_save_path
 
     if rank == 0:
@@ -177,7 +160,6 @@ def main(args, rank, master_port):
         collected_id = []
 
     captions = []
-    negative_prompt = None
 
     with open(args.caption_path, 'r', encoding='utf-8') as file:
         for line in file:
@@ -187,74 +169,96 @@ def main(args, rank, master_port):
 
     total = len(info)
     resolution = args.resolution
-    for res in resolution:
-        for idx, caption in tqdm(enumerate(captions)):
-            sample_id = f'{idx}_{res.split(":")[-1]}'
-            if sample_id in collected_id:
-                continue
-            caps_list = [caption]
-            
-            res_cat, resolution = res.split(":")
-            res_cat = int(res_cat)
-            do_extrapolation = res_cat > 1024
-        
-            n = len(caps_list)
-            w, h = resolution.split("x")
-            w, h = int(w), int(h)
-            latent_w, latent_h = w // 8, h // 8
-            z = torch.randn([1, 4, latent_w, latent_h], device="cuda").to(dtype)
-            z = z.repeat(n * 2, 1, 1, 1)
-
-
-            with torch.no_grad():
-                cap_feats, cap_mask = encode_prompt([caps_list] + [""], text_encoder, tokenizer, 0.0)
-
-            cap_mask = cap_mask.to(cap_feats.device)
-
-            model_kwargs = dict(
-                cap_feats=cap_feats, cap_mask=cap_mask, cfg_scale=args.cfg_scale,
-            )
+    with torch.autocast("cuda", dtype):
+        for res in resolution:
+            for idx, caption in tqdm(enumerate(captions)):
                 
-            if args.proportional_attn:
-                model_kwargs["proportional_attn"] = True
-                model_kwargs["base_seqlen"] = (train_args.image_size // 16) ** 2
-            else:
-                model_kwargs["proportional_attn"] = False
-                model_kwargs["base_seqlen"] = None
+                transport = create_transport(
+                    args.path_type,
+                    args.prediction,
+                    args.loss_weight,
+                    args.train_eps,
+                    args.sample_eps
+                )
+                sampler = Sampler(transport)
+                sample_fn = sampler.sample_ode(
+                    sampling_method=args.sampling_method,
+                    num_steps=args.num_sampling_steps,
+                    atol=args.atol,
+                    rtol=args.rtol,
+                    reverse=args.reverse,
+                    time_shifting_factor=args.time_shifting_factor
+                )
+                
+                if int(args.seed) != 0:
+                    torch.random.manual_seed(int(args.seed))
+    
+                sample_id = f'{idx}_{res.split(":")[-1]}'
+                if sample_id in collected_id:
+                    continue
+                caps_list = [caption]
+                
+                res_cat, resolution = res.split(":")
+                res_cat = int(res_cat)
+                do_extrapolation = res_cat > 1024
+            
+                n = len(caps_list)
+                w, h = resolution.split("x")
+                w, h = int(w), int(h)
+                latent_w, latent_h = w // 8, h // 8
+                z = torch.randn([1, 4, latent_w, latent_h], device="cuda").to(dtype)
+                z = z.repeat(n * 2, 1, 1, 1)
 
-            if do_extrapolation and args.scaling_method == "Time-aware":
-                model_kwargs["scale_factor"] = math.sqrt(w * h / train_args.image_size**2)
-                model_kwargs["scale_watershed"] = args.scaling_watershed
-            else:
-                model_kwargs["scale_factor"] = 1.0
-                model_kwargs["scale_watershed"] = 1.0
 
-            samples = sample_fn(z, model.forward_with_cfg, **model_kwargs)[-1]
-            samples = samples[:1]
+                with torch.no_grad():
+                    cap_feats, cap_mask = encode_prompt([caps_list] + [""], text_encoder, tokenizer, 0.0)
 
-            factor = 0.18215 if train_args.vae != "sdxl" else 0.13025
-            samples = vae.decode(samples.float() / factor).sample
-            samples = (samples + 1.0) / 2.0
-            samples.clamp_(0.0, 1.0)
+                cap_mask = cap_mask.to(cap_feats.device)
 
-            # Save samples to disk as individual .png files
-            for i, (sample, cap) in enumerate(zip(samples, caps_list)):
-                img = to_pil_image(sample)
-                save_path = f"{args.image_save_path}/images/{args.sampling_method}_{args.num_sampling_steps}_{sample_id}.png"
-                img.save(save_path)
-                info.append({
-                    'caption': cap,
-                    'image_url': f"{args.image_save_path}/images/{args.sampling_method}_{args.num_sampling_steps}_{sample_id}.png",
-                    'resolution': f'res: {resolution}\ntime_shift: {args.time_shifting_factor}',
-                    'sampling_method': args.sampling_method,
-                    'num_sampling_steps': args.num_sampling_steps
-                })
+                model_kwargs = dict(
+                    cap_feats=cap_feats, cap_mask=cap_mask, cfg_scale=args.cfg_scale,
+                )
+                    
+                if args.proportional_attn:
+                    model_kwargs["proportional_attn"] = True
+                    model_kwargs["base_seqlen"] = (train_args.image_size // 16) ** 2
+                else:
+                    model_kwargs["proportional_attn"] = False
+                    model_kwargs["base_seqlen"] = None
 
-            with open(info_path, 'w') as f:
-                f.write(json.dumps(info))
+                if do_extrapolation and args.scaling_method == "Time-aware":
+                    model_kwargs["scale_factor"] = math.sqrt(w * h / train_args.image_size**2)
+                    model_kwargs["scale_watershed"] = args.scaling_watershed
+                else:
+                    model_kwargs["scale_factor"] = 1.0
+                    model_kwargs["scale_watershed"] = 1.0
+                
+                samples = sample_fn(z, model.forward_with_cfg, **model_kwargs)[-1]
+                samples = samples[:1]
+                
+                factor = 0.18215 if train_args.vae != "sdxl" else 0.13025
+                samples = vae.decode(samples / factor).sample
+                samples = (samples + 1.0) / 2.0
+                samples.clamp_(0.0, 1.0)
+                
+                # Save samples to disk as individual .png files
+                for i, (sample, cap) in enumerate(zip(samples, caps_list)):
+                    img = to_pil_image(sample.float())
+                    save_path = f"{args.image_save_path}/images/{args.sampling_method}_{args.num_sampling_steps}_{sample_id}.png"
+                    img.save(save_path)
+                    info.append({
+                        'caption': cap,
+                        'image_url': f"{args.image_save_path}/images/{args.sampling_method}_{args.num_sampling_steps}_{sample_id}.png",
+                        'resolution': f'res: {resolution}\ntime_shift: {args.time_shifting_factor}',
+                        'sampling_method': args.sampling_method,
+                        'num_sampling_steps': args.num_sampling_steps
+                    })
 
-            total += len(samples)
-            dist.barrier()
+                with open(info_path, 'w') as f:
+                    f.write(json.dumps(info))
+
+                total += len(samples)
+                dist.barrier()
 
     dist.barrier()
     dist.barrier()
