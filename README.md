@@ -31,6 +31,8 @@
 [![Static Badge](https://img.shields.io/badge/Official(node3)-6B88E3?logo=youtubegaming&label=Demo%20Lumina-Next-T2I)](http://106.14.2.150:10022/)&#160;
 [![Static Badge](https://img.shields.io/badge/Official(compositional)-6B88E3?logo=youtubegaming&label=Demo%20Lumina-Next-T2I)](http://106.14.2.150:10023/)&#160;
 [![Static Badge](https://img.shields.io/badge/Lumina--Next--T2I-HF_Space-yellow?logoColor=violet&label=%F0%9F%A4%97%20Demo%20Lumina-Next-T2I)](https://huggingface.co/spaces/Alpha-VLLM/Lumina-Next-T2I)
+
+[![Static Badge](https://img.shields.io/badge/Lumina--Next--2B--HQ--SFT%20checkpoints-Model(2B)-yellow?logoColor=violet&label=%F0%9F%A4%97%20Lumina-Next-2B-HQ-SFT%20checkpoints)](https://huggingface.co/Alpha-VLLM/Lumina-Next-2B-HQ-SFT)
 [![Static Badge](https://img.shields.io/badge/Lumina--Next--T2I%20checkpoints-Model(2B)-yellow?logoColor=violet&label=%F0%9F%A4%97%20Lumina-Next-T2I%20checkpoints)](https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I)
 [![Static Badge](https://img.shields.io/badge/Lumina--T2I%20checkpoints-Model(5B)-yellow?logoColor=violet&label=%F0%9F%A4%97%20Lumina-T2I%20checkpoints)](https://huggingface.co/Alpha-VLLM/Lumina-T2I)
 
@@ -57,6 +59,7 @@
 
 ## 📰 News
 
+- **[2024-06-08] 🚀🚀🚀 We have released the `Lumina-Next-2B-HQ-SFT`model. [MODEL](https://huggingface.co/Alpha-VLLM/Lumina-Next-2B-HQ-SFT)**
 - **[2024-06-07] 🔥🔥🔥 We have released the `Lumina-T2Music` (Text-to-Music) code and model for music generation. [MODEL](https://huggingface.co/Alpha-VLLM/Lumina-T2Music) [DEMO](http://139.196.83.164:8000/)**
 - **[2024-06-03] 🔥🔥🔥 We have released the `Compositional Generation` version of `Lumina-Next-T2I`, which enables compositional generation with multiple captions for different regions. [model](https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I). [DEMO](http://106.14.2.150:10023/)**
 - **[2024-05-29] 🥰🥰🥰 We updated the new `Lumina-Next-T2I` [Code](https://github.com/Alpha-VLLM/Lumina-T2X/tree/main/lumina_next_t2i) and [HF Model](https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I). Supporting 2K Resolution image generation and Time-aware Scaled RoPE.**
@@ -65,8 +68,8 @@
 - [2024-05-18] We released training scripts for Lumina-T2I 5B. [README](https://github.com/Alpha-VLLM/Lumina-T2X/tree/main/lumina_t2i#training)
 - [2024-05-16] ❗❗❗ We have converted the `.pth` weights to `.safetensors` weights. Please pull the latest code and use `demo.py` for inference.
 - [2024-05-14] Lumina-Next now supports simple **text-to-music** generation ([examples](#text-to-music-generation)), **high-resolution (1024*4096) Panorama** generation conditioned on text ([examples](#panorama-generation)), and **3D point cloud** generation conditioned on labels ([examples](#point-cloud-generation)).
-- [2024-05-13] 🔥🔥🔥 We give [examples](#multilingual-generation) demonstrating Lumina-T2X's capability to support **multilingual prompts**, and even support prompts containing **emojis**.
-- **[2024-05-12]** 🤩🤩🤩 **We excitedly released our `Lumina-Next-T2I` model ([checkpoint](https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I)) which uses a 2B Next-DiT model as the backbone and Gemma-2B as the text encoder. Try it out at [demo1](http://106.14.2.150:10020/) & [demo2](http://106.14.2.150:10021/) & [demo3](http://106.14.2.150:10022/).**
+- [2024-05-13] We give [examples](#multilingual-generation) demonstrating Lumina-T2X's capability to support **multilingual prompts**, and even support prompts containing **emojis**.
+- **[2024-05-12] We excitedly released our `Lumina-Next-T2I` model ([checkpoint](https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I)) which uses a 2B Next-DiT model as the backbone and Gemma-2B as the text encoder. Try it out at [demo1](http://106.14.2.150:10020/) & [demo2](http://106.14.2.150:10021/) & [demo3](http://106.14.2.150:10022/).**
 - [2024-05-10] We released the technical report on [arXiv](https://arxiv.org/abs/2405.05945).
 - [2024-05-09] We released `Lumina-T2A` (Text-to-Audio) Demos. [Examples](#text-to-audio-generation)
 - [2024-04-29] We released the 5B model [checkpoint](https://huggingface.co/Alpha-VLLM/Lumina-T2I) and demo built upon it for text-to-image generation.
@@ -88,7 +91,11 @@ In order to quickly get you guys using our model, we built different versions of
 
 #### Lumina-Next-T2I 2B model demo:
 
-[[node1](http://106.14.2.150:10020/)] [[node2](http://106.14.2.150:10021/)] [[node3](http://106.14.2.150:10022/)]
+Image Generation: [[node1](http://106.14.2.150:10020/)] [[node2](http://106.14.2.150:10021/)] [[node3](http://106.14.2.150:10022/)]
+
+Image Compositional Generation: [[node1](http://106.14.2.150:10023/)]
+
+Music Generation: [[node1](http://139.196.83.164:8000)]
 
 For more details about training and inference, please refer to [Lumina-T2I](./lumina_t2i/README.md#Installation) and [Lumina-Next-T2I](./lumina_next_t2i/README.md#Installation)
 
