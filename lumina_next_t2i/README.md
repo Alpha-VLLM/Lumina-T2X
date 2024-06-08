@@ -152,6 +152,21 @@ lumina_next convert "/path/to/your/own/model.pth" "/path/to/new/directory/" # co
 lumina_next convert "/path/to/your/own/model.safetensors" "/path/to/new/directory/" # convert to `.pth`
 ```
 
+### Direct Inference
+
+To generate images directly from the inference code (for development), run the following command:
+```bash
+python -u sample.py --ckpt ${ckpt_dir} \
+    --image_save_path ${save_dir} \
+    --num_sampling_steps ${steps} \
+    --caption_path ${prompt_dir} \
+    --seed ${seed} \
+    --resolution ${res} \
+    --time_shifting_factor ${t} \
+    --batch_size 1 \
+```
+You can personalize more arguments by checking the `sample.py` file.
+
 ### Web Demo
 
 To host a local gradio demo for interactive inference, run the following command:
