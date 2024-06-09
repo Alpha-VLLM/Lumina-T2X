@@ -32,6 +32,7 @@
 [![Static Badge](https://img.shields.io/badge/Official(node1)-6B88E3?logo=youtubegaming&label=Demo%20Lumina-Next-SFT)](http://106.14.2.150:10020/)&#160;
 [![Static Badge](https://img.shields.io/badge/Official(node2)-6B88E3?logo=youtubegaming&label=Demo%20Lumina-Next-SFT)](http://106.14.2.150:10021/)&#160;
 [![Static Badge](https://img.shields.io/badge/Official(node3)-6B88E3?logo=youtubegaming&label=Demo%20Lumina-Next-SFT)](http://106.14.2.150:10022/)&#160;
+[![Static Badge](https://img.shields.io/badge/Official(node1)-6B88E3?logo=youtubegaming&label=Demo%20Lumina-Text2Music)](http://139.196.83.164:8000/)&#160;
 [![Static Badge](https://img.shields.io/badge/Official(compositional)-6B88E3?logo=youtubegaming&label=Demo%20Lumina-Next-T2I)](http://106.14.2.150:10023/)&#160;
 [![Static Badge](https://img.shields.io/badge/Lumina--Next--SFT-HF_Space-yellow?logoColor=violet&label=%F0%9F%A4%97%20Demo%20Lumina-Next-SFT)](https://huggingface.co/spaces/Alpha-VLLM/Lumina-Next-T2I)
 
@@ -124,9 +125,9 @@ pre-commit
 
 ## 📑 Open-source Plan
 
-- [X] Lumina-T2I (Demos✅, Training✅, Inference✅, Checkpoints✅)
-- [ ] Lumina-T2V (Demos✅)
-- [ ] Lumina-T2A (Demos✅)
+- [X] Lumina-Text2Image (Demos✅, Training✅, Inference✅, Checkpoints✅)
+- [ ] Lumina-Text2Video (Demos✅)
+- [x] Lumina-Text2Music (Demos✅, Inference✅, Checkpoints✅)
 - [X] Web Demo
 - [X] Cli Demo
 
