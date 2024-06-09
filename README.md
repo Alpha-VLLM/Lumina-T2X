@@ -162,6 +162,10 @@ We introduce the $\textbf{Lumina-T2X}$ family, a series of text-conditioned Diff
 
 ## 📽️ Demo Examples
 
+### Demos of Lumina-Next-SFT
+
+![github_banner](https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/926adf8c-3f34-44ed-8ff6-5eb650b9712c)
+
 ### Text-to-Image Generation
 
 <p align="center">
