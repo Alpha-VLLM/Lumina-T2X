@@ -24,8 +24,11 @@
 [![weixin](https://img.shields.io/badge/-WeChat@机器之心-000000?logo=wechat&logoColor=07C160)](https://mp.weixin.qq.com/s/NwwbaeRujh-02V6LRs5zMg)&#160;
 [![zhihu](https://img.shields.io/badge/-知乎-000000?logo=zhihu&logoColor=0084FF)](https://www.zhihu.com/org/opengvlab)&#160;
 [![zhihu](https://img.shields.io/badge/-Twitter@OpenGVLab-black?logo=twitter&logoColor=1D9BF0)](https://twitter.com/opengvlab/status/1788949243383910804)&#160;
-[![Static Badge](https://img.shields.io/badge/Video%20Introduction%20of%20Lumina--T2X-red?logo=youtube)](https://www.youtube.com/watch?v=KFtHmS5eUCM)
 ![Static Badge](https://img.shields.io/badge/-MIT-MIT?logoColor=%231082c3&label=Code%20License&link=https%3A%2F%2Fgithub.com%2FAlpha-VLLM%2FLumina-T2X%2Fblob%2Fmain%2FLICENSE)
+
+[![Static Badge](https://img.shields.io/badge/Video%20Introduction%20of%20Lumina--Next-red?logo=youtube)](https://www.youtube.com/watch?v=K0-AJa33Rw4)
+[![Static Badge](https://img.shields.io/badge/Video%20Introduction%20of%20Lumina--T2X-pink?logo=youtube)](https://www.youtube.com/watch?v=KFtHmS5eUCM)
+
 [![Static Badge](https://img.shields.io/badge/Official(node1)-6B88E3?logo=youtubegaming&label=Demo%20Lumina-Next-SFT)](http://106.14.2.150:10020/)&#160;
 [![Static Badge](https://img.shields.io/badge/Official(node2)-6B88E3?logo=youtubegaming&label=Demo%20Lumina-Next-SFT)](http://106.14.2.150:10021/)&#160;
 [![Static Badge](https://img.shields.io/badge/Official(node3)-6B88E3?logo=youtubegaming&label=Demo%20Lumina-Next-SFT)](http://106.14.2.150:10022/)&#160;
