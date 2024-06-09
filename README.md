@@ -32,8 +32,8 @@
 [![Static Badge](https://img.shields.io/badge/Official(node1)-6B88E3?logo=youtubegaming&label=Demo%20Lumina-Next-SFT)](http://106.14.2.150:10020/)&#160;
 [![Static Badge](https://img.shields.io/badge/Official(node2)-6B88E3?logo=youtubegaming&label=Demo%20Lumina-Next-SFT)](http://106.14.2.150:10021/)&#160;
 [![Static Badge](https://img.shields.io/badge/Official(node3)-6B88E3?logo=youtubegaming&label=Demo%20Lumina-Next-SFT)](http://106.14.2.150:10022/)&#160;
-[![Static Badge](https://img.shields.io/badge/Official(node1)-6B88E3?logo=youtubegaming&label=Demo%20Lumina-Text2Music)](http://139.196.83.164:8000/)&#160;
 [![Static Badge](https://img.shields.io/badge/Official(compositional)-6B88E3?logo=youtubegaming&label=Demo%20Lumina-Next-T2I)](http://106.14.2.150:10023/)&#160;
+[![Static Badge](https://img.shields.io/badge/Official(node1)-violet?logo=youtubegaming&label=Demo%20Lumina-Text2Music)](http://139.196.83.164:8000/)&#160;
 [![Static Badge](https://img.shields.io/badge/Lumina--Next--SFT-HF_Space-yellow?logoColor=violet&label=%F0%9F%A4%97%20Demo%20Lumina-Next-SFT)](https://huggingface.co/spaces/Alpha-VLLM/Lumina-Next-T2I)
 
 [![Static Badge](https://img.shields.io/badge/Lumina--Next--SFT%20checkpoints-Model(2B)-yellow?logoColor=violet&label=%F0%9F%A4%97%20Lumina-Next-SFT%20checkpoints)](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT)
@@ -170,7 +170,7 @@ We introduce the $\textbf{Lumina-T2X}$ family, a series of text-conditioned Diff
 
 ![github_banner](https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/926adf8c-3f34-44ed-8ff6-5eb650b9712c)
 
-### Text-to-Image Generation
+### Demos of Lumina-T2I
 
 <p align="center">
  <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/27bd36a8-8411-47dd-a3a7-3607c1d5d644" width="90%"/>
