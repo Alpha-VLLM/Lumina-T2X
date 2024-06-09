@@ -4,7 +4,7 @@ We will provide our implementation and pretrained models as open source in this 
 
 - Generation Model: Flag-DiT
 - Text Encoder: [FLAN-T5-Large](https://huggingface.co/google/flan-t5-large)
-- VAE: Make an Audio 2, finetuned from [Makee an Audio](https://github.com/Text-to-Audio/Make-An-Audio)
+- VAE: Make an Audio 2, finetuned from [Make an Audio](https://github.com/Text-to-Audio/Make-An-Audio)
 - Decoder: [Vocoder](https://github.com/NVIDIA/BigVGAN)
 - `Lumina-T2Music` Checkpoints: [huggingface](https://huggingface.co/Alpha-VLLM/Lumina-T2Music)
 
