@@ -26,9 +26,9 @@
 [![zhihu](https://img.shields.io/badge/-Twitter@OpenGVLab-black?logo=twitter&logoColor=1D9BF0)](https://twitter.com/opengvlab/status/1788949243383910804)&#160;
 [![Static Badge](https://img.shields.io/badge/Video%20Introduction%20of%20Lumina--T2X-red?logo=youtube)](https://www.youtube.com/watch?v=KFtHmS5eUCM)
 ![Static Badge](https://img.shields.io/badge/-MIT-MIT?logoColor=%231082c3&label=Code%20License&link=https%3A%2F%2Fgithub.com%2FAlpha-VLLM%2FLumina-T2X%2Fblob%2Fmain%2FLICENSE)
-[![Static Badge](https://img.shields.io/badge/Official(node1)-6B88E3?logo=youtubegaming&label=Demo%20Lumina-Next-T2I)](http://106.14.2.150:10020/)&#160;
-[![Static Badge](https://img.shields.io/badge/Official(node2)-6B88E3?logo=youtubegaming&label=Demo%20Lumina-Next-T2I)](http://106.14.2.150:10021/)&#160;
-[![Static Badge](https://img.shields.io/badge/Official(node3)-6B88E3?logo=youtubegaming&label=Demo%20Lumina-Next-T2I)](http://106.14.2.150:10022/)&#160;
+[![Static Badge](https://img.shields.io/badge/Official(node1)-6B88E3?logo=youtubegaming&label=Demo%20Lumina-Next-SFT)](http://106.14.2.150:10020/)&#160;
+[![Static Badge](https://img.shields.io/badge/Official(node2)-6B88E3?logo=youtubegaming&label=Demo%20Lumina-Next-SFT)](http://106.14.2.150:10021/)&#160;
+[![Static Badge](https://img.shields.io/badge/Official(node3)-6B88E3?logo=youtubegaming&label=Demo%20Lumina-Next-SFT)](http://106.14.2.150:10022/)&#160;
 [![Static Badge](https://img.shields.io/badge/Official(compositional)-6B88E3?logo=youtubegaming&label=Demo%20Lumina-Next-T2I)](http://106.14.2.150:10023/)&#160;
 [![Static Badge](https://img.shields.io/badge/Lumina--Next--T2I-HF_Space-yellow?logoColor=violet&label=%F0%9F%A4%97%20Demo%20Lumina-Next-T2I)](https://huggingface.co/spaces/Alpha-VLLM/Lumina-Next-T2I)
 
