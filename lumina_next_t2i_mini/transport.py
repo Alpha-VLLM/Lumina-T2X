@@ -33,7 +33,9 @@ def training_losses(model, x1, model_kwargs=None):
         xt = [t[i] * x1[i] + (1 - t[i]) * x0[i] for i in range(B)]
         ut = [x1[i] - x0[i] for i in range(B)]
     else:
-        xt = t * x1 + (1 - t) * x0
+        dims = [1] * (len(x1.size()) - 1)
+        t_ = t.view(t.size(0), *dims)
+        xt = t_ * x1 + (1 - t_) * x0
         ut = x1 - x0
 
     model_output = model(xt, t, **model_kwargs)

@@ -28,12 +28,13 @@ def main(args, rank, master_port):
 
     dist.init_process_group("nccl")
     torch.cuda.set_device(rank)
-
+    
     dtype = {"bf16": torch.bfloat16, "fp16": torch.float16, "fp32": torch.float32}[args.precision]
     pipe = StableDiffusion3Pipeline.from_pretrained(
         "stabilityai/stable-diffusion-3-medium-diffusers",
         torch_dtype=dtype
     ).to("cuda")
+    
     if dist.get_rank() == 0:
         print("Loaded SD3 pipeline")
 
@@ -92,7 +93,7 @@ def main(args, rank, master_port):
             z = z.repeat(n * 2, 1, 1, 1)
             
             with torch.no_grad():
-                prompt_embeds, negative_prompt_embeds, pooled_prompt_embeds, negative_pooled_prompt_embeds = pipe.encode_prompt(prompt=caption, prompt_2=None, prompt_3=None, device="cuda")
+                prompt_embeds, negative_prompt_embeds, pooled_prompt_embeds, negative_pooled_prompt_embeds = pipe.encode_prompt(prompt=caption, prompt_2=caption, prompt_3=caption, device="cuda")
                     
             
             prompt_embeds = torch.cat([negative_prompt_embeds, prompt_embeds], dim=0)
