@@ -225,6 +225,12 @@ def main():
     description = """
     # Lumina Text-to-Audio
 
+    ### Lumina Text-to-Audio requires using `gpt-3.5-turbo` to generate structure caption. 
+    
+    ### Before using it, please set your `OpenAI API key` to ensure correct generation of structured descriptions and suitable audio.
+    
+    ### <span style="color: red;">We will soon release a version that does not require structure caption.
+    
     """
     with gr.Blocks(css="./style.css") as demo:
         with gr.Row():
