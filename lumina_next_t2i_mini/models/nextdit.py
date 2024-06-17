@@ -355,6 +355,10 @@ class Attention(nn.Module):
             # end var_len_flash_attn
 
         else:
+            n_rep = self.n_local_heads // self.n_local_kv_heads
+            if n_rep >= 1:
+                xk = xk.unsqueeze(3).repeat(1, 1, 1, n_rep, 1).flatten(2, 3)
+                xv = xv.unsqueeze(3).repeat(1, 1, 1, n_rep, 1).flatten(2, 3)
             output = (
                 F.scaled_dot_product_attention(
                     xq.permute(0, 2, 1, 3),
