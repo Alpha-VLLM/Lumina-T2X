@@ -95,6 +95,9 @@
 > git pull origin main
 > ```
 
+For more details about training and inference of Lumina framework, please refer to [Lumina-T2I](./lumina_t2i/README.md#Installation), [Lumina-Next-T2I](./lumina_next_t2i/README.md#Installation), and [Lumina-Next-T2I-Mini](./lumina_next_t2i_mini/README.md#Installation). We highly recommend you to use the **[Lumina-Next-T2I-Mini](./lumina_next_t2i_mini/README.md#Installation)** for training and inference, which is an extremely simplified version of Lumina-Next-T2I with full functionalities.
+
+### GUI Demo
 In order to quickly get you guys using our model, we built different versions of the GUI demo site.
 
 #### Lumina-Next-T2I model demo:
@@ -105,18 +108,18 @@ Image Compositional Generation: [[node1](http://106.14.2.150:10023/)]
 
 Music Generation: [[node1](http://139.196.83.164:8000)]
 
-For more details about training and inference, please refer to [Lumina-T2I](./lumina_t2i/README.md#Installation), [Lumina-Next-T2I](./lumina_next_t2i/README.md#Installation), and [Lumina-Next-T2I-Mini](./lumina_next_t2i_mini/README.md#Installation).  
-We highly recommend you to use the **[Lumina-Next-T2I-Mini](./lumina_next_t2i_mini/README.md#Installation)** for training and inference, which is an extremely simplified version of Lumina-Next-T2I with full functionalities.
 
-> [!Warning]
-> **Lumina-T2X employs FSDP for training large diffusion models. FSDP shards parameters, optimizer states, and gradients across GPUs. Thus, at least 8 GPUs are required for full fine-tuning of the Lumina-T2X 5B model. Parameter-efficient Finetuning of Lumina-T2X shall be released soon.**
+<!-- > [!Warning] -->
+<!-- > **Lumina-T2X employs FSDP for training large diffusion models. FSDP shards parameters, optimizer states, and gradients across GPUs. Thus, at least 8 GPUs are required for full fine-tuning of the Lumina-T2X 5B model. Parameter-efficient Finetuning of Lumina-T2X shall be released soon.** -->
 
+### Installation
 Using `Lumina-T2I` as a library, using installation command on your environment:
 
 ```bash
 pip install git+https://github.com/Alpha-VLLM/Lumina-T2X
 ```
 
+### Development
 If you want to contribute to the code, you should run command below to install `pre-commit` library:
 
 ```bash
