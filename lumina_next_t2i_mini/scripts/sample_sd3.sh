@@ -4,7 +4,7 @@
 # SD3 supports up to 1.2K resolution
 # res="1024:024x1024 1280:1280x1280"
 res=1024:1024x1024
-t=1
+shift=3
 cfg=7.0
 seed=25
 steps=20
@@ -18,6 +18,6 @@ python -u sample_sd3.py --ckpt ${model_dir} \
 --caption_path ${cap_dir} \
 --seed ${seed} \
 --resolution ${res} \
---time_shifting_factor ${t} \
+--time_shifting_factor ${shift} \
 --cfg_scale ${cfg} \
 --batch_size 1 \
