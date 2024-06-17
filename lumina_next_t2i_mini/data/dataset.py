@@ -25,7 +25,7 @@ class DataBriefReportException(Exception):
         return f"{self.__class__}: {self.message}"
 
 
-class ItemProcessor(ABC):
+class   ItemProcessor(ABC):
     @abstractmethod
     def process_item(self, data_item, training_mode=False):
         raise NotImplementedError
