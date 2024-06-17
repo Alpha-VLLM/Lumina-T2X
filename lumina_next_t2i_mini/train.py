@@ -315,6 +315,7 @@ def main(args):
     model = models.__dict__[args.model](
         qk_norm=args.qk_norm,
         cap_feat_dim=cap_feat_dim,
+        use_flash_attn=args.use_flash_attn,
     )
     logger.info(f"DiT Parameters: {model.parameter_count():,}")
     model_patch_size = model.patch_size
@@ -670,6 +671,12 @@ if __name__ == "__main__":
     parser.add_argument(
         "--qk_norm",
         action="store_true",
+    )
+    parser.add_argument(
+        "--use_flash_attn",
+        type=bool,
+        default=True,
+        help="Use Flash Attention in the model.",
     )
     parser.add_argument(
         "--caption_dropout_prob",

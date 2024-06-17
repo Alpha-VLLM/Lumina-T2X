@@ -70,6 +70,7 @@ Note: You may want to adjust the CUDA version [according to your driver version]
 
 ### 3. Install ``flash-attn``
 
+  To speed up the training and inference, we recommend installing the ``flash-attn`` package. If you have trouble installing it, you can skip this step and pass the argument ``--use_flash_attn False`` to the training and inference scripts.
   ```bash
   pip install flash-attn --no-build-isolation
   ```
