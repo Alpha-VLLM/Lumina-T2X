@@ -13,6 +13,7 @@ import torch.distributed as dist
 from torchvision.transforms.functional import to_pil_image
 from diffusers.models import AutoencoderKL
 from transformers import AutoTokenizer, AutoModel
+from safetensors.torch import load_file
 
 import models
 from transport import ODE
@@ -107,11 +108,11 @@ def main(args, rank, master_port):
         # assert train_args.model_parallel_size == args.num_gpus
         if args.ema:
             print("Loading ema model.")
-        ckpt = torch.load(os.path.join(
+        ckpt = load_file(os.path.join(
             args.ckpt,
-            f"consolidated{'_ema' if args.ema else ''}."
-            f"{rank:02d}-of-{args.num_gpus:02d}.pth",
-        ), map_location="cpu")
+            f"consolidated{'_ema' if args.ema else ''}.{rank:02d}-of-{args.num_gpus:02d}.safetensors",
+            )
+        )
         model.load_state_dict(ckpt, strict=True)
 
     sample_folder_dir = args.image_save_path
