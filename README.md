@@ -21,6 +21,7 @@
 
 [![Lumina-Next](https://img.shields.io/badge/Paper-Lumina--Next-2b9348.svg?logo=arXiv)](assets/lumina-next.pdf)&#160;
 [![Lumina-T2X](https://img.shields.io/badge/Paper-Lumina--T2X-2b9348.svg?logo=arXiv)](https://arxiv.org/abs/2405.05945)&#160;
+
 [![Badge](https://img.shields.io/badge/-WeChat@Group-000000?logo=wechat&logoColor=07C160)](http://imagebind-llm.opengvlab.com/qrcode/)&#160;
 [![weixin](https://img.shields.io/badge/-WeChat@机器之心-000000?logo=wechat&logoColor=07C160)](https://mp.weixin.qq.com/s/NwwbaeRujh-02V6LRs5zMg)&#160;
 [![zhihu](https://img.shields.io/badge/-知乎-000000?logo=zhihu&logoColor=0084FF)](https://www.zhihu.com/org/opengvlab)&#160;
