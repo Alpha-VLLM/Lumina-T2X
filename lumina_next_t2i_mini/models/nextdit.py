@@ -171,6 +171,7 @@ class Attention(nn.Module):
         # for proportional attention computation
         self.base_seqlen = None
         self.proportional_attn = False
+        self.use_flash_attn = True
 
     @staticmethod
     def reshape_for_broadcast(freqs_cis: torch.Tensor, x: torch.Tensor):
@@ -324,7 +325,7 @@ class Attention(nn.Module):
         else:
             softmax_scale = math.sqrt(1 / self.head_dim)
 
-        if dtype in [torch.float16, torch.bfloat16]:
+        if self.use_flash_attn and dtype in [torch.float16, torch.bfloat16]:
             # begin var_len flash attn
             (
                 query_states,
@@ -629,6 +630,7 @@ class NextDiT(nn.Module):
         qk_norm: bool = False,
         cap_feat_dim: int = 5120,
         scale_factor: float = 1.0,
+        use_flash_attn: bool = True,
     ) -> None:
         super().__init__()
         self.learn_sigma = learn_sigma
@@ -674,6 +676,9 @@ class NextDiT(nn.Module):
         )
         self.final_layer = FinalLayer(dim, patch_size, self.out_channels)
 
+        for layer in self.layers:
+            layer.attention.use_flash_attn = use_flash_attn
+            
         assert (dim // n_heads) % 4 == 0, "2d rope needs head dim to be divisible by 4"
         self.freqs_cis = NextDiT.precompute_freqs_cis(
             dim // n_heads,

@@ -99,6 +99,7 @@ def main(args, rank, master_port):
     model = models.__dict__[train_args.model](
         qk_norm=train_args.qk_norm,
         cap_feat_dim=cap_feat_dim,
+        use_flash_attn=args.use_flash_attn,
     )
     model.eval().to("cuda", dtype=dtype)
 
@@ -268,6 +269,9 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--scaling_watershed", type=float, default=0.3,
+    )
+    parser.add_argument(
+        "--use_flash_attn", type=bool, default=True
     )
     parser.add_argument("--debug", action="store_true")
     parser.add_argument("--batch_size", type=int, default=8)

@@ -154,7 +154,7 @@ if __name__ == "__main__":
     parser.add_argument("--solver", type=str, default="euler")
     parser.add_argument(
         "--precision", type=str, choices=["fp32", "bf16", "fp16"],
-        default="fp16",
+        default="bf16",
     )
     parser.add_argument("--num_gpus", type=int, default=1)
     parser.add_argument("--ema", action="store_true", help="Use EMA models.")
@@ -165,7 +165,7 @@ if __name__ == "__main__":
              "(sample{_ema}.png in the model checkpoint directory)."
     )
     parser.add_argument(
-        "--time_shifting_factor", type=float, default=1.0,
+        "--time_shifting_factor", type=float, default=3.0,
     )
     parser.add_argument(
         "--caption_path", type=str, default='prompts.txt',
