@@ -19,7 +19,8 @@
 
 <!--[![GitHub repo size](https://img.shields.io/github/repo-size/Alpha-VLLM/Lumina-T2X?style=flat&logo=github&logoColor=whitesmoke&label=Repo%20Size)](https://github.com/Alpha-VLLM/Lumina-T2X/archive/refs/heads/main.zip) -->
 
-[![arXiv](https://img.shields.io/badge/Arxiv-2405.05945-b31b1b.svg?logo=arXiv)](https://arxiv.org/abs/2405.05945)&#160;
+[![Lumina-Next](https://img.shields.io/badge/Paper-Lumina--Next-2b9348.svg?logo=arXiv)](.assets/lumina-next.pdf)&#160;
+[![Lumina-T2X](https://img.shields.io/badge/Paper-Lumina--T2X-2b9348.svg?logo=arXiv)](https://arxiv.org/abs/2405.05945)&#160;
 [![Badge](https://img.shields.io/badge/-WeChat@Group-000000?logo=wechat&logoColor=07C160)](http://imagebind-llm.opengvlab.com/qrcode/)&#160;
 [![weixin](https://img.shields.io/badge/-WeChat@机器之心-000000?logo=wechat&logoColor=07C160)](https://mp.weixin.qq.com/s/NwwbaeRujh-02V6LRs5zMg)&#160;
 [![zhihu](https://img.shields.io/badge/-知乎-000000?logo=zhihu&logoColor=0084FF)](https://www.zhihu.com/org/opengvlab)&#160;
@@ -63,17 +64,19 @@
 
 ## 📰 News
 
-- **[2024-06-08] 🚀🚀🚀 We have released the `Lumina-Next-SFT`model. [MODEL](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT)**
-- **[2024-06-07] 🔥🔥🔥 We have released the `Lumina-T2Music` (Text-to-Music) code and model for music generation. [MODEL](https://huggingface.co/Alpha-VLLM/Lumina-T2Music) [DEMO](http://139.196.83.164:8000/)**
-- **[2024-06-03] 🔥🔥🔥 We have released the `Compositional Generation` version of `Lumina-Next-T2I`, which enables compositional generation with multiple captions for different regions. [model](https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I). [DEMO](http://106.14.2.150:10023/)**
-- **[2024-05-29] 🥰🥰🥰 We updated the new `Lumina-Next-T2I` [Code](https://github.com/Alpha-VLLM/Lumina-T2X/tree/main/lumina_next_t2i) and [HF Model](https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I). Supporting 2K Resolution image generation and Time-aware Scaled RoPE.**
+- **[2024-06-17] 🚀🚀🚀 We have support both inference and training (including Dreambooth) of SD3, implemented in our Lumina framework! [CODE](https://github.com/Alpha-VLLM/Lumina-T2X/tree/main/lumina_next_t2i_mini)**
+- **[2024-06-17] 🥰🥰🥰 Lumina-Next supports ComfyUI now, thanks to [Kijai](https://github.com/kijai)! [LINK](https://github.com/kijai/ComfyUI-LuminaWrapper)**
+- **[2024-06-08] 🚀🚀🚀 We have released the `Lumina-Next-SFT` model, demonstrating better visual quality! [MODEL](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT)**
+- [2024-06-07] 🔥🔥🔥 We have released the `Lumina-T2Music` (Text-to-Music) code and model for music generation. [MODEL](https://huggingface.co/Alpha-VLLM/Lumina-T2Music) [DEMO](http://139.196.83.164:8000/)
+- [2024-06-03] 🔥🔥🔥 We have released the `Compositional Generation` version of `Lumina-Next-T2I`, which enables compositional generation with multiple captions for different regions. [model](https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I). [DEMO](http://106.14.2.150:10023/)
+- [2024-05-29] 🥰🥰🥰 We updated the new `Lumina-Next-T2I` [Code](https://github.com/Alpha-VLLM/Lumina-T2X/tree/main/lumina_next_t2i) and [HF Model](https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I). Supporting 2K Resolution image generation and Time-aware Scaled RoPE.
 - [2024-05-25] We released training scripts for Flag-DiT and Next-DiT, and we have reported the comparison results between Next-DiT and Flag-DiT. [Comparsion Results](https://github.com/Alpha-VLLM/Lumina-T2X/blob/main/Next-DiT-ImageNet/README.md#results)
 - [2024-05-21] Lumina-Next-T2I supports a higher-order solver. It can generate images in just 10 steps without any distillation. Try our demos [DEMO](http://106.14.2.150:10021/).
 - [2024-05-18] We released training scripts for Lumina-T2I 5B. [README](https://github.com/Alpha-VLLM/Lumina-T2X/tree/main/lumina_t2i#training)
 - [2024-05-16] ❗❗❗ We have converted the `.pth` weights to `.safetensors` weights. Please pull the latest code and use `demo.py` for inference.
 - [2024-05-14] Lumina-Next now supports simple **text-to-music** generation ([examples](#text-to-music-generation)), **high-resolution (1024*4096) Panorama** generation conditioned on text ([examples](#panorama-generation)), and **3D point cloud** generation conditioned on labels ([examples](#point-cloud-generation)).
 - [2024-05-13] We give [examples](#multilingual-generation) demonstrating Lumina-T2X's capability to support **multilingual prompts**, and even support prompts containing **emojis**.
-- **[2024-05-12] We excitedly released our `Lumina-Next-T2I` model ([checkpoint](https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I)) which uses a 2B Next-DiT model as the backbone and Gemma-2B as the text encoder. Try it out at [demo1](http://106.14.2.150:10020/) & [demo2](http://106.14.2.150:10021/) & [demo3](http://106.14.2.150:10022/).**
+- **[2024-05-12] We excitedly released our `Lumina-Next-T2I` model ([checkpoint](https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I)) which uses a 2B Next-DiT model as the backbone and Gemma-2B as the text encoder. Try it out at [demo1](http://106.14.2.150:10020/) & [demo2](http://106.14.2.150:10021/) & [demo3](http://106.14.2.150:10022/). Please refer to the paper [Lumina-Next](.assests/lumina-next.pdf) for more details.**
 - [2024-05-10] We released the technical report on [arXiv](https://arxiv.org/abs/2405.05945).
 - [2024-05-09] We released `Lumina-T2A` (Text-to-Audio) Demos. [Examples](#text-to-audio-generation)
 - [2024-04-29] We released the 5B model [checkpoint](https://huggingface.co/Alpha-VLLM/Lumina-T2I) and demo built upon it for text-to-image generation.
@@ -101,7 +104,8 @@ Image Compositional Generation: [[node1](http://106.14.2.150:10023/)]
 
 Music Generation: [[node1](http://139.196.83.164:8000)]
 
-For more details about training and inference, please refer to [Lumina-T2I](./lumina_t2i/README.md#Installation) and [Lumina-Next-T2I](./lumina_next_t2i/README.md#Installation)
+For more details about training and inference, please refer to [Lumina-T2I](./lumina_t2i/README.md#Installation), [Lumina-Next-T2I](./lumina_next_t2i/README.md#Installation), and [Lumina-Next-T2I-Mini](./lumina_next_t2i_mini/README.md#Installation).  
+We highly recommend you to use the **[Lumina-Next-T2I-Mini](./lumina_next_t2i_mini/README.md#Installation)** for training and inference, which is an extremely simplified version of Lumina-Next-T2I with full functionalities.
 
 > [!Warning]
 > **Lumina-T2X employs FSDP for training large diffusion models. FSDP shards parameters, optimizer states, and gradients across GPUs. Thus, at least 8 GPUs are required for full fine-tuning of the Lumina-T2X 5B model. Parameter-efficient Finetuning of Lumina-T2X shall be released soon.**
@@ -127,7 +131,7 @@ pre-commit
 
 - [X] Lumina-Text2Image (Demos✅, Training✅, Inference✅, Checkpoints✅)
 - [ ] Lumina-Text2Video (Demos✅)
-- [x] Lumina-Text2Music (Demos✅, Inference✅, Checkpoints✅)
+- [X] Lumina-Text2Music (Demos✅, Inference✅, Checkpoints✅)
 - [X] Web Demo
 - [X] Cli Demo
 
@@ -407,7 +411,7 @@ https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/da93e13d-6462-48d2-b6dc
 
 ## ⚙️ Diverse Configurations
 
-We support diverse configurations, including text encoders, DiTs of different parameter sizes, inference methods, and VAE encoders. Additionally, we offer features such as 1D-RoPE, image enhancement, and more.
+We support diverse configurations, including text encoders, DiTs of different parameter sizes, inference methods, and VAE encoders.AAdditionally, we offer features such as 1D-RoPE, image enhancement, and more.
 
 <p align="center">
   <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/221de325-d9fb-4b7e-a97c-4b24cd2df0fc" width="100%"/>
