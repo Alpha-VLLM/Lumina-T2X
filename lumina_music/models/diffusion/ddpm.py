@@ -23,8 +23,8 @@ try:
 except:
     from pytorch_lightning.utilities import rank_zero_only  # torch2
 
-from models.autoencoder1d import AutoencoderKL, IdentityFirstStage, VQModelInterface
-from models.util import (
+from ..autoencoder1d import AutoencoderKL, IdentityFirstStage, VQModelInterface
+from ..util import (
     count_params,
     default,
     exists,
