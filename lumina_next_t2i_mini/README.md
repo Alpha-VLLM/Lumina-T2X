@@ -9,15 +9,18 @@
 1. trimmed `transport` module; and
 2. removed model-parallel stuff (which exists but makes no effect in the `Lumina-Next-T2I` project)
 
-Though simplified, this directory retains **all** the functionalities that were *actually used* by us during the training and inference of Lumina-Next-T2I
+Though simplified, this directory retains **ALL** the functionalities that were *actually used* by us during the training and inference of Lumina-Next-T2I.
+
+Currently, this codebase also supports the training (including Dreambooth) and inference of **Stable Diffusion 3** (SD3). Since both SD3 and Lumina are flow-based diffusion transformers, we integrated SD3 with minimal changes based on our Lumina codebase.
 
 ## 🎮 Model Zoo
 
 More checkpoints of our model will be released soon~
 
-| Resolution | Next-DiT Parameter| Text Encoder | Prediction | Download URL  |
-| ---------- | ----------------------- | ------------ | -----------|-------------- |
-| 1024       | 2B             |    [Gemma-2B](https://huggingface.co/google/gemma-2b)  |   Rectified Flow | [hugging face](https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I) |
+| Model | Resolution | Next-DiT Parameter| Text Encoder | Download URL  |
+| ---------- | ---------- | ----------------------- | ------------ |-------------- |
+| Lumina-Next-T2I | 1024       | 2B             |    [Gemma-2B](https://huggingface.co/google/gemma-2b)  | [hugging face](https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I) |
+| Lumina-Next-SFT | 1024       | 2B             |    [Gemma-2B](https://huggingface.co/google/gemma-2b)  | [hugging face](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT) |
 
 ## Installation
 
@@ -62,7 +65,6 @@ Note: You may want to adjust the CUDA version [according to your driver version]
   or you can use
 
   ```bash
-  cd lumina_next_t2i
   pip install -r requirements.txt
   ```
 
@@ -138,6 +140,18 @@ lumina_next convert "/path/to/your/own/model.pth" "/path/to/new/directory/" # co
 # example 2:
 lumina_next convert "/path/to/your/own/model.safetensors" "/path/to/new/directory/" # convert to `.pth`
 ```
+
+### Direct Inference
+To generate images directly from the inference code (for development), run the following script with customized arguments:
+
+```bash
+# For Lumina
+bash scripts/sample.sh
+
+# For SD3
+bash scripts/sample_sd3.sh
+```
+You can personalize more arguments by checking the `sample.py` and `sample_sd3.py` file.
 
 ### Web Demo
 
