@@ -21,3 +21,4 @@ python -u sample.py --ckpt ${model_dir} \
 --time_shifting_factor ${t} \
 --cfg_scale ${cfg} \
 --batch_size 1 \
+--use_flash_attn True # You can set this to False if you want to disable the flash attention

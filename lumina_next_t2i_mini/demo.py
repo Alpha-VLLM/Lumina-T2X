@@ -116,6 +116,7 @@ def model_main(args, master_port, rank, request_queue, response_queue, mp_barrie
     model = models.__dict__[train_args.model](
         qk_norm=train_args.qk_norm,
         cap_feat_dim=cap_feat_dim,
+        use_flash_attn=args.use_flash_attn,
     )
     model.eval().to("cuda", dtype=dtype)
 
@@ -248,6 +249,7 @@ def main():
     parser.add_argument("--ema", action="store_true")
     parser.add_argument("--precision", default="bf16", choices=["bf16", "fp32"])
     parser.add_argument("--hf_token", type=str, default=None, help="huggingface read token for accessing gated repo.")
+    parser.add_argument("--use_flash_attn", type=bool, default=True, help="Use flash attention for the model.")
 
     args = parser.parse_known_args()[0]
 

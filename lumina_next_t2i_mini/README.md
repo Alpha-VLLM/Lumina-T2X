@@ -168,4 +168,7 @@ python -u demo.py --ckpt "/path/to/ckpt" --precision fp32
 
 # use ema model
 python -u demo.py --ckpt "/path/to/ckpt" --ema
+
+# disable the use Flash Attention
+python -u demo.py --ckpt "/path/to/ckpt" --use_flash_attn False
 ```
