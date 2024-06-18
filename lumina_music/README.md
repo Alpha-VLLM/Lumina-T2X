@@ -1,6 +1,6 @@
 # Lumina Text-to-Music
 
-We will provide our implementation and pretrained models as open source in this repository recently.
+`Lumina Text-to-Music` is a music generation model developed based on FlagDiT. It uses `FLAN-T5-Large` as the text encoder and `Vocoder` as the decoder.
 
 - Generation Model: Flag-DiT
 - Text Encoder: [FLAN-T5-Large](https://huggingface.co/google/flan-t5-large)

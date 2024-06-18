@@ -1,6 +1,9 @@
 # Lumina Text-to-Audio
 
-We will provide our implementation and pretrained models as open source in this repository recently.
+`Lumina Text-to-Audio` is a music generation model developed based on FlagDiT. It uses [T5-v1.1-XXL](https://huggingface.co/google/t5-v1_1-xxl) as the text encoder and [Vocoder](https://github.com/NVIDIA/BigVGAN) as the decoder.
+
+>[!Warning]
+>The current version of Lumina Text-to-Audio requires the use of structure caption for audio generation. We will soon release a version that does not require structure caption.
 
 - Generation Model: Flag-DiT
 - Text Encoder: [T5-v1.1-XXL](https://huggingface.co/google/t5-v1_1-xxl)
