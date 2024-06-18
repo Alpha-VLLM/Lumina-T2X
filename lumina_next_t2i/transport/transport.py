@@ -38,11 +38,6 @@ class WeightType(enum.Enum):
     LIKELIHOOD = enum.auto()
 
 
-class SNRType(enum.Enum):
-    UNIFORM = enum.auto()
-    LOGNORM = enum.auto()
-
-
 class Transport:
     def __init__(self, *, model_type, path_type, loss_type, train_eps, sample_eps, snr_type):
         path_options = {
@@ -108,11 +103,25 @@ class Transport:
             x0 = th.randn_like(x1)
         t0, t1 = self.check_interval(self.train_eps, self.sample_eps)
 
-        if self.snr_type == SNRType.UNIFORM:
+        if self.snr_type.startswith("uniform"):
+            assert t0 == 0.0 and t1 == 1.0, "not implemented."
+            if "_" in self.snr_type:
+                _, t0, t1 = self.snr_type.split("_")
+                t0, t1 = float(t0), float(t1)
             t = th.rand((len(x1),)) * (t1 - t0) + t0
-        elif self.snr_type == SNRType.LOGNORM:
+        elif self.snr_type == "lognorm":
             u = th.normal(mean=0.0, std=1.0, size=(len(x1),))
             t = 1 / (1 + th.exp(-u)) * (t1 - t0) + t0
+        elif self.snr_type.startswith("shift"):
+            try:
+                shift_factor = float(self.snr_type.split("_")[1])
+            except Exception:
+                raise ValueError(
+                    f"illegal snr_type: {self.snr_type}, "
+                    "if time shift is expected, snr_type should be shift_{factor}, like shift_3.0"
+                )
+            t = th.rand((len(x1),))
+            t = (shift_factor * t) / (1 + (shift_factor - 1) * t)
         else:
             raise ValueError(f"Unknown snr type: {self.snr_type}")
         t = t.to(x1[0])
