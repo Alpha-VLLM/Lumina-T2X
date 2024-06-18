@@ -147,7 +147,8 @@ you should update `configs/lumina-text2audio.yaml` to set `AutoencoderKL` checkp
     cond_stage_config:
       target: models.encoders.modules.FrozenCLAPFLANEmbedder
       params:
-        weights_path: /path/to/ckpt/CLAP/CLAP_weights_2022.pth
+        - weights_path: /path/to/ckpt/CLAP/CLAP_weights_2022.pth
+        + weights_path: <real_ckpt_path>/CLAP/CLAP_weights_2022.pth
 
 ```
 
@@ -166,7 +167,7 @@ python -u demo_audio.py \
     --sample_rate 16000
 ```
 
-or you can run `run_audio.sh` script for web demo after updating `AutoencoderKL` ckpt path on `configs/lumina-text2audio.yaml`, `--ckpt`, and `--vocoder_ckpt`.
+or you can run `run_audio.sh` script for web demo after updating `AutoencoderKL` ckpt path on `configs/lumina-text2audio.yaml`, and updating `--ckpt`, and `--vocoder_ckpt` on `run_audio.sh`.
 
 3. setting openai api key for generating structure caption.
 
