@@ -1,0 +1,12 @@
+soundfile
+omegaconf
+torchdyn
+pytorch_lightning
+pytorch_memlab
+einops
+ninja
+torchlibrosa
+protobuf
+sentencepiece
+transformers
+gradio

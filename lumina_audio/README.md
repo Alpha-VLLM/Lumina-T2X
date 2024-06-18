@@ -1,16 +1,19 @@
-# Lumina Text-to-Music
+# Lumina Text-to-Audio
 
-`Lumina Text-to-Music` is a music generation model developed based on FlagDiT. It uses [FLAN-T5-Large](https://huggingface.co/google/flan-t5-large) as the text encoder and [Vocoder](https://github.com/NVIDIA/BigVGAN) as the decoder.
+`Lumina Text-to-Audio` is a music generation model developed based on FlagDiT. It uses [T5-v1.1-XXL](https://huggingface.co/google/t5-v1_1-xxl) as the text encoder and [Vocoder](https://github.com/NVIDIA/BigVGAN) as the decoder.
+
+>[!Warning]
+>The current version of Lumina Text-to-Audio requires the use of structure caption for audio generation. We will soon release a version that does not require structure caption.
 
 - Generation Model: Flag-DiT
-- Text Encoder: [FLAN-T5-Large](https://huggingface.co/google/flan-t5-large)
+- Text Encoder: [T5-v1.1-XXL](https://huggingface.co/google/t5-v1_1-xxl)
 - VAE: Make an Audio 2, finetuned from [Make an Audio](https://github.com/Text-to-Audio/Make-An-Audio)
 - Decoder: [Vocoder](https://github.com/NVIDIA/BigVGAN)
-- `Lumina-T2Music` Checkpoints: [huggingface](https://huggingface.co/Alpha-VLLM/Lumina-T2Music)
+- `Lumina-T2Audio` Checkpoints: [huggingface](https://huggingface.co/Alpha-VLLM/Lumina-T2Audio)
 
 ## 📰 News
 
-- [2024-06-07] 🚀🚀🚀 We release the initial version of `Lumina-T2Music` for text-to-music generation.
+- [2024-06-19] 🚀🚀🚀 We release the initial version of `Lumina-T2Audio` for text-to-audio generation.
 
 ## Installation
 
@@ -49,19 +52,19 @@ conda install python=3.11 pytorch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 p
 ### 2. Install dependencies
 
 >[!Warning]
-> The environment dependencies for Lumina-T2Music are different from those for Lumina-T2I. Please install the appropriate environment.
+> The environment dependencies for Lumina-T2Audio are different from those for Lumina-T2I. Please install the appropriate environment.
 
-Installing `Lumina-T2Music` dependencies:
+Installing `Lumina-T2Audio` dependencies:
 
 ```bash
-cd .. # If you are in the `lumina_music` directory, execute this line.
-pip install -e ".[music]"
+cd .. # If you are in the `lumina_audio` directory, execute this line.
+pip install -e ".[audio]"
 ```
 
 or you can use `requirements.txt` to install the environment.
 
 ```bash
-cd lumina_music # If you are not in the `lumina_music` folder, run this line.
+cd lumina_audio # If you are not in the `lumina_audio` folder, run this line.
 pip install -r requirements.txt
 ```
 
@@ -107,13 +110,13 @@ Prepare the pretrained checkpoints.
 ⭐⭐ (Recommended) you can use `huggingface-cli` downloading our model:
 
 ```bash
-huggingface-cli download --resume-download Alpha-VLLM/Lumina-T2Music --local-dir /path/to/ckpt
+huggingface-cli download --resume-download Alpha-VLLM/Lumina-T2Audio --local-dir /path/to/ckpt
 ```
 
 or using git for cloning the model you want to use:
 
 ```bash
-git clone https://huggingface.co/Alpha-VLLM/Lumina-T2Music
+git clone https://huggingface.co/Alpha-VLLM/Lumina-T2Audio
 ```
 
 ### Web Demo
@@ -122,7 +125,7 @@ To host a local gradio demo for interactive inference, run the following command
 
 1. updated `AutoencoderKL` ckpt path
 
-you should update `configs/lumina-text2music.yaml` to set `AutoencoderKL` checkpoint path. Please replace `/path/to/ckpt` with the path where your checkpoints are located (<real_ckpt_path>).
+you should update `configs/lumina-text2audio.yaml` to set `AutoencoderKL` checkpoint path. Please replace `/path/to/ckpt` with the path where your checkpoints are located (<real_ckpt_path>).
 
 ```diff
   ...
@@ -141,27 +144,51 @@ you should update `configs/lumina-text2music.yaml` to set `AutoencoderKL` checkp
           in_channels: 80
           out_ch: 80
   ...
+    cond_stage_config:
+      target: models.encoders.modules.FrozenCLAPFLANEmbedder
+      params:
+        - weights_path: /path/to/ckpt/CLAP/CLAP_weights_2022.pth
+        + weights_path: <real_ckpt_path>/CLAP/CLAP_weights_2022.pth
+
 ```
 
-2. setting `Lumina-T2Music` and `Vocoder` checkpoint path and run demo
+2. setting `Lumina-T2Audio` and `Vocoder` checkpoint path and run demo
 
 Please replace `/path/to/ckpt` with the actual downloaded path.
 
 ```bash
-# `/path/to/ckpt` should be a directory containing `music_generation`, `maa2`, and `bigvnat`.
+# `/path/to/ckpt` should be a directory containing `audio_generation`, `maa2`, and `bigvnat`.
 
 # default
-python -u demo_music.py \
-    --ckpt "/path/to/ckpt/music_generation" \
+python -u demo_audio.py \
+    --ckpt "/path/to/ckpt/audio_generation" \
     --vocoder_ckpt "/path/to/ckpt/bigvnat" \
-    --config_path "configs/lumina-text2music.yaml" \
+    --config_path "configs/lumina-text2audio.yaml" \
     --sample_rate 16000
 ```
 
-or you can run `run_music.sh` script for web demo after updating `AutoencoderKL` ckpt path on `configs/lumina-text2music.yaml` and updating `--ckpt`, `--vocoder_ckpt` on `run_music.sh`.
+or you can run `run_audio.sh` script for web demo after updating `AutoencoderKL` ckpt path on `configs/lumina-text2audio.yaml`, and updating `--ckpt`, and `--vocoder_ckpt` on `run_audio.sh`.
+
+3. setting openai api key for generating structure caption.
+
+Please replace the line in `n2s_openai.py`:
+
+```diff
+- openai_key = 'your openai api key here'
++ openai_key = '<your real openai api key>'
+```
+
+If you have other relay station APIs, please modify the `base_url` accordingly. The default setting uses OpenAI's `base_url`.
+
+```diff
+- base_url = ""
++ base_url = "<your base url>"
+```
+
+4. running the demo
 
 ```bash
-bash run_music.sh
+bash run_audio.sh
 ```
 
 ## Disclaimer
