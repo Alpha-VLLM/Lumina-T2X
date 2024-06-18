@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 from transformers import AutoTokenizer, T5EncoderModel, T5Tokenizer
 
-from models.util import count_params
+from ..util import count_params
 from .CLAP.clap import TextEncoder
 from .CLAP.utils import read_config_as_args
 

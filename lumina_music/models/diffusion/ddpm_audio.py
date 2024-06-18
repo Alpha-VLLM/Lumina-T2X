@@ -13,8 +13,8 @@ except:
 
 from omegaconf import ListConfig
 
-from models.autoencoder1d import AutoencoderKL, IdentityFirstStage, VQModelInterface
-from models.util import default, instantiate_from_config, isimage, log_txt_as_img, mean_flat
+from ..autoencoder1d import AutoencoderKL, IdentityFirstStage, VQModelInterface
+from ..util import default, instantiate_from_config, isimage, log_txt_as_img, mean_flat
 from .ddim import DDIMSampler
 from .ddpm import DDPM, disabled_train
 from .distributions.distributions import DiagonalGaussianDistribution, normal_kl

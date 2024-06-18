@@ -17,7 +17,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from models.util import instantiate_from_config
+from ..util import instantiate_from_config
 
 
 def make_beta_schedule(schedule, n_timestep, linear_start=1e-4, linear_end=2e-2, cosine_s=8e-3):
