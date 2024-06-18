@@ -137,8 +137,7 @@ pre-commit
 - [X] Lumina-Text2Image (Demos✅, Training✅, Inference✅, Checkpoints✅)
 - [ ] Lumina-Text2Video (Demos✅)
 - [X] Lumina-Text2Music (Demos✅, Inference✅, Checkpoints✅)
-- [X] Web Demo
-- [X] Cli Demo
+- [X] Lumina-Text2Audio (Demos✅, Inference✅, Checkpoints✅)
 
 ## 📜 Index of Content
 
