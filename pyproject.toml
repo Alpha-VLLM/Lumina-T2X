@@ -56,6 +56,7 @@ dev = ["coverage", "pre-commit", "isort", "black"]
 image = ["diffusers", "fairscale", "accelerate", "tensorboard", "transformers", "gradio", "torchdiffeq", "click"
 ]
 music = ["soundfile", "omegaconf", "torchdyn", "pytorch_lightning", "pytorch_memlab", "einops", "ninja", "torchlibrosa", "protobuf", "sentencepiece", "gradio", "transformers"]
+audio = ["soundfile", "omegaconf", "torchdyn", "pytorch_lightning", "pytorch_memlab", "einops", "ninja", "torchlibrosa", "protobuf", "sentencepiece", "gradio", "transformers"]
 
 
 [project.scripts]

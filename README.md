@@ -65,6 +65,7 @@
 
 ## 📰 News
 
+- **[2024-06-19] We have released the `Lumina-T2Music` (Text-to-Music) code and model for music generation. [MODEL](https://huggingface.co/Alpha-VLLM/Lumina-T2Music)**
 - **[2024-06-17] 🚀🚀🚀 We have support both inference and training (including Dreambooth) of SD3, implemented in our Lumina framework! [CODE](https://github.com/Alpha-VLLM/Lumina-T2X/tree/main/lumina_next_t2i_mini)**
 - **[2024-06-17] 🥰🥰🥰 Lumina-Next supports ComfyUI now, thanks to [Kijai](https://github.com/kijai)! [LINK](https://github.com/kijai/ComfyUI-LuminaWrapper)**
 - **[2024-06-08] 🚀🚀🚀 We have released the `Lumina-Next-SFT` model, demonstrating better visual quality! [MODEL](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT)**
