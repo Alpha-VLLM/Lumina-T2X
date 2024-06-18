@@ -225,7 +225,9 @@ def main():
     description = """
     # Lumina Text-to-Audio
 
-    ### Lumina Text-to-Audio requires using `gpt-3.5-turbo` to generate structure caption. 
+    ### Lumina Text-to-Audio requires using `gpt-3.5-turbo` to generate structure caption.
+
+    ### <span style="color: red;">(Please ensure that the OpenAI API key is set in lines 8 and 9 of the `n2s_openai.py` file. If using other proxies, please set the `base_url` accordingly.)
     
     ### Before using it, please set your `OpenAI API key` to ensure correct generation of structured descriptions and suitable audio.
     
@@ -246,9 +248,9 @@ def main():
                 )
                 with gr.Row():
                     num_sampling_steps = gr.Slider(
-                        minimum=1,
-                        maximum=1000,
-                        value=40,
+                        minimum=20,
+                        maximum=200,
+                        value=100,
                         step=1,
                         interactive=True,
                         label="Sampling steps",
@@ -266,7 +268,7 @@ def main():
                         solver = gr.Dropdown(
                             value="euler",
                             choices=["euler"],
-                            label="solver",
+                            label="Solver",
                         )
                         cfg_scale = gr.Slider(
                             minimum=2.0,
@@ -340,7 +342,7 @@ def main():
         )
 
     mp_barrier.wait()
-    demo.queue().launch(server_name="0.0.0.0", server_port=7864)
+    demo.queue().launch(server_name="0.0.0.0", server_port=7860)
 
 
 if __name__ == "__main__":

@@ -10,7 +10,7 @@ We will provide our implementation and pretrained models as open source in this 
 
 ## 📰 News
 
-- [2024-06-07] 🚀🚀🚀 We release the initial version of `Lumina-T2Audio` for text-to-audio generation.
+- [2024-06-19] 🚀🚀🚀 We release the initial version of `Lumina-T2Audio` for text-to-audio generation.
 
 ## Installation
 
@@ -171,7 +171,7 @@ Please replace the line in `n2s_openai.py`:
 
 ```diff
 - openai_key = 'your openai api key here'
-+ openai_key = '<your openai api key>'
++ openai_key = '<your real openai api key>'
 ```
 
 If you have other relay station APIs, please modify the `base_url` accordingly. The default setting uses OpenAI's `base_url`.
