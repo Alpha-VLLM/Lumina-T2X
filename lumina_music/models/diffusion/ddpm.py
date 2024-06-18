@@ -24,16 +24,7 @@ except:
     from pytorch_lightning.utilities import rank_zero_only  # torch2
 
 from ..autoencoder1d import AutoencoderKL, IdentityFirstStage, VQModelInterface
-from ..util import (
-    count_params,
-    default,
-    exists,
-    instantiate_from_config,
-    isimage,
-    ismap,
-    log_txt_as_img,
-    mean_flat,
-)
+from ..util import count_params, default, exists, instantiate_from_config, isimage, ismap, log_txt_as_img, mean_flat
 from .ddim import DDIMSampler
 from .distributions.distributions import DiagonalGaussianDistribution, normal_kl
 from .ema import LitEma

@@ -1,6 +1,7 @@
 import torch as th
 from torchdiffeq import odeint
 
+
 def sample(x1):
     """Sampling x0 & t based on shape of x1 (if needed)
     Args:
@@ -73,7 +74,7 @@ class ODE:
             self.t = th.linspace(t0, t1, num_steps)
             if time_shifting_factor:
                 self.t = self.t / (self.t + time_shifting_factor - time_shifting_factor * self.t)
-        
+
         self.use_sd3 = use_sd3
         self.sampler_type = sampler_type
 
@@ -81,23 +82,26 @@ class ODE:
         device = x[0].device if isinstance(x, tuple) else x.device
 
         if not self.use_sd3:
+
             def _fn(t, x):
                 t = th.ones(x[0].size(0)).to(device) * t if isinstance(x, tuple) else th.ones(x.size(0)).to(device) * t
                 model_output = model(x, t, **model_kwargs)
                 return model_output
+
         else:
             cfg_scale = model_kwargs["cfg_scale"]
             model_kwargs.pop("cfg_scale")
+
             def _fn(t, x):
                 t = th.ones(x.size(0)).to(device) * t * 1000
-                half_x = x[:len(x) // 2]
+                half_x = x[: len(x) // 2]
                 x = th.cat([half_x, half_x], dim=0)
                 model_output = model(hidden_states=x, timestep=t, **model_kwargs)[0]
                 uncond, cond = model_output.chunk(2, dim=0)
                 model_output = uncond + cfg_scale * (cond - uncond)
                 model_output = th.cat([model_output, model_output], dim=0)
                 return model_output
-            
+
         t = self.t.to(device)
         samples = odeint(_fn, x, t, method=self.sampler_type)
         return samples

@@ -69,4 +69,3 @@ model:
       target: models.encoders.modules.FrozenCLAPFLANEmbedder
       params:
         weights_path: /path/to/ckpt/CLAP/CLAP_weights_2022.pth
-

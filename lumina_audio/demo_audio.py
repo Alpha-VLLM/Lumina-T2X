@@ -228,11 +228,11 @@ def main():
     ### Lumina Text-to-Audio requires using `gpt-3.5-turbo` to generate structure caption.
 
     ### <span style="color: red;">(Please ensure that the OpenAI API key is set in lines 8 and 9 of the `n2s_openai.py` file. If using other proxies, please set the `base_url` accordingly.)
-    
+
     ### Before using it, please set your `OpenAI API key` to ensure correct generation of structured descriptions and suitable audio.
-    
+
     ### <span style="color: red;">We will soon release a version that does not require structure caption.
-    
+
     """
     with gr.Blocks(css="./style.css") as demo:
         with gr.Row():
