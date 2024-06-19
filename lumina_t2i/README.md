@@ -114,11 +114,78 @@ pip install -v --disable-pip-version-check --no-cache-dir --no-build-isolation -
 
 This section shows how to train Lumina-T2I on a SLURM cluster. Changes may be needed to run the experiments on different platforms.
 
-`*If you want to finetune on [pretrained checkpoints](https://huggingface.co/Alpha-VLLM/Lumina-T2I) of `.safetensors` format, please convert them to `.pth` first. We provide `lumina` command for this conversion.*
+*If you want to finetune on [pretrained checkpoints](https://huggingface.co/Alpha-VLLM/Lumina-T2I) of `.safetensors` format, please convert them to `.pth` first. We provide `lumina` command for this conversion.*
 
 ```bash
 lumina convert "/path/to/your/own/model.safetensors" "/path/to/new/directory/" # convert to `.pth`
 ```
+
+### Data preparation
+
+You should first prepare a JSON file containing your image paths and corresponding captions in the following format.
+
+```json
+// image_caption.json
+[
+  {
+    "conversations": [
+      {"from": "user", "value": ""},
+      {"from": "gpt", "value": "<image caption1>...."},
+    ],
+    "image": "<image_path_1>"
+  },
+  {
+    "conversations": [
+      {"from": "user", "value": ""},
+      {"from": "gpt", "value": "<image caption2>...."},
+    ],
+    "image": "<image_path_2>"
+  },
+  ...
+]
+```
+
+Then, specify the path of the JSON file in the YAML files under configs/data. You can use multiple files.
+
+```yaml
+# config.yaml
+META:
+  -
+    path: '/path/to/<json_file_1>.json'
+    root: '<image_folder_path_1>'
+  -
+    path: '/path/to/<json_file_2>.json'
+    root: '<image_folder_path_2>'
+  ...
+```
+
+You can place all image files from a dataset in the same folder, write the relative paths of the images in the JSON file, and specify the root to locate the images. it will load the image using path like: 
+
+```python
+json_file = json.load(open("image_caption.json"), "r")
+# each item in the json will be processed to concat the image_folder_path and image_path:
+image_path = os.path.join(yaml_file['META'][0]['root'], json_file[0]['conversations'][1]['value'])
+```
+all images `x` <image_path_x> is stored in folder `y` <image_folder_path_y>.
+
+### Download pretrained model on Huggingface
+
+⭐⭐ (Recommended) you can use `huggingface-cli` downloading our model:
+
+```bash
+huggingface-cli download --resume-download Alpha-VLLM/Lumina-T2I --local-dir /path/to/ckpt
+```
+
+please convert your downloaded `.safetensors` weigh to `.pth` first. We provide `lumina` command for this conversion.*
+
+```bash
+# convert to `.pth`
+lumina convert "/path/to/your/own/model.safetensors" "/path/to/new/directory/" 
+```
+
+### Run training
+
+Modify the path to the weights and start the training.
 
 1. **Stage 1 @ 256px**
 
