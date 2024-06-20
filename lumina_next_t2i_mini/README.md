@@ -117,7 +117,7 @@ huggingface-cli download --resume-download Alpha-VLLM/Lumina-Next-SFT --local-di
 or using git for cloning the model you want to use:
 
 ```bash
-git clone https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I
+git clone https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT
 ```
 
 >[!Note]
