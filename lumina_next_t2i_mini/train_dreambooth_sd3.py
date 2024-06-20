@@ -716,7 +716,7 @@ def main(args):
                 loss_dict = training_losses(model_func, x_mb, model_kwargs)
             loss = loss_dict["loss"].sum() / local_batch_size
             loss_item += loss.item()
-            with model.no_sync() if args.data_parallel in ["sdp", "hsdp"] and not last_mb else contextlib.nullcontext():
+            with model.no_sync() if args.data_parallel in ["sdp", "fsdp"] and not last_mb else contextlib.nullcontext():
                 loss.backward()
 
         grad_norm = calculate_l2_grad_norm(model)
