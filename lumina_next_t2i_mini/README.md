@@ -111,7 +111,7 @@ pip install -v --disable-pip-version-check --no-cache-dir --no-build-isolation -
 ⭐⭐ (Recommended) you can use huggingface_cli downloading our model:
 
 ```bash
-huggingface-cli download --resume-download Alpha-VLLM/Lumina-Next-T2I --local-dir /path/to/ckpt
+huggingface-cli download --resume-download Alpha-VLLM/Lumina-Next-SFT --local-dir /path/to/ckpt
 ```
 
 or using git for cloning the model you want to use:
@@ -120,6 +120,12 @@ or using git for cloning the model you want to use:
 git clone https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I
 ```
 
+>[!Note]
+> For Chinese user using command below to download the model:
+> ```bash
+> git lfs install
+> git clone https://www.wisemodel.cn/Alpha-VLLM/Lumina-Next-SFT.git
+> ```
 
 #### 2. Use checkpoints trained by yourself
 
