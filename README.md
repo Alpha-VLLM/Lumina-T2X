@@ -68,6 +68,7 @@
 
 ## 📰 News
 
+- **[2024-06-21] 🥰🥰🥰 Lumina-Next has a jupyter nootbook for inference, thanks to [canenduru](https://github.com/camenduru)! [LINK](https://github.com/camenduru/Lumina-Next-jupyter)**
 - **[2024-06-21] We have uploaded the `Lumina-Next-SFT` and `Lumina-Next-T2I` to [wisemodel.cn](https://wisemodel.cn/models). [wisemodel repo](https://wisemodel.cn/models/Alpha-VLLM/Lumina-Next-SFT)**
 - **[2024-06-19] We have released the `Lumina-T2Audio` (Text-to-Audio) code and model for music generation. [MODEL](https://huggingface.co/Alpha-VLLM/Lumina-T2Audio)**
 - **[2024-06-17] 🚀🚀🚀 We have support both inference and training (including Dreambooth) of SD3, implemented in our Lumina framework! [CODE](https://github.com/Alpha-VLLM/Lumina-T2X/tree/main/lumina_next_t2i_mini)**
@@ -427,6 +428,10 @@ We support diverse configurations, including text encoders, DiTs of different pa
 </p>
 
 ## Contributors
+
+Core member for code developlement and maintence:
+
+Ziyi Lin, Dongyang Liu, Le Zhuo, Junlin Xie, Ruoyi Du, Peng Gao
 
 <a href="https://github.com/Alpha-VLLM/Lumina-T2X/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=Alpha-VLLM/Lumina-T2X" />
