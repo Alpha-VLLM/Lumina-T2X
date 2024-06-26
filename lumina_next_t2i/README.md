@@ -122,14 +122,21 @@ pip install -e .
 ⭐⭐ (Recommended) you can use `huggingface-cli` downloading our model:
 
 ```bash
-huggingface-cli download --resume-download Alpha-VLLM/Lumina-Next-T2I --local-dir /path/to/ckpt
+huggingface-cli download --resume-download Alpha-VLLM/Lumina-Next-SFT --local-dir /path/to/ckpt
 ```
 
 or using git for cloning the model you want to use:
 
 ```bash
-git clone https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I
+git clone https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT
 ```
+
+>[!Note]
+> For Chinese user using command below to download the model:
+> ```bash
+> git lfs install
+> git clone https://www.wisemodel.cn/Alpha-VLLM/Lumina-Next-SFT.git
+> ```
 
 3. Converting `*.pth` files to `*.safetensors`
 

@@ -182,7 +182,8 @@ def inference(cap, dtype, config, vae, model_dit, text_encoder, tokenizer, *args
     solver = infer_config["solver"]
     t_shift = infer_config["t_shift"]
     seed = infer_config["seed"]
-    ntk_scaling = infer_config["ntk_scaling"]
+    scaling_method = infer_config["scaling_method"]
+    scaling_watershed = infer_config["scaling_watershed"]
     proportional_attn = infer_config["proportional_attn"]
 
     # model config
@@ -208,6 +209,7 @@ def inference(cap, dtype, config, vae, model_dit, text_encoder, tokenizer, *args
                 # end sampler
 
                 # getting resolution setting
+                do_extrapolation = "Extrapolation" in resolution
                 resolution = resolution.split(" ")[-1]
                 w, h = resolution.split("x")
                 w, h = int(w), int(h)
@@ -233,8 +235,16 @@ def inference(cap, dtype, config, vae, model_dit, text_encoder, tokenizer, *args
                 if proportional_attn:
                     model_kwargs["proportional_attn"] = True
                     model_kwargs["base_seqlen"] = (image_size // 16) ** 2
-                if ntk_scaling:
-                    model_kwargs["ntk_factor"] = math.sqrt(w * h / image_size**2)
+                else:
+                    model_kwargs["proportional_attn"] = False
+                    model_kwargs["base_seqlen"] = None
+
+                if do_extrapolation and scaling_method == "Time-aware":
+                    model_kwargs["scale_factor"] = math.sqrt(w * h / image_size**2)
+                    model_kwargs["scale_watershed"] = scaling_watershed
+                else:
+                    model_kwargs["scale_factor"] = 1.0
+                    model_kwargs["scale_watershed"] = 1.0
 
                 rank0_print(f"> Caption: {cap}")
                 rank0_print(f"> Num_sampling_steps: {num_sampling_steps}")

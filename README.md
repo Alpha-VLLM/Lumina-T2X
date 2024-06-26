@@ -38,6 +38,9 @@
 [![Static Badge](https://img.shields.io/badge/Official(node1)-violet?logo=youtubegaming&label=Demo%20Lumina-Text2Music)](http://139.196.83.164:8000/)&#160;
 [![Static Badge](https://img.shields.io/badge/Lumina--Next--SFT-HF_Space-yellow?logoColor=violet&label=%F0%9F%A4%97%20Demo%20Lumina-Next-SFT)](https://huggingface.co/spaces/Alpha-VLLM/Lumina-Next-T2I)
 
+[![Static Badge](https://img.shields.io/badge/Lumina--Next--SFT%20checkpoints-Model(2B)-purple?logoColor=#571482&label=%F0%9F%A4%97%20Lumina-Next-SFT%20checkpoints)](https://wisemodel.cn/models/Alpha-VLLM/Lumina-Next-SFT)
+[![Static Badge](https://img.shields.io/badge/Lumina--Next--T2I%20checkpoints-Model(2B)-purple?logoColor=#571482&label=%F0%9F%A4%97%20Lumina-Next-SFT%20checkpoints)](https://wisemodel.cn/models/Alpha-VLLM/Lumina-Next-T2I)
+
 [![Static Badge](https://img.shields.io/badge/Lumina--Next--SFT%20checkpoints-Model(2B)-yellow?logoColor=violet&label=%F0%9F%A4%97%20Lumina-Next-SFT%20checkpoints)](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT)
 [![Static Badge](https://img.shields.io/badge/Lumina--Next--T2I%20checkpoints-Model(2B)-yellow?logoColor=violet&label=%F0%9F%A4%97%20Lumina-Next-T2I%20checkpoints)](https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I)
 [![Static Badge](https://img.shields.io/badge/Lumina--T2I%20checkpoints-Model(5B)-yellow?logoColor=violet&label=%F0%9F%A4%97%20Lumina-T2I%20checkpoints)](https://huggingface.co/Alpha-VLLM/Lumina-T2I)
@@ -66,6 +69,9 @@
 ## 📰 News
 
 - [2024-06-26] We have released the inference code for img2img translation using `Lumina-Next-T2I`. [CODE](https://github.com/Alpha-VLLM/Lumina-T2X/tree/main/lumina_next_t2i_mini/scripts/sample_img2img.sh)
+- **[2024-06-21] 🥰🥰🥰 Lumina-Next has a jupyter nootbook for inference, thanks to [canenduru](https://github.com/camenduru)! [LINK](https://github.com/camenduru/Lumina-Next-jupyter)**
+- **[2024-06-21] We have uploaded the `Lumina-Next-SFT` and `Lumina-Next-T2I` to [wisemodel.cn](https://wisemodel.cn/models). [wisemodel repo](https://wisemodel.cn/models/Alpha-VLLM/Lumina-Next-SFT)**
+- **[2024-06-19] We have released the `Lumina-T2Audio` (Text-to-Audio) code and model for music generation. [MODEL](https://huggingface.co/Alpha-VLLM/Lumina-T2Audio)**
 - **[2024-06-17] 🚀🚀🚀 We have support both inference and training (including Dreambooth) of SD3, implemented in our Lumina framework! [CODE](https://github.com/Alpha-VLLM/Lumina-T2X/tree/main/lumina_next_t2i_mini)**
 - **[2024-06-17] 🥰🥰🥰 Lumina-Next supports ComfyUI now, thanks to [Kijai](https://github.com/kijai)! [LINK](https://github.com/kijai/ComfyUI-LuminaWrapper)**
 - **[2024-06-08] 🚀🚀🚀 We have released the `Lumina-Next-SFT` model, demonstrating better visual quality! [MODEL](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT)**
@@ -137,8 +143,7 @@ pre-commit
 - [X] Lumina-Text2Image (Demos✅, Training✅, Inference✅, Checkpoints✅)
 - [ ] Lumina-Text2Video (Demos✅)
 - [X] Lumina-Text2Music (Demos✅, Inference✅, Checkpoints✅)
-- [X] Web Demo
-- [X] Cli Demo
+- [X] Lumina-Text2Audio (Demos✅, Inference✅, Checkpoints✅)
 
 ## 📜 Index of Content
 
@@ -433,6 +438,10 @@ We support diverse configurations, including text encoders, DiTs of different pa
 </p>
 
 ## Contributors
+
+Core member for code developlement and maintence:
+
+Ziyi Lin, Dongyang Liu, Le Zhuo, Junlin Xie, Ruoyi Du, Peng Gao
 
 <a href="https://github.com/Alpha-VLLM/Lumina-T2X/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=Alpha-VLLM/Lumina-T2X" />

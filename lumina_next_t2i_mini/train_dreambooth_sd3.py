@@ -17,15 +17,12 @@ from functools import partial
 import json
 import logging
 import os
-import json
-import yaml
 import random
 import socket
 from time import time
 
 from PIL import Image
-from diffusers import StableDiffusion3Pipeline, AutoencoderKL, SD3Transformer2DModel
-from transformers import CLIPTextModelWithProjection, T5EncoderModel, CLIPTokenizer, T5TokenizerFast
+from diffusers import AutoencoderKL, SD3Transformer2DModel, StableDiffusion3Pipeline
 import numpy as np
 import torch
 import torch.distributed as dist
@@ -46,6 +43,9 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from torchvision import transforms
+from transformers import CLIPTextModelWithProjection, CLIPTokenizer, T5EncoderModel, T5TokenizerFast
+from transformers.utils import logging as hf_logging
+import yaml
 
 from data import ItemProcessor, MyDataset, read_general
 from grad_norm import calculate_l2_grad_norm, scale_grad
@@ -53,7 +53,6 @@ from imgproc import var_center_crop
 from parallel import distributed_init, get_intra_node_process_group
 from transport import training_losses
 
-from transformers.utils import logging as hf_logging
 hf_logging.set_verbosity_error()
 
 
@@ -110,33 +109,33 @@ class T2IItemProcessor(ItemProcessor):
         image = self.image_transform(image)
 
         return image, text
-    
 
-def generate_json(data_path, instance_prompt, save_path='.tmp/meta_data.yaml'):
-    
+
+def generate_json(data_path, instance_prompt, save_path=".tmp/meta_data.yaml"):
+
     all_imgs = os.listdir(data_path)
-    all_imgs = [os.path.join(data_path, x) for x in all_imgs if x.split('.')[-1] in ['jpg', 'jpeg', 'png']]
+    all_imgs = [os.path.join(data_path, x) for x in all_imgs if x.split(".")[-1] in ["jpg", "jpeg", "png"]]
 
     data = [{"prompt": instance_prompt, "path": x} for x in all_imgs]
 
-    os.makedirs('.tmp', exist_ok=True)
-    with open('.tmp/data.json', 'w') as json_file:
+    os.makedirs(".tmp", exist_ok=True)
+    with open(".tmp/data.json", "w") as json_file:
         json.dump(data, json_file, indent=4)
-        
+
     meta_data = {
-        'META': [
+        "META": [
             {
-                'path': '.tmp/data.json',
-                'type': 'image_text',
+                "path": ".tmp/data.json",
+                "type": "image_text",
             },
         ]
     }
 
-    with open(save_path, 'w') as yaml_file:
+    with open(save_path, "w") as yaml_file:
         yaml.dump(meta_data, yaml_file, default_flow_style=False)
-        
+
     return save_path
-        
+
 
 def _encode_prompt_with_t5(
     text_encoder,
@@ -415,7 +414,7 @@ def main(args):
     torch.manual_seed(seed)
     torch.cuda.set_device(device)
     setup_mixed_precision(args)
-    
+
     # Setup an experiment folder:
     os.makedirs(args.results_dir, exist_ok=True)
     checkpoint_dir = os.path.join(args.results_dir, "checkpoints")
@@ -452,15 +451,9 @@ def main(args):
     tokenizers = [tokenizer_one, tokenizer_two, tokenizer_three]
 
     # Load text encoders
-    text_encoder_one = CLIPTextModelWithProjection.from_pretrained(
-        args.model_path, subfolder="text_encoder"
-    )
-    text_encoder_two = CLIPTextModelWithProjection.from_pretrained(
-        args.model_path, subfolder="text_encoder_2"
-    )
-    text_encoder_three = T5EncoderModel.from_pretrained(
-        args.model_path, subfolder="text_encoder_3"
-    )
+    text_encoder_one = CLIPTextModelWithProjection.from_pretrained(args.model_path, subfolder="text_encoder")
+    text_encoder_two = CLIPTextModelWithProjection.from_pretrained(args.model_path, subfolder="text_encoder_2")
+    text_encoder_three = T5EncoderModel.from_pretrained(args.model_path, subfolder="text_encoder_3")
     text_encoders = [text_encoder_one, text_encoder_two, text_encoder_three]
 
     # Load vae
@@ -468,11 +461,9 @@ def main(args):
         args.model_path,
         subfolder="vae",
     )
-    
+
     # Load model
-    model = SD3Transformer2DModel.from_pretrained(
-        args.model_path, subfolder="transformer"
-    )
+    model = SD3Transformer2DModel.from_pretrained(args.model_path, subfolder="transformer")
 
     model.requires_grad_(True)
     vae.requires_grad_(False)
@@ -490,7 +481,7 @@ def main(args):
         text_encoder_one = text_encoder_one.to(device, dtype=torch.float32)
         text_encoder_two = text_encoder_two.to(device, dtype=torch.float32)
         text_encoder_three = text_encoder_three.to(device, dtype=torch.float32)
-        
+
     model_ema = deepcopy(model)
 
     # resume (part 1, before FSDP wrapping)
@@ -686,7 +677,9 @@ def main(args):
             x = [(vae.encode(img[None]).latent_dist.sample()[0] - vae_shift) * vae_scale for img in x]
 
         with torch.no_grad():
-            prompt_embeds, pooled_prompt_embeds = encode_prompt(text_encoders, tokenizers, args.instance_prompt, device="cuda")
+            prompt_embeds, pooled_prompt_embeds = encode_prompt(
+                text_encoders, tokenizers, args.instance_prompt, device="cuda"
+            )
 
         loss_item = 0.0
         opt.zero_grad()
@@ -709,6 +702,7 @@ def main(args):
                 "fp32": contextlib.nullcontext(),
                 "tf32": contextlib.nullcontext(),
             }[args.precision]:
+
                 def model_func(latents, t, **kwargs):
                     # SD3 uses a reversed notation for the flow between pure signal and noise
                     # specifically, at timestep 0, the latents are pure noise for lumina-series models,
@@ -716,12 +710,13 @@ def main(args):
                     # additional, the timesteps that sd3 model expects lie between [0,1000], while
                     # for lumia the range is [0, 1]
                     # this function wraps the model to eliminate these gaps
-                    result = model(hidden_states=latents, timestep=(1-t)*1000, **kwargs)[0]
+                    result = model(hidden_states=latents, timestep=(1 - t) * 1000, **kwargs)[0]
                     return -result
+
                 loss_dict = training_losses(model_func, x_mb, model_kwargs)
             loss = loss_dict["loss"].sum() / local_batch_size
             loss_item += loss.item()
-            with model.no_sync() if args.data_parallel in ["sdp", "hsdp"] and not last_mb else contextlib.nullcontext():
+            with model.no_sync() if args.data_parallel in ["sdp", "fsdp"] and not last_mb else contextlib.nullcontext():
                 loss.backward()
 
         grad_norm = calculate_l2_grad_norm(model)
@@ -870,12 +865,8 @@ if __name__ == "__main__":
         "Compared to --resume, this loads neither the optimizer states "
         "nor the data loader states.",
     )
-    parser.add_argument(
-        "--use_t5", action="store_true", default=True
-    )
-    parser.add_argument(
-        "--no_t5", action="store_false", dest="use_t5"
-    )
+    parser.add_argument("--use_t5", action="store_true", default=True)
+    parser.add_argument("--no_t5", action="store_false", dest="use_t5")
     parser.add_argument(
         "--grad_clip",
         type=float,

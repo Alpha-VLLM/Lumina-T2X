@@ -15,7 +15,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.optim.lr_scheduler import LambdaLR
 
-from models.util import instantiate_from_config
+from ..util import instantiate_from_config
 from .diffusion.distributions.distributions import DiagonalGaussianDistribution
 from .diffusion.ema import LitEma
 

@@ -682,7 +682,7 @@ class NextDiT(nn.Module):
 
         for layer in self.layers:
             layer.attention.use_flash_attn = use_flash_attn
-            
+
         assert (dim // n_heads) % 4 == 0, "2d rope needs head dim to be divisible by 4"
         self.freqs_cis = NextDiT.precompute_freqs_cis(
             dim // n_heads,

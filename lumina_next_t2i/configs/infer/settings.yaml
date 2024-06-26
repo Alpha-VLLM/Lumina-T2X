@@ -19,11 +19,12 @@
     likelihood: false               # option: true or false
 
   infer:
-      resolution: "1024x1024"     # option: ["1024x1024", "512x2048", "2048x512", "(Extrapolation) 1664x1664", "(Extrapolation) 1024x2048", "(Extrapolation) 2048x1024"]
-      num_sampling_steps: 60      # range: 1-1000
-      cfg_scale: 4.               # range: 1-20
-      solver: "euler"             # option: ["euler", "dopri5", "dopri8"]
-      t_shift: 4                  # range: 1-20 (int only)
-      ntk_scaling: true           # option: true or false
-      proportional_attn: true     # option: true or false
-      seed: 0                     # rnage: any number
+      resolution: "1024x1024"       # option: ["1024x1024", "512x2048", "2048x512", "(Extrapolation) 1664x1664", "(Extrapolation) 1024x2048", "(Extrapolation) 2048x1024"]
+      num_sampling_steps: 60        # range: 1-1000
+      cfg_scale: 4.                 # range: 1-20
+      solver: "euler"               # option: ["euler", "dopri5", "dopri8"]
+      t_shift: 4                    # range: 1-20 (int only)
+      scaling_method: "Time-aware"  # option: ["Time-aware", "None"]
+      scale_watershed: 0.3          # range: 0.0-1.0
+      proportional_attn: true       # option: true or false
+      seed: 0                       # rnage: any number

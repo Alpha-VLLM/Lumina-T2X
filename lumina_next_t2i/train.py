@@ -13,6 +13,7 @@ import contextlib
 from copy import deepcopy
 from datetime import datetime
 import functools
+from functools import partial
 import json
 import logging
 import os
@@ -26,6 +27,11 @@ import fairscale.nn.model_parallel.initialize as fs_init
 import numpy as np
 import torch
 import torch.distributed as dist
+from torch.distributed.algorithms._checkpoint.checkpoint_wrapper import (
+    CheckpointImpl,
+    apply_activation_checkpointing,
+    checkpoint_wrapper,
+)
 from torch.distributed.fsdp import (
     FullStateDictConfig,
     FullyShardedDataParallel as FSDP,
@@ -313,8 +319,8 @@ def main(args):
     cap_feat_dim = text_encoder.config.hidden_size
 
     # Create model:
-    assert args.image_size % 8 == 0, "Image size must be divisible by 8 (for the VAE encoder)."
     model = models.__dict__[args.model](
+        in_channels=16 if args.vae == "sd3" else 4,
         qk_norm=args.qk_norm,
         cap_feat_dim=cap_feat_dim,
     )
@@ -370,31 +376,73 @@ def main(args):
                 ),
                 map_location="cpu",
             )
+
+            size_mismatch_keys = []
+            model_state_dict = model.state_dict()
+            for k, v in state_dict.items():
+                if k in model_state_dict and model_state_dict[k].shape != v.shape:
+                    size_mismatch_keys.append(k)
+            for k in size_mismatch_keys:
+                del state_dict[k]
+            del model_state_dict
+
             missing_keys, unexpected_keys = model.load_state_dict(state_dict, strict=False)
             missing_keys_ema, unexpected_keys_ema = model_ema.load_state_dict(state_dict, strict=False)
             del state_dict
             assert set(missing_keys) == set(missing_keys_ema)
             assert set(unexpected_keys) == set(unexpected_keys_ema)
             logger.info("Model initialization result:")
+            logger.info(f"  Size mismatch keys: {size_mismatch_keys}")
             logger.info(f"  Missing keys: {missing_keys}")
             logger.info(f"  Unexpeected keys: {unexpected_keys}")
     dist.barrier()
 
+    # checkpointing (part1, should be called before FSDP wrapping)
+    if args.checkpointing:
+        checkpointing_list = list(model.transformer_blocks)
+        checkpointing_list_ema = list(model_ema.transformer_blocks)
+    else:
+        checkpointing_list = []
+        checkpointing_list_ema = []
+
     model = setup_fsdp_sync(model, args)
     model_ema = setup_fsdp_sync(model_ema, args)
 
+    # checkpointing (part2, after FSDP wrapping)
+    if args.checkpointing:
+        print("apply gradient checkpointing")
+        non_reentrant_wrapper = partial(
+            checkpoint_wrapper,
+            offload_to_cpu=False,
+            checkpoint_impl=CheckpointImpl.NO_REENTRANT,
+        )
+        apply_activation_checkpointing(
+            model,
+            checkpoint_wrapper_fn=non_reentrant_wrapper,
+            check_fn=lambda submodule: submodule in checkpointing_list,
+        )
+        apply_activation_checkpointing(
+            model_ema,
+            checkpoint_wrapper_fn=non_reentrant_wrapper,
+            check_fn=lambda submodule: submodule in checkpointing_list_ema,
+        )
+
+    logger.info(f"model:\n{model}\n")
+
     # default: 1000 steps, linear noise schedule
     transport = create_transport("Linear", "velocity", None, None, None, snr_type=args.snr_type)  # default: velocity;
-    if args.vae != "sdxl":
+    if args.vae == "sd3":
+        logger.info("use SD3 VAE")
+        vae = AutoencoderKL.from_pretrained("/path/to/sd3/vae").to(device)
+    elif args.vae == "sdxl":
+        logger.info("use SDXL VAE")
+        vae = AutoencoderKL.from_pretrained("stabilityai/sdxl-vae").to(device)
+    else:
         vae = AutoencoderKL.from_pretrained(
             f"stabilityai/sd-vae-ft-{args.vae}"
             if args.local_diffusers_model_root is None
             else os.path.join(args.local_diffusers_model_root, f"stabilityai/sd-vae-ft-{args.vae}")
         ).to(device)
-    else:
-        # vae
-        logger.info("use SDXL VAE")
-        vae = AutoencoderKL.from_pretrained("stabilityai/sdxl-vae").to(device)
 
     # Setup optimizer (we used default Adam betas=(0.9, 0.999) and a constant
     # learning rate of 1e-4 in our paper):
@@ -430,6 +478,7 @@ def main(args):
     # Setup data:
     logger.info("Creating data transform...")
     patch_size = 8 * model_patch_size
+    logger.info(f"patch size: {patch_size}")
     max_num_patches = round((args.image_size / patch_size) ** 2)
     logger.info(f"Limiting number of patches to {max_num_patches}.")
     crop_size_list = generate_crop_size_list(max_num_patches, patch_size)
@@ -477,6 +526,7 @@ def main(args):
     # Variables for monitoring/logging purposes:
     log_steps = 0
     running_loss = 0
+    running_grad_norm = 0
     start_time = time()
 
     logger.info(f"Training for {args.max_steps:,} steps...")
@@ -485,36 +535,16 @@ def main(args):
         x = [img.to(device, non_blocking=True) for img in x]
 
         with torch.no_grad():
-            vae_scale = 0.18215 if args.vae != "sdxl" else 0.13025
-            if step == resume_step:
-                logger.warning(f"vae scale: {vae_scale}")
-            # Map input images to latent space + normalize latents:
-            x = [vae.encode(img[None]).latent_dist.sample().mul_(vae_scale)[0] for img in x]
+            vae_scale = {"sdxl": 0.13025, "sd3": 1.5305, "ema": 0.18215, "mse": 0.18215}[args.vae]
+            vae_shift = {"sdxl": 0.0, "sd3": 0.0609, "ema": 0.0, "mse": 0.0}[args.vae]
 
-        if mp_world_size > 1:
-            mp_src = fs_init.get_model_parallel_src_rank()
-            mp_group = fs_init.get_model_parallel_group()
-            for img in x:
-                dist.broadcast(img, mp_src, mp_group)
-            dist.broadcast_object_list(caps, mp_src, mp_group)
-            assert caps.size(0) % mp_world_size == 0
-            caps = caps[
-                caps.size(0) // mp_world_size * mp_rank,
-                caps.size(0) // mp_world_size * (mp_rank + 1),
-            ]
+            if step == resume_step:
+                logger.warning(f"vae scale: {vae_scale}    vae shift: {vae_shift}")
+            # Map input images to latent space + normalize latents:
+            x = [(vae.encode(img[None]).latent_dist.sample()[0] - vae_shift) * vae_scale for img in x]
 
         with torch.no_grad():
             cap_feats, cap_mask = encode_prompt(caps, text_encoder, tokenizer, args.caption_dropout_prob)
-
-        if mp_world_size > 1:
-            local_cap_feats = cap_feats
-            cap_feats = torch.zeros(
-                [mp_world_size, *local_cap_feats.size()],
-                dtype=local_cap_feats.dtype,
-                device=local_cap_feats.device,
-            )
-            dist.all_gather_into_tensor(cap_feats, local_cap_feats, group=mp_group)
-            cap_feats = cap_feats.flatten(0, 1)
 
         loss_item = 0.0
         opt.zero_grad()
@@ -537,7 +567,7 @@ def main(args):
                 loss_dict = transport.training_losses(model, x_mb, model_kwargs)
             loss = loss_dict["loss"].sum() / local_batch_size
             loss_item += loss.item()
-            with model.no_sync() if args.data_parallel in ["sdp", "hsdp"] and not last_mb else contextlib.nullcontext():
+            with model.no_sync() if args.data_parallel in ["sdp", "fsdp"] and not last_mb else contextlib.nullcontext():
                 loss.backward()
 
         grad_norm = calculate_l2_grad_norm(model, model_parallel_dim_dict)
@@ -554,6 +584,7 @@ def main(args):
 
         # Log loss values:
         running_loss += loss_item
+        running_grad_norm += grad_norm
         log_steps += 1
         if (step + 1) % args.log_every == 0:
             # Measure training speed:
@@ -565,14 +596,17 @@ def main(args):
             avg_loss = torch.tensor(running_loss / log_steps, device=device)
             dist.all_reduce(avg_loss, op=dist.ReduceOp.SUM)
             avg_loss = avg_loss.item() / dist.get_world_size()
+            avg_grad_norm = running_grad_norm / log_steps
             logger.info(
                 f"(step={step + 1:07d}) "
                 f"Train Loss: {avg_loss:.4f}, "
+                f"Train Grad Norm: {avg_grad_norm:.4f}, "
                 f"Train Secs/Step: {secs_per_step:.2f}, "
                 f"Train Imgs/Sec: {imgs_per_sec:.2f}"
             )
             # Reset monitoring variables:
             running_loss = 0
+            running_grad_norm = 0
             log_steps = 0
             start_time = time()
 
@@ -660,7 +694,7 @@ if __name__ == "__main__":
     parser.add_argument("--micro_batch_size", type=int, default=1)
     parser.add_argument("--global_seed", type=int, default=0)
     parser.add_argument(
-        "--vae", type=str, choices=["ema", "mse", "sdxl"], default="ema"
+        "--vae", type=str, choices=["ema", "mse", "sdxl", "sd3"], default="ema"
     )  # Choice doesn't affect training
     parser.add_argument("--num_workers", type=int, default=4)
     parser.add_argument("--log_every", type=int, default=100)
@@ -670,6 +704,7 @@ if __name__ == "__main__":
     parser.add_argument("--data_parallel", type=str, choices=["sdp", "fsdp"], default="fsdp")
     parser.add_argument("--precision", choices=["fp32", "tf32", "fp16", "bf16"], default="bf16")
     parser.add_argument("--grad_precision", choices=["fp32", "fp16", "bf16"])
+    parser.add_argument("--checkpointing", action="store_true", default=False, help="enable gradient checkpointing")
     parser.add_argument(
         "--local_diffusers_model_root",
         type=str,
@@ -715,7 +750,7 @@ if __name__ == "__main__":
         default=0.1,
         help="Randomly change the caption of a sample to a blank string with the given probability.",
     )
-    parser.add_argument("--snr_type", type=str, default="uniform", choices=["uniform", "lognorm"])
+    parser.add_argument("--snr_type", type=str, default="uniform")
     args = parser.parse_args()
 
     main(args)

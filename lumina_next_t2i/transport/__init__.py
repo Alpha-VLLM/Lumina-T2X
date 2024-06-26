@@ -1,4 +1,4 @@
-from .transport import ModelType, PathType, Sampler, SNRType, Transport, WeightType
+from .transport import ModelType, PathType, Sampler, Transport, WeightType
 
 
 def create_transport(
@@ -34,13 +34,6 @@ def create_transport(
         loss_type = WeightType.LIKELIHOOD
     else:
         loss_type = WeightType.NONE
-
-    if snr_type == "lognorm":
-        snr_type = SNRType.LOGNORM
-    elif snr_type == "uniform":
-        snr_type = SNRType.UNIFORM
-    else:
-        raise ValueError(f"Invalid snr type {snr_type}")
 
     path_choice = {
         "Linear": PathType.LINEAR,

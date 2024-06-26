@@ -1,6 +1,6 @@
 # Lumina Text-to-Music
 
-We will provide our implementation and pretrained models as open source in this repository recently.
+`Lumina Text-to-Music` is a music generation model developed based on FlagDiT. It uses [FLAN-T5-Large](https://huggingface.co/google/flan-t5-large) as the text encoder and [Vocoder](https://github.com/NVIDIA/BigVGAN) as the decoder.
 
 - Generation Model: Flag-DiT
 - Text Encoder: [FLAN-T5-Large](https://huggingface.co/google/flan-t5-large)
@@ -122,7 +122,7 @@ To host a local gradio demo for interactive inference, run the following command
 
 1. updated `AutoencoderKL` ckpt path
 
-you should update `configs/lumina-text2music.yaml` to set `AutoencoderKL` checkpoint path. Please replace `/path/to/ckpt` with the path where your checkpoints are located (<real_path>).
+you should update `configs/lumina-text2music.yaml` to set `AutoencoderKL` checkpoint path. Please replace `/path/to/ckpt` with the path where your checkpoints are located (<real_ckpt_path>).
 
 ```diff
   ...
@@ -135,7 +135,7 @@ you should update `configs/lumina-text2music.yaml` to set `AutoencoderKL` checkp
         embed_dim: 20
         monitor: val/rec_loss
         - ckpt_path: /path/to/ckpt/maa2/maa2.ckpt
-        + ckpt_path: <real_path>/maa2/maa2.ckpt
+        + ckpt_path: <real_ckpt_path>/maa2/maa2.ckpt
         ddconfig:
           double_z: true
           in_channels: 80
@@ -158,7 +158,7 @@ python -u demo_music.py \
     --sample_rate 16000
 ```
 
-or you can run `run_music.sh` script for web demo after updating `AutoencoderKL` ckpt path on `configs/lumina-text2music.yaml`, `--ckpt`, and `--vocoder_ckpt`.
+or you can run `run_music.sh` script for web demo after updating `AutoencoderKL` ckpt path on `configs/lumina-text2music.yaml` and updating `--ckpt`, `--vocoder_ckpt` on `run_music.sh`.
 
 ```bash
 bash run_music.sh
