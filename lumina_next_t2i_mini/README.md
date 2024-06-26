@@ -149,6 +149,9 @@ To generate images directly from the inference code (for development), run the f
 # For Lumina
 bash scripts/sample.sh
 
+# For Lumina img2img translation
+bash scripts/sample_img2img.sh
+
 # For SD3
 bash scripts/sample_sd3.sh
 ```

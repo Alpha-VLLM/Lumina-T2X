@@ -65,6 +65,7 @@
 
 ## 📰 News
 
+- [2024-06-26] We have released the inference code for img2img translation using `Lumina-Next-T2I`. [CODE](https://github.com/Alpha-VLLM/Lumina-T2X/tree/main/lumina_next_t2i_mini/scripts/sample_img2img.sh)
 - **[2024-06-17] 🚀🚀🚀 We have support both inference and training (including Dreambooth) of SD3, implemented in our Lumina framework! [CODE](https://github.com/Alpha-VLLM/Lumina-T2X/tree/main/lumina_next_t2i_mini)**
 - **[2024-06-17] 🥰🥰🥰 Lumina-Next supports ComfyUI now, thanks to [Kijai](https://github.com/kijai)! [LINK](https://github.com/kijai/ComfyUI-LuminaWrapper)**
 - **[2024-06-08] 🚀🚀🚀 We have released the `Lumina-Next-SFT` model, demonstrating better visual quality! [MODEL](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT)**
@@ -141,20 +142,29 @@ pre-commit
 
 ## 📜 Index of Content
 
-- [Lumina-T2X](#lumina-t2x)
+- [$\\textbf{Lumina-T2X}$: Transforming Text into Any Modality, Resolution, and Duration via Flow-based Large Diffusion Transformers](#textbflumina-t2x-transforming-text-into-any-modality-resolution-and-duration-via-flow-based-large-diffusion-transformers)
   - [📰 News](#-news)
   - [🚀 Quick Start](#-quick-start)
+    - [GUI Demo](#gui-demo)
+      - [Lumina-Next-T2I model demo:](#lumina-next-t2i-model-demo)
+    - [Installation](#installation)
+    - [Development](#development)
   - [📑 Open-source Plan](#-open-source-plan)
   - [📜 Index of Content](#-index-of-content)
   - [Introduction](#introduction)
   - [📽️ Demo Examples](#️-demo-examples)
-    - [Text-to-Image Generation](#text-to-image-generation)
+    - [Demos of Lumina-Next-SFT](#demos-of-lumina-next-sft)
+    - [Demos of Lumina-T2I](#demos-of-lumina-t2i)
+      - [Panorama Generation](#panorama-generation)
     - [Text-to-Video Generation](#text-to-video-generation)
     - [Text-to-3D Generation](#text-to-3d-generation)
+      - [Point Cloud Generation](#point-cloud-generation)
     - [Text-to-Audio Generation](#text-to-audio-generation)
     - [Text-to-music Generation](#text-to-music-generation)
-    - [Multilingual Examples](#multilingual-generation)
+    - [Multilingual Generation](#multilingual-generation)
   - [⚙️ Diverse Configurations](#️-diverse-configurations)
+  - [Contributors](#contributors)
+  - [📄 Citation](#-citation)
 
 ## Introduction
 

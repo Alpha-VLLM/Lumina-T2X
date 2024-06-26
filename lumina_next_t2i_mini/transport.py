@@ -64,6 +64,7 @@ class ODE:
         t0=0.0,
         t1=1.0,
         use_sd3=False,
+        strength=1.0,
     ):
         if use_sd3:
             self.t = th.linspace(t1, t0, num_steps)
@@ -74,6 +75,9 @@ class ODE:
             if time_shifting_factor:
                 self.t = self.t / (self.t + time_shifting_factor - time_shifting_factor * self.t)
         
+        if strength != 1.0:
+            self.t = self.t[int(num_steps * (1 - strength)):]
+            
         self.use_sd3 = use_sd3
         self.sampler_type = sampler_type
 
