@@ -68,7 +68,6 @@
 
 ## 📰 News
 
-- **[2024-06-28] Our Lumina-Next preprint is finally available on [arXiv](https://arxiv.org/abs/2405.05945)!**
 - [2024-06-26] We have released the inference code for img2img translation using `Lumina-Next-T2I`. [CODE](https://github.com/Alpha-VLLM/Lumina-T2X/tree/main/lumina_next_t2i_mini/scripts/sample_img2img.sh) [ComfyUI](https://github.com/kijai/ComfyUI-LuminaWrapper)
 - [2024-06-21] 🥰🥰🥰 Lumina-Next has a jupyter nootbook for inference, thanks to [canenduru](https://github.com/camenduru)! [LINK](https://github.com/camenduru/Lumina-Next-jupyter)
 - [2024-06-21] We have uploaded the `Lumina-Next-SFT` and `Lumina-Next-T2I` to [wisemodel.cn](https://wisemodel.cn/models). [wisemodel repo](https://wisemodel.cn/models/Alpha-VLLM/Lumina-Next-SFT)
