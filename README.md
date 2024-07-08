@@ -68,7 +68,7 @@
 
 ## 📰 News
 
-- [2024-07-08] 🎉🎉🎉 Lumina-Next is now supported in the diffusers! Thanks to @yiyixuxu and @sayakpaul! [HF Model Repo](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT-diffusers).
+- **[2024-07-08] 🎉🎉🎉 Lumina-Next is now supported in the [diffusers](https://github.com/huggingface/diffusers)! Thanks to @yiyixuxu and @sayakpaul! [HF Model Repo](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT-diffusers).**
 - [2024-06-26] We have released the inference code for img2img translation using `Lumina-Next-T2I`. [CODE](https://github.com/Alpha-VLLM/Lumina-T2X/tree/main/lumina_next_t2i_mini/scripts/sample_img2img.sh) [ComfyUI](https://github.com/kijai/ComfyUI-LuminaWrapper)
 - [2024-06-21] 🥰🥰🥰 Lumina-Next has a jupyter nootbook for inference, thanks to [canenduru](https://github.com/camenduru)! [LINK](https://github.com/camenduru/Lumina-Next-jupyter)
 - [2024-06-21] We have uploaded the `Lumina-Next-SFT` and `Lumina-Next-T2I` to [wisemodel.cn](https://wisemodel.cn/models). [wisemodel repo](https://wisemodel.cn/models/Alpha-VLLM/Lumina-Next-SFT)
@@ -103,9 +103,32 @@
 > git pull origin main
 > ```
 
+### Fast Demo
+
+We have supported Lumina-Next in the [diffusers](https://github.com/huggingface/diffusers). 
+
+> [!Note]
+> You should install the development version of diffusers (`main` branch) before diffusers releasing the new version.
+> ```bash
+> pip install git+https://github.com/huggingface/diffusers
+
+and you can try the code below:
+
+```python
+from diffusers import LuminaText2ImgPipeline
+import torch
+
+pipeline = LuminaText2ImgPipeline.from_pretrained(
+"/mnt/hdd1/xiejunlin/checkpoints/Lumina-Next-SFT-diffusers", torch_dtype=torch.bfloat16
+).to("cuda")
+
+image = pipeline(prompt="Upper body of a young woman in a Victorian-era outfit with brass goggles and leather straps. Background shows an industrial revolution ciyscape with smoky skies and tall, metal structures").images[0]
+```
+
 For more details about training and inference of Lumina framework, please refer to [Lumina-T2I](./lumina_t2i/README.md#Installation), [Lumina-Next-T2I](./lumina_next_t2i/README.md#Installation), and [Lumina-Next-T2I-Mini](./lumina_next_t2i_mini/README.md#Installation). We highly recommend you to use the **[Lumina-Next-T2I-Mini](./lumina_next_t2i_mini/README.md#Installation)** for training and inference, which is an extremely simplified version of Lumina-Next-T2I with full functionalities.
 
 ### GUI Demo
+
 In order to quickly get you guys using our model, we built different versions of the GUI demo site.
 
 #### Lumina-Next-T2I model demo:
@@ -115,7 +138,6 @@ Image Generation: [[node1](http://106.14.2.150:10020/)] [[node2](http://106.14.2
 Image Compositional Generation: [[node1](http://106.14.2.150:10023/)]
 
 Music Generation: [[node1](http://139.196.83.164:8000)]
-
 
 <!-- > [!Warning] -->
 <!-- > **Lumina-T2X employs FSDP for training large diffusion models. FSDP shards parameters, optimizer states, and gradients across GPUs. Thus, at least 8 GPUs are required for full fine-tuning of the Lumina-T2X 5B model. Parameter-efficient Finetuning of Lumina-T2X shall be released soon.** -->
