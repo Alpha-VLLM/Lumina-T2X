@@ -41,6 +41,7 @@
 [![Static Badge](https://img.shields.io/badge/Lumina--Next--SFT%20checkpoints-Model(2B)-purple?logoColor=#571482&label=%F0%9F%A4%97%20Lumina-Next-SFT%20checkpoints)](https://wisemodel.cn/models/Alpha-VLLM/Lumina-Next-SFT)
 [![Static Badge](https://img.shields.io/badge/Lumina--Next--T2I%20checkpoints-Model(2B)-purple?logoColor=#571482&label=%F0%9F%A4%97%20Lumina-Next-SFT%20checkpoints)](https://wisemodel.cn/models/Alpha-VLLM/Lumina-Next-T2I)
 
+[![Static Badge](https://img.shields.io/badge/Lumina--Next--SFT%20checkpoints-Model(2B)-yellow?logoColor=violet&label=%F0%9F%A4%97%20Lumina-Next-Diffusers%20checkpoints)](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT-diffusers)
 [![Static Badge](https://img.shields.io/badge/Lumina--Next--SFT%20checkpoints-Model(2B)-yellow?logoColor=violet&label=%F0%9F%A4%97%20Lumina-Next-SFT%20checkpoints)](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT)
 [![Static Badge](https://img.shields.io/badge/Lumina--Next--T2I%20checkpoints-Model(2B)-yellow?logoColor=violet&label=%F0%9F%A4%97%20Lumina-Next-T2I%20checkpoints)](https://huggingface.co/Alpha-VLLM/Lumina-Next-T2I)
 [![Static Badge](https://img.shields.io/badge/Lumina--T2I%20checkpoints-Model(5B)-yellow?logoColor=violet&label=%F0%9F%A4%97%20Lumina-T2I%20checkpoints)](https://huggingface.co/Alpha-VLLM/Lumina-T2I)
