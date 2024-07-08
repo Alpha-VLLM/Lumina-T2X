@@ -122,7 +122,7 @@ pipeline = LuminaText2ImgPipeline.from_pretrained(
 "/mnt/hdd1/xiejunlin/checkpoints/Lumina-Next-SFT-diffusers", torch_dtype=torch.bfloat16
 ).to("cuda")
 
-image = pipeline(prompt="Upper body of a young woman in a Victorian-era outfit with brass goggles and leather straps. Background shows an industrial revolution ciyscape with smoky skies and tall, metal structures").images[0]
+image = pipeline(prompt="Upper body of a young woman in a Victorian-era outfit with brass goggles and leather straps. Background shows an industrial revolution ciyscape with smoky skies and tall, metal structures", height=1024, width=768).images[0]
 ```
 
 For more details about training and inference of Lumina framework, please refer to [Lumina-T2I](./lumina_t2i/README.md#Installation), [Lumina-Next-T2I](./lumina_next_t2i/README.md#Installation), and [Lumina-Next-T2I-Mini](./lumina_next_t2i_mini/README.md#Installation). We highly recommend you to use the **[Lumina-Next-T2I-Mini](./lumina_next_t2i_mini/README.md#Installation)** for training and inference, which is an extremely simplified version of Lumina-Next-T2I with full functionalities.
@@ -143,7 +143,7 @@ Music Generation: [[node1](http://139.196.83.164:8000)]
 <!-- > **Lumina-T2X employs FSDP for training large diffusion models. FSDP shards parameters, optimizer states, and gradients across GPUs. Thus, at least 8 GPUs are required for full fine-tuning of the Lumina-T2X 5B model. Parameter-efficient Finetuning of Lumina-T2X shall be released soon.** -->
 
 ### Installation
-Using `Lumina-T2I` as a library, using installation command on your environment:
+Using `Lumina-T2X` as a library, using installation command on your environment:
 
 ```bash
 pip install git+https://github.com/Alpha-VLLM/Lumina-T2X
@@ -163,7 +163,7 @@ pre-commit
 
 ## 📑 Open-source Plan
 
-- [X] Lumina-Text2Image (Demos✅, Training✅, Inference✅, Checkpoints✅)
+- [X] Lumina-Text2Image (Demos✅, Training✅, Inference✅, Checkpoints✅, Diffusers✅)
 - [ ] Lumina-Text2Video (Demos✅)
 - [X] Lumina-Text2Music (Demos✅, Inference✅, Checkpoints✅)
 - [X] Lumina-Text2Audio (Demos✅, Inference✅, Checkpoints✅)
