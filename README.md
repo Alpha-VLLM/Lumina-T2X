@@ -465,7 +465,7 @@ We support diverse configurations, including text encoders, DiTs of different pa
 
 Core member for code developlement and maintence:
 
-Ziyi Lin, Dongyang Liu, Le Zhuo, Junlin Xie, Ruoyi Du, Peng Gao
+Dongyang Liu, Le Zhuo, Junlin Xie, Ruoyi Du, Peng Gao
 
 <a href="https://github.com/Alpha-VLLM/Lumina-T2X/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=Alpha-VLLM/Lumina-T2X" />
