@@ -5,7 +5,7 @@ import torch
 from loguru import logger
 
 from hydit.config import get_args
-from hydit.modules.models import HunYuanDiT, HUNYUAN_DIT_CONFIG
+import lumina_next_t2i_mini.models as models
 
 import numpy as np
 import onnx
@@ -71,9 +71,9 @@ class ExportONNX(object):
             raise ValueError(f"model_path not exists: {model_path}")
 
         # Build model structure
-        model = models.__dict__[train_args.model](
+        self.model = models.__dict__[train_args.model](
             qk_norm=train_args.qk_norm,
-            cap_feat_dim=2304,
+            cap_feat_dim=2048,
             use_flash_attn=args.use_flash_attn,
         )
         # Load model checkpoint
@@ -93,13 +93,8 @@ class ExportONNX(object):
         # Construct model inputs
         latent_model_input = torch.randn(2, 4, 128, 128, device=self.device).half()
         t_expand = torch.randint(0, 1000, [2], device=self.device).half()
-        prompt_embeds = torch.randn(2, 256, 2304, device=self.device).half()
+        prompt_embeds = torch.randn(2, 256, 2048, device=self.device).half()
         attention_mask = torch.randint(0, 2, [2, 256], device=self.device).long()
-        ims = torch.tensor([[1024, 1024, 1024, 1024, 0, 0], [1024, 1024, 1024, 1024, 0, 0]], device=self.device).half()
-        freqs_cis_img = (
-            torch.randn(4096, 72),
-            torch.randn(4096, 72),
-        )
 
         save_to = self.onnx_export
         logger.info(f"Exporting ONNX model {save_to}...")
@@ -108,10 +103,7 @@ class ExportONNX(object):
             latent_model_input,
             t_expand,
             prompt_embeds,
-            attention_mask,
-            ims,
-            freqs_cis_img[0],
-            freqs_cis_img[1]
+            attention_mask
         )
         torch.onnx.export(self.model,
                           model_args,
@@ -119,16 +111,11 @@ class ExportONNX(object):
                           export_params=True,
                           opset_version=17,
                           do_constant_folding=True,
-                          input_names=["x", "t", "encoder_hidden_states", "text_embedding_mask",
-                                       "encoder_hidden_states_t5", "text_embedding_mask_t5", "image_meta_size", "style",
-                                       "cos_cis_img", "sin_cis_img"],
+                          input_names=["x", "t", "cap_feats", "cap_mask"],
                           output_names=["output"],
                           dynamic_axes={"x": {0: "2B", 2: "H", 3: "W"}, "t": {0: "2B"},
-                                        "encoder_hidden_states": {0: "2B"},
-                                        "text_embedding_mask": {0: "2B"}, "encoder_hidden_states_t5": {0: "2B"},
-                                        "text_embedding_mask_t5": {0: "2B"},
-                                        "image_meta_size": {0: "2B"}, "style": {0: "2B"}, "cos_cis_img": {0: "seqlen"},
-                                        "sin_cis_img": {0: "seqlen"}},
+                                        "cap_feats": {0: "2B"},
+                                        "cap_mask": {0: "2B"}},
                           )
         logger.info("Exporting onnx finished")
 
@@ -245,4 +232,4 @@ if __name__ == "__main__":
     exporter = ExportONNX(args, models_root_path)
     exporter.export()
     exporter.postprocessing()
-    exporter.fuse_attn()
+    # exporter.fuse_attn()

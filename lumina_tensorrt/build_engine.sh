@@ -44,7 +44,7 @@ echo "Change directory to ${PROJECT_DIR}"
 sleep 2s
 
 echo "Exporting ONNX model..."
-python trt/export_onnx.py --model-root ${MODEL_ROOT} --onnx-workdir ${ONNX_WORKDIR}
+python lumina_trt/export_onnx.py --model-root ${MODEL_ROOT} --onnx-workdir ${ONNX_WORKDIR}
 echo "Exporting ONNX model finished"
 
 # ----------------------------------------
