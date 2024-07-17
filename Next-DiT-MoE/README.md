@@ -14,7 +14,7 @@ The MoE version of `Next-DiT`.
 
 ## Results
 
-As shown in the figure, `Next-DiT-MoE` achieves lower training loss with space and/or time MoE than `Next-DiT`. `Next-DiT-TimeMoE` outperforms `Next-DiT` and SiT in both FID and IS, indicating that our model performs better.
+As shown in the figure, `Next-DiT-MoE` achieves lower training loss with space and/or time MoE than `Next-DiT`. `Next-DiT-TimeMoE` outperforms `Next-DiT` in both FID and IS, indicating that MoE works for Next-DiT.
 
 <p align="left">
  <img src="loss_timemoe.png" width="60%"/>
