@@ -27,7 +27,7 @@ As shown in the figure, `Next-DiT-MoE` achieves lower training loss with space a
 </p>
 
 <p align="left">
- <img src="loss_spacetimemoe.png" width="60%"/>
+ <img src="loss_timespacemoe.png" width="60%"/>
  <br>
 </p>
 
