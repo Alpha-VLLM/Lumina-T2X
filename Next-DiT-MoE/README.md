@@ -33,8 +33,8 @@ As shown in the figure, `Next-DiT-MoE` achieves lower training loss with space a
 
 |  Model   | Params | Training Iters |  FID ↓  |  sFID ↓ |   IS ↑  | Precision | Recall |
 |  :---:   | :---:  |     :---:      | :---: | :---:  | :---:  |   :---:   | :---:  |
-| Next-DiT |  600M  |     800K       | 2.41  |  **4.84**  | 245.95 |   0.82    |  0.58  |
-| Next-DiT-TimeMoE |  600M  |     800K       | **2.30**  |  4.97  | **257.36** |   0.82    |  0.58  |
+| Next-DiT |  600M  |     900K       | 2.36  |  4.85  | 250.69 |   0.82    |  0.59  |
+| Next-DiT-TimeMoE |  600M  |     900K       | **2.21**  |  **4.79**  | **260.61** |   0.81    |  0.59  |
 
 
 ## Installation
