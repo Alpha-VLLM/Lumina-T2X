@@ -217,6 +217,12 @@ We introduce the $\textbf{Lumina-T2X}$ family, a series of text-conditioned Diff
 
 ![github_banner](https://github.com/Alpha-VLLM/Lumina-T2X/assets/54879512/926adf8c-3f34-44ed-8ff6-5eb650b9712c)
 
+### Demos of Visual Anagrams
+
+![](https://github.com/user-attachments/assets/7a200023-6e85-4209-96f1-49e0ddadf021)
+
+![](https://github.com/user-attachments/assets/8006da1f-18be-45a0-b292-e1f2ef1e029a)
+
 ### Demos of Lumina-T2I
 
 <p align="center">
@@ -354,7 +360,7 @@ We present three multilingual capabilities of Lumina-Next-2B.
  <br>
 </p>
 
-**Generating Images with multilignual prompts:**
+**Generating Images with multilingual prompts:**
 
 <p align="center">
  <img src="https://github.com/Alpha-VLLM/Lumina-T2X/assets/86041420/7c62bb94-42e4-4525-a298-9e25475b511d" width="90%"/>
