@@ -16,10 +16,10 @@ As shown in the figure, `Next-DiT` outperforms `Flag-DiT` and SiT in both FID an
  <br>
 </p>
 
-|  Model   | Params | Training Iters |  FID ↓  |  sFID ↓ |   IS ↑  | Precision | Recall |
-|  :---:   | :---:  |     :---:      | :---: | :---:  | :---:  |   :---:   | :---:  |
-| Flag-DiT |  600M  |     900K       | 2.40  |  **4.63**  | 243.44 |   0.81    |  0.58  |
-| Next-DiT |  600M  |     900K       | **2.36**  |  4.85  | **250.69** |   **0.82**    |  **0.59**  |
+|  Model   | Params | Training Iters |  FID ↓  |  sFID ↓ |   IS ↑  | Precision | Recall | Download URL |
+|  :---:   | :---:  |     :---:      | :---: | :---:  | :---:  |   :---:   | :---:  | :---: |
+| Flag-DiT |  600M  |     900K       | 2.40  |  **4.63**  | 243.44 |   0.81    |  0.58  |    |
+| Next-DiT |  600M  |     900K       | **2.36**  |  4.85  | **250.69** |   **0.82**    |  **0.59**  | [huggingface](https://huggingface.co/Alpha-VLLM/Next-DiT) |
 
 
 ## Installation
