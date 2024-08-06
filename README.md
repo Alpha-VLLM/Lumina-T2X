@@ -21,6 +21,7 @@
 
 [![Lumina-Next](https://img.shields.io/badge/Paper-Lumina--Next-2b9348.svg?logo=arXiv)](https://arxiv.org/abs/2406.18583)&#160;
 [![Lumina-T2X](https://img.shields.io/badge/Paper-Lumina--T2X-2b9348.svg?logo=arXiv)](https://arxiv.org/abs/2405.05945)&#160;
+[![Lumina-mGPT](https://img.shields.io/badge/Paper-Lumina--mGPT-2b9348.svg?logo=arXiv)](https://arxiv.org/abs/2408.02657)&#160;
 
 [![Badge](https://img.shields.io/badge/-WeChat@Group-000000?logo=wechat&logoColor=07C160)](http://imagebind-llm.opengvlab.com/qrcode/)&#160;
 [![weixin](https://img.shields.io/badge/-WeChat@机器之心-000000?logo=wechat&logoColor=07C160)](https://mp.weixin.qq.com/s/NwwbaeRujh-02V6LRs5zMg)&#160;
@@ -69,6 +70,7 @@
 
 ## 📰 News
 
+- **[2024-08-06] 🎉🎉🎉 We have released [Lumina-mGPT](https://arxiv.org/abs/2408.02657), the next-generation of generative models in our Lumina family! Lumina-mGPT is an autoregressive transformer capable of photorealistic image generation and other vision-language tasks, e.g., controllable generation, multi-turn dialog, depth/normal/segmentation map estimation.**
 - **[2024-07-08] 🎉🎉🎉 Lumina-Next is now supported in the [diffusers](https://github.com/huggingface/diffusers)! Thanks to [@yiyixuxu](https://github.com/yiyixuxu) and [@sayakpaul](https://github.com/sayakpaul)! [HF Model Repo](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT-diffusers).**
 - [2024-06-26] We have released the inference code for img2img translation using `Lumina-Next-T2I`. [CODE](https://github.com/Alpha-VLLM/Lumina-T2X/tree/main/lumina_next_t2i_mini/scripts/sample_img2img.sh) [ComfyUI](https://github.com/kijai/ComfyUI-LuminaWrapper)
 - [2024-06-21] 🥰🥰🥰 Lumina-Next has a jupyter nootbook for inference, thanks to [canenduru](https://github.com/camenduru)! [LINK](https://github.com/camenduru/Lumina-Next-jupyter)
