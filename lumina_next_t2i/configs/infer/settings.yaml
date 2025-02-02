@@ -25,6 +25,6 @@
       solver: "euler"               # option: ["euler", "dopri5", "dopri8"]
       t_shift: 4                    # range: 1-20 (int only)
       scaling_method: "Time-aware"  # option: ["Time-aware", "None"]
-      scale_watershed: 0.3          # range: 0.0-1.0
+      scaling_watershed: 0.3        # range: 0.0-1.0
       proportional_attn: true       # option: true or false
       seed: 0                       # rnage: any number
