@@ -3,7 +3,9 @@
  <br>
 </p> -->
 
-# $\textbf{Lumina-T2X}$: Transforming Text into Any Modality, Resolution, and Duration via Flow-based Large Diffusion Transformers
+# $\textbf{Lumina-T2X}$: Transforming Text into Any Modality, Resolution, and Duration via Flow-based Large Diffusion Transformers 
+
+### <div align="center"> ICLR 2025 Spotlight & NeurIPS 2024 <div>
 
 <div align="center">
 
