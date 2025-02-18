@@ -161,13 +161,13 @@ def main(args, rank, master_port):
         collected_id = []
 
     captions = []
-
+    print(args.caption_path)
     with open(args.caption_path, "r", encoding="utf-8") as file:
         for line in file:
             text = line.strip()
             if text:
                 captions.append(line.strip())
-
+    print(captions)
     total = len(info)
     resolution = args.resolution
     with torch.autocast("cuda", dtype):
@@ -308,7 +308,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--resolution",
         type=str,
-        default="",
+        default=["1024:1024x1024"],
         nargs="+",
     )
     parser.add_argument(

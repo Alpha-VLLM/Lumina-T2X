@@ -53,7 +53,7 @@ global_options = [
         "-c",
         "--config",
         type=str,
-        default="cofing/infer/settings.yaml",
+        default="config/infer/settings.yaml",
         help="setting for inference with different parameter.",
     ),
     click.option(
